@@ -6,6 +6,7 @@ pub use vek::LineSegment2 as Line;
 
 pub trait LineExt<T> where T: PartialOrd + Copy {
     fn boundingbox(&self) -> Aabr<T>;
+    fn reverse(&self) -> Self;
 }
 
 impl<T> LineExt<T> for Line<T>  where T: PartialOrd + Copy {
@@ -14,5 +15,12 @@ impl<T> LineExt<T> for Line<T>  where T: PartialOrd + Copy {
             min: self.start,
             max: self.end,
         }.made_valid()
+    }
+
+    fn reverse(&self) -> Self {
+        Self {
+            start: self.end,
+            end: self.start,
+        }
     }
 }

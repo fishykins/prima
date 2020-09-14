@@ -2,6 +2,7 @@ use vek::{Vec2};
 use std::f64::consts::PI;
 use crate::core::OrdNum;
 use super::line::*;
+use super::Triangle;
 
 pub struct Polygon<T> where T: OrdNum {
     verticies: Vec<Vec2<T>>,
@@ -60,6 +61,74 @@ impl<T> Polygon<T> where T: OrdNum {
         return None;
     }
 
+    /// impliments "Ear Clipping". See also: https://gitlab.com/nathanfaucett/rs-polygon2/-/blob/master/src/triangulate.rs
+    pub fn triangulate(&self) -> Vec<Triangle<T>> {
+        let mut triangles = Vec::new();
+        let n = self.verticies.len();
+
+        if n < 3 {
+            //This is not going to triangulate- return nothing
+            return triangles;
+        }
+
+        if n == 3 {
+            //This IS a triangle, so simply return it as is
+            triangles.push(Triangle::new(self.verticies[0], self.verticies[1], self.verticies[2]));
+            return triangles;
+        }
+
+        //time to impliment "Ear Clipping". Wont work for complex polys, but meh. 
+        let mut avl = Vec::with_capacity(n);
+
+        for i in 0..n {
+            avl.push(i);
+        }
+
+        let mut i = 0;
+        let mut al = n;
+        while al > 3 {
+            let i0 = avl[i % al];
+            let i1 = avl[(i + 1) % al];
+            let i2 = avl[(i + 2) % al];
+
+            let a = self.verticies[i0];
+            let b = self.verticies[i1];
+            let c = self.verticies[i2];
+
+            let t = Triangle::new(a, b, c);
+
+            let mut ear_found = false;
+            if t.is_convex() {
+                ear_found = true;
+
+                for j in 0..al {
+                    let vi = avl[j];
+
+                    if vi != i0 && vi != i1 && vi != i2 {
+                        if t.contains_point(self.verticies[vi]) {
+                            ear_found = false;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            if ear_found {
+                triangles.push(t);
+                avl.remove((i + 1) % al);
+                al -= 1;
+                i = 0;
+            } else if i > 3 * al {
+                break;
+            } else {
+                i += 1;
+            }
+        }
+
+        triangles.push(Triangle::new(self.verticies[avl[0]], self.verticies[avl[1]], self.verticies[avl[2]]));
+        triangles
+    }
+
     pub fn edge(&self, i: usize, clockwise: bool) -> Option<Line<T>> {
         let vert_count = self.verticies.len();
 
@@ -102,7 +171,7 @@ mod tests {
     use image::RgbImage;
     use vek::{Vec2,Rgb};
 
-    const POLY_SIZE: usize = 8;
+    const POLY_SIZE: usize = 7;
 
     #[test]
     fn polygon_test() {
@@ -124,5 +193,22 @@ mod tests {
         }
 
         img.save("polygon_test.png").unwrap();
+    }
+
+    #[test]
+    fn polygon_triangulation_test() {
+        let mut img = RgbImage::new(512, 512);
+        let poly = Polygon::new_ngon(POLY_SIZE, 128., Vec2::new(256., 256.));
+
+        for triangle in poly.triangulate().iter() {
+            let a = triangle.a.map(|x| x as u32);
+            let b = triangle.b.map(|x| x as u32);
+            let c = triangle.c.map(|x| x as u32);
+            draw_line(&mut img, a, b, Rgb::new(0,255,0));
+            draw_line(&mut img, b, c, Rgb::new(0,255,0));
+            draw_line(&mut img, c, a, Rgb::new(0,255,0));
+        }
+
+        img.save("polygon_triangulation_test.png").unwrap();
     }
 }
