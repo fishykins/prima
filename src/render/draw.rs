@@ -1,6 +1,6 @@
-use crate::geom::{Line, Rect, Triangle, Polygon, Disk};
+use crate::geom::{Line, Rect, Triangle, Polygon, Disk, Ellipsis};
 use crate::core::OrdNum;
-use super::{RgbImage, draw_line, draw_circle};
+use super::{RgbImage, draw_line, draw_circle, paint_pixel, RgbRaw};
 use vek::{Vec2, Rgb};
 use num::ToPrimitive;
 
@@ -60,24 +60,49 @@ impl<T, E> Draw<T> for Disk<T, E> where T: OrdNum, E: OrdNum {
     }
 }
 
-// impl<T, E> Draw<T> for Ellipsis<T, E> {
-//     fn draw(&self, image: &mut RgbImage, colour: Rgb<u8>) {
+impl<T, E> Draw<T> for Ellipsis<T, E> where T: OrdNum, E: OrdNum {
+    fn draw(&self, image: &mut RgbImage, colour: Rgb<u8>) {
+        // just use the formula for an elipse
+        let center = self.center.map(|x| x.to_f64().unwrap());
+        let major = self.radius.w.to_f64().unwrap();
+        let minor = self.radius.h.to_f64().unwrap();
         
-//     }
-// }
+        for xi in (-major as i64)..(major as i64) {
+            let x = xi as f64;
+            let y = (minor.powi(2) - ((x.powi(2) * minor.powi(2)) / major.powi(2))).sqrt();
+            paint_pixel(image, (center.x + x) as u32, (center.y + y) as u32, RgbRaw([colour.r, colour.g, colour.b]));
+            paint_pixel(image, (center.x + x) as u32, (center.y - y) as u32, RgbRaw([colour.r, colour.g, colour.b]));
+        }
+
+        // iterate both axis to avoid deadzones. There is 100% a neater way of doing this but meh
+        for yi in (-minor as i64)..(minor as i64) {
+            let y = yi as f64;
+            let x = (major.powi(2) - ((y.powi(2) * major.powi(2)) / minor.powi(2))).sqrt();
+            paint_pixel(image, (center.x - x) as u32, (center.y + y) as u32, RgbRaw([colour.r, colour.g, colour.b]));
+            paint_pixel(image, (center.x + x) as u32, (center.y + y) as u32, RgbRaw([colour.r, colour.g, colour.b]));
+        }
+    }
+}
 
 
 #[test]
 fn draw_test() {
     let mut img = RgbImage::new(512, 512);
-    let poly = Polygon::new_ngon(Vec2::new(256., 256.), 200., 5);
-    
+
+    let poly = Polygon::new_ngon(Vec2::new(256., 256.), 200., 7);
     let disk = Disk::new(Vec2::new(256.,256.), 200.);
     let rect = disk.rect();
 
-    poly.draw(&mut img, Rgb::new(255,255,0));
-    rect.draw(&mut img, Rgb::new(0,255,255));
-    disk.draw(&mut img, Rgb::new(255,0,255));
+    let elpipse = Ellipsis {
+        center: Vec2::new(256.,256.),
+        radius: vek::Extent2::new(128., 64.),
+    };
 
+    poly.draw(&mut img, Rgb::new(255,255,0));
+    disk.draw(&mut img, Rgb::new(255,0,255));
+    rect.draw(&mut img, Rgb::new(0,255,255));
+    elpipse.draw(&mut img, Rgb::new(0,0,255));
+
+    //image::imageops::blur(&img, 0.9).save("draw_test.png").unwrap();
     img.save("draw_test.png").unwrap();
 }

@@ -6,6 +6,7 @@ use std::fmt::Display;
 
 const NUM_STEPS: usize = 128;
 
+/// fake circle, using a many sides polygon.
 pub fn draw_circle<T>(image: &mut RgbImage, point: Vec2<T>, radius: T, colour: Rgb<u8>) 
 where 
     T: Num + Integer + Unsigned + ToPrimitive + FromPrimitive + Copy + Display {

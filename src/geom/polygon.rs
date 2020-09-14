@@ -4,7 +4,6 @@ use crate::core::OrdNum;
 use super::Line;
 use super::Triangle;
 use super::is_convex;
-use super::Disk;
 
 pub struct Polygon<T> where T: OrdNum {
     verticies: Vec<Vec2<T>>,
@@ -63,7 +62,7 @@ impl<T> Polygon<T> where T: OrdNum {
     pub fn verticies(&self) -> Vec<Vec2<T>> {
         self.verticies.clone()
     }
-    
+
     /// Generates all edges
     pub fn edges(&self) -> Vec<Line<T>> {
         let mut lines = Vec::new();
