@@ -1,15 +1,8 @@
-use super::{RgbImage, RgbRaw};
+use super::{RgbImage, RgbRaw, paint_pixel};
 use crate::geom::{Line, LineExt};
 use vek::{Vec2, Aabr, Extent2, Rgb};
 use num::{Num, Integer, Unsigned, ToPrimitive};
 
-/// reverses the y value!
-fn paint_pixel(image: &mut RgbImage, x: u32, y: u32, rgb: RgbRaw<u8>) {
-    //println!("Painting [{},{}]", x, y);
-    if x < image.width() && y < image.height() && y > 0 && x > 0 {
-        image.put_pixel(x, image.height() - y, rgb);
-    }
-}
 
 pub fn draw_line<T>(image: &mut RgbImage, a: Vec2<T>, b: Vec2<T>, colour: Rgb<u8>) where T: Num + Integer + Unsigned + ToPrimitive + Copy {
     let line = Line {

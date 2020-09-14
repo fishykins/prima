@@ -4,6 +4,7 @@ use crate::core::OrdNum;
 use super::Line;
 use super::Triangle;
 use super::is_convex;
+use super::Disk;
 
 pub struct Polygon<T> where T: OrdNum {
     verticies: Vec<Vec2<T>>,
@@ -22,7 +23,7 @@ impl<T> Polygon<T> where T: OrdNum {
         }
     }
     
-    pub fn new_ngon(n: usize, circumradius: T, pos: Vec2<T>) -> Self {
+    pub fn new_ngon(pos: Vec2<T>, circumradius: T, n: usize) -> Self {
         if n < 3 {
             panic!("Polygon must have at least 3 sides");
         }
@@ -62,7 +63,7 @@ impl<T> Polygon<T> where T: OrdNum {
     pub fn verticies(&self) -> Vec<Vec2<T>> {
         self.verticies.clone()
     }
-
+    
     /// Generates all edges
     pub fn edges(&self) -> Vec<Line<T>> {
         let mut lines = Vec::new();
@@ -193,54 +194,16 @@ impl<T> Polygon<T> where T: OrdNum {
 #[cfg(test)]
 mod tests {
     use crate::geom::polygon::Polygon;
-    use crate::render::{draw_line, RgbImage};
-    use vek::{Vec2,Rgb};
+    use vek::{Vec2};
 
     const POLY_SIZE: usize = 12;
 
     #[test]
     fn polygon_test() {
-        let mut img = RgbImage::new(512, 512);
-        let poly = Polygon::new_ngon(POLY_SIZE, 200., Vec2::new(256., 256.));
+        let poly = Polygon::new_ngon(Vec2::new(256., 256.), 200., POLY_SIZE);
 
         for (i, v) in poly.verticies().iter().enumerate() {
             println!("v{} => {}", i, v);
         }
-
-        for v in poly.edges().iter() {
-            let a = v.start.map(|x| x as u32);
-            let b = v.end.map(|x| x as u32);
-            draw_line(&mut img, a, b, Rgb::new(255,125,0));
-        }
-
-        img.save("polygon_test.png").unwrap();
-    }
-
-    #[test]
-    fn polygon_triangulation_test() {
-        let mut img = RgbImage::new(512, 512);
-        let poly = Polygon::new_ngon(POLY_SIZE, 128., Vec2::new(256., 256.));
-        let triangles = poly.triangulate();
-        let mut sub_poly = Polygon::<f64>::with_capacity(POLY_SIZE - 2);
-
-        for triangle in triangles.iter() {
-            let a = triangle.a.map(|x| x as u32);
-            let b = triangle.b.map(|x| x as u32);
-            let c = triangle.c.map(|x| x as u32);
-            let colour = Rgb::new(200,40,200);
-            draw_line(&mut img, a, b, colour);
-            draw_line(&mut img, b, c, colour);
-            draw_line(&mut img, c, a, colour);
-
-            sub_poly.add_vertex(triangle.centroid());
-        }
-
-        for v in sub_poly.edges().iter() {
-            let a = v.start.map(|x| x as u32);
-            let b = v.end.map(|x| x as u32);
-            draw_line(&mut img, a, b, Rgb::new(10,120,170));
-        }
-
-        img.save("polygon_triangulation_test.png").unwrap();
     }
 }
