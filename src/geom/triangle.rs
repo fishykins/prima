@@ -37,6 +37,13 @@ impl<T> Triangle<T> where T: OrdNum {
         }
     }
 
+    pub fn centroid(&self) -> Vec2<T> {
+        let x = self.a.x + self.b.x + self.c.x;
+        let y = self.a.y + self.b.y + self.c.y;
+        let three = T::one() + T::one() + T::one();
+        Vec2::new(x / three, y / three)
+    }
+
     pub fn contains_point(&self, p: Vec2<T>) -> bool {
         let v0x = self.c.x - self.a.x;
         let v0y = self.c.y - self.a.y;

@@ -1,10 +1,10 @@
-use super::image::{RgbImage, Rgb as ImgRgb};
+use super::{RgbImage, RgbRaw};
+use crate::geom::line::*;
 use vek::{Vec2, Aabr, Extent2, Rgb};
 use num::{Num, Integer, Unsigned, ToPrimitive};
-use crate::geom::line::*;
 
 /// reverses the y value!
-fn paint_pixel(image: &mut RgbImage, x: u32, y: u32, rgb: ImgRgb<u8>) {
+fn paint_pixel(image: &mut RgbImage, x: u32, y: u32, rgb: RgbRaw<u8>) {
     //println!("Painting [{},{}]", x, y);
     if x < image.width() && y < image.height() && y > 0 && x > 0 {
         image.put_pixel(x, image.height() - y, rgb);
@@ -36,7 +36,7 @@ pub fn draw_line_segment<T>(image: &mut RgbImage, line: &Line<T>, colour: Rgb<u8
         return;
     }
 
-    let rgb = ImgRgb([colour.r, colour.g, colour.b]);
+    let rgb = RgbRaw([colour.r, colour.g, colour.b]);
 
 
     if line_box.size().w == 0 {

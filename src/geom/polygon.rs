@@ -9,8 +9,19 @@ pub struct Polygon<T> where T: OrdNum {
 }
 
 impl<T> Polygon<T> where T: OrdNum {
-    pub fn new_ngon(n: usize, circumradius: T, pos: Vec2<T>) -> Self {
+    pub fn empty() -> Self {
+        Self {
+            verticies: Vec::new(),
+        }
+    }
 
+    pub fn with_capacity(capacity: usize) -> Self {
+        Self {
+            verticies: Vec::with_capacity(capacity),
+        }
+    }
+    
+    pub fn new_ngon(n: usize, circumradius: T, pos: Vec2<T>) -> Self {
         if n < 3 {
             panic!("Polygon must have at least 3 sides");
         }
@@ -19,33 +30,39 @@ impl<T> Polygon<T> where T: OrdNum {
             verticies: Vec::new(),
         };
 
-        let angle = (2. * PI) / n as f64; //regular_simple_angle(n);
-        println!("angle = {}", angle);
+        let angle = (2. * PI) / n as f64; 
         
         for i in 0..n {
-            let a = angle * i as f64;
+            // angle is ajusted by Pi/2 so triangulation starts from 12 O'clock
+            let a = angle * i as f64 + (PI / 2.);
             let x = T::from_f64(a.cos()).unwrap() * circumradius;
             let y = T::from_f64(a.sin()).unwrap() * circumradius;
             poly.verticies.push(Vec2::new(x, y) + pos);
         }
-
         poly
     }
 
+    pub fn add_vertex(&mut self, v: Vec2<T>) {
+        self.verticies.push(v);
+    }
+
+    // The number of sides
     pub fn n(&self) -> usize {
         self.verticies.len()
     }
 
-    /// calculates the interior angle for a regular poly of our size
-    pub fn interoir_angle(&self) -> f64 {
+    /// Calculates the interior angle for a regular poly of our size
+    pub fn interior_angle(&self) -> f64 {
         let n = self.verticies.len() as f64;
         ((n as f64 - 2.) * PI) / n
     }
 
+    // Returns all vecticies in the poly
     pub fn verticies(&self) -> Vec<Vec2<T>> {
         self.verticies.clone()
     }
 
+    // Generates all edges
     pub fn edges(&self) -> Vec<Line<T>> {
         let mut lines = Vec::new();
         for (i, _) in self.verticies.iter().enumerate() {
@@ -54,6 +71,7 @@ impl<T> Polygon<T> where T: OrdNum {
         lines
     }
 
+    // Getter for vertex at given index
     pub fn vertex(&self, i: usize) -> Option<Vec2<T>> {
         if i < self.verticies.len() {
             return Some(self.verticies[i]);
@@ -61,6 +79,7 @@ impl<T> Polygon<T> where T: OrdNum {
         return None;
     }
 
+    /// Triangulates the polygon.
     /// impliments "Ear Clipping". See also: https://gitlab.com/nathanfaucett/rs-polygon2/-/blob/master/src/triangulate.rs
     pub fn triangulate(&self) -> Vec<Triangle<T>> {
         let mut triangles = Vec::new();
@@ -129,6 +148,7 @@ impl<T> Polygon<T> where T: OrdNum {
         triangles
     }
 
+    /// Getter for edge, going from a given vertex (either clockwise or counter).
     pub fn edge(&self, i: usize, clockwise: bool) -> Option<Line<T>> {
         let vert_count = self.verticies.len();
 
@@ -167,16 +187,15 @@ impl<T> Polygon<T> where T: OrdNum {
 #[cfg(test)]
 mod tests {
     use crate::geom::polygon::Polygon;
-    use crate::render::draw_line;
-    use image::RgbImage;
+    use crate::render::{draw_line, RgbImage};
     use vek::{Vec2,Rgb};
 
-    const POLY_SIZE: usize = 7;
+    const POLY_SIZE: usize = 12;
 
     #[test]
     fn polygon_test() {
         let mut img = RgbImage::new(512, 512);
-        let poly = Polygon::new_ngon(POLY_SIZE, 128., Vec2::new(256., 256.));
+        let poly = Polygon::new_ngon(POLY_SIZE, 200., Vec2::new(256., 256.));
 
         for (i, v) in poly.verticies().iter().enumerate() {
             println!("v{} => {}", i, v);
@@ -185,11 +204,7 @@ mod tests {
         for v in poly.edges().iter() {
             let a = v.start.map(|x| x as u32);
             let b = v.end.map(|x| x as u32);
-            let f1 = v.start.x as f64;
-            let f2 = v.start.y as f64;
-            let c1 = ((f2.sin() + 1.)  * 122.) as u8;
-            let c2 = ((f1.cos() + 1.)* 122.) as u8;
-            draw_line(&mut img, a, b, Rgb::new(c1,c2,0));
+            draw_line(&mut img, a, b, Rgb::new(255,125,0));
         }
 
         img.save("polygon_test.png").unwrap();
@@ -199,14 +214,25 @@ mod tests {
     fn polygon_triangulation_test() {
         let mut img = RgbImage::new(512, 512);
         let poly = Polygon::new_ngon(POLY_SIZE, 128., Vec2::new(256., 256.));
+        let triangles = poly.triangulate();
+        let mut sub_poly = Polygon::<f64>::with_capacity(POLY_SIZE - 2);
 
-        for triangle in poly.triangulate().iter() {
+        for triangle in triangles.iter() {
             let a = triangle.a.map(|x| x as u32);
             let b = triangle.b.map(|x| x as u32);
             let c = triangle.c.map(|x| x as u32);
-            draw_line(&mut img, a, b, Rgb::new(0,255,0));
-            draw_line(&mut img, b, c, Rgb::new(0,255,0));
-            draw_line(&mut img, c, a, Rgb::new(0,255,0));
+            let colour = Rgb::new(200,40,200);
+            draw_line(&mut img, a, b, colour);
+            draw_line(&mut img, b, c, colour);
+            draw_line(&mut img, c, a, colour);
+
+            sub_poly.add_vertex(triangle.centroid());
+        }
+
+        for v in sub_poly.edges().iter() {
+            let a = v.start.map(|x| x as u32);
+            let b = v.end.map(|x| x as u32);
+            draw_line(&mut img, a, b, Rgb::new(10,120,170));
         }
 
         img.save("polygon_triangulation_test.png").unwrap();
