@@ -1,8 +1,9 @@
 use vek::{Vec2};
 use std::f64::consts::PI;
 use crate::core::OrdNum;
-use super::line::*;
+use super::Line;
 use super::Triangle;
+use super::is_convex;
 
 pub struct Polygon<T> where T: OrdNum {
     verticies: Vec<Vec2<T>>,
@@ -57,12 +58,12 @@ impl<T> Polygon<T> where T: OrdNum {
         ((n as f64 - 2.) * PI) / n
     }
 
-    // Returns all vecticies in the poly
+    /// Returns all vecticies in the poly
     pub fn verticies(&self) -> Vec<Vec2<T>> {
         self.verticies.clone()
     }
 
-    // Generates all edges
+    /// Generates all edges
     pub fn edges(&self) -> Vec<Line<T>> {
         let mut lines = Vec::new();
         for (i, _) in self.verticies.iter().enumerate() {
@@ -71,12 +72,17 @@ impl<T> Polygon<T> where T: OrdNum {
         lines
     }
 
-    // Getter for vertex at given index
+    /// Getter for vertex at given index
     pub fn vertex(&self, i: usize) -> Option<Vec2<T>> {
         if i < self.verticies.len() {
             return Some(self.verticies[i]);
         }
         return None;
+    }
+
+    /// Returns true if polygon is convex
+    pub fn is_convex(&self) -> bool {
+        is_convex(self.verticies())
     }
 
     /// Triangulates the polygon.

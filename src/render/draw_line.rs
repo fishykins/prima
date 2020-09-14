@@ -1,5 +1,5 @@
 use super::{RgbImage, RgbRaw};
-use crate::geom::line::*;
+use crate::geom::{Line, LineExt};
 use vek::{Vec2, Aabr, Extent2, Rgb};
 use num::{Num, Integer, Unsigned, ToPrimitive};
 

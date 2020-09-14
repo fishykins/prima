@@ -1,4 +1,4 @@
-use super::line::*;
+use super::Line;
 use super::is_triangle_convex;
 use vek::{Vec2};
 use crate::core::OrdNum;
