@@ -1,5 +1,7 @@
 mod direction;
 
+pub mod maths;
+
 pub use direction::Direction;
 
 use num::{Num, CheckedMul, FromPrimitive, ToPrimitive, Signed, Integer, Float};
