@@ -11,7 +11,8 @@ pub use triangle::Triangle;
 pub use polygon::Polygon;
 
 // Vek re-exports
-pub use vek::Aabr as Boundingbox;
+pub use vek::Aabr as BoundingRect;
+pub use vek::Aabb as BoundingBox;
 pub use vek::LineSegment2 as Line;
 pub use vek::Rect;
 pub use vek::Disk;
