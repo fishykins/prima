@@ -1,5 +1,5 @@
 use crate::core::OrdNum;
-use super::{Triangle, Orientation, Line, vec::*};
+use super::{Triangle, Rect, Orientation, Line, vec::*};
 use vek::{Aabr, Vec2};
 use num::Signed;
 
@@ -10,6 +10,7 @@ pub trait LineExt<T> where T: OrdNum {
     fn reverse(&self) -> Self;
     fn intersects(&self, other: &Self) -> bool;
     fn intersection_point(&self, other: &Self) -> Option<Vec2<T>>;
+    fn intersects_rect(&self, other: &Rect<T, T>) -> bool;
 }
 
 impl<T> LineExt<T> for Line<T>  where T: OrdNum + Signed {
@@ -83,6 +84,30 @@ impl<T> LineExt<T> for Line<T>  where T: OrdNum + Signed {
         }
 
         return Some(a + r * t);
+    }
+
+    fn intersects_rect(&self, other: &Rect<T, T>) -> bool {
+        let l1 = Line { 
+            start:Vec2::new(other.x, other.y), 
+            end: Vec2::new(other.x + other.w, other.y),
+        };
+
+        let l2 = Line { 
+            start:Vec2::new(other.x, other.y + other.h), 
+            end: Vec2::new(other.x + other.w, other.y + other.h),
+        };
+
+        let l3 = Line { 
+            start:Vec2::new(other.x, other.y), 
+            end: Vec2::new(other.x, other.y + other.h),
+        };
+
+        let l4 = Line { 
+            start:Vec2::new(other.x + other.w, other.y), 
+            end: Vec2::new(other.x + other.w, other.y + other.h),
+        };
+
+        self.intersects(&l1) || self.intersects(&l2) || self.intersects(&l3) || self.intersects(&l4)
     }
 }
 
