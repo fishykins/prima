@@ -2,24 +2,24 @@ use crate::geom::{Line, Rect, Triangle, Polygon, Disk, Ellipsis};
 use crate::core::OrdNum;
 use super::{RgbImage, draw_line, draw_circle, paint_pixel, RgbRaw};
 use vek::{Vec2, Rgb};
-use num::ToPrimitive;
+use num::Signed;
 
 pub trait Draw<T> {
     fn draw(&self, image: &mut RgbImage, colour: Rgb<u8>);
 }
 
-impl<T> Draw<T> for Line<T> where T: ToPrimitive + Copy {
+impl<T> Draw<T> for Line<T> where T: OrdNum + Signed {
     fn draw(&self, image: &mut RgbImage, colour: Rgb<u8>) {
-        draw_line(image, self.start.map(|x| x.to_u32().unwrap()), self.end.map(|x| x.to_u32().unwrap()), colour);
+        draw_line(image, self.start.map(|x| x.to_i32().unwrap()), self.end.map(|x| x.to_i32().unwrap()), colour);
     }
 }
 
-impl<T, E> Draw<T> for Rect<T, E> where T: ToPrimitive + Copy, E: OrdNum {
+impl<T, E> Draw<T> for Rect<T, E> where T: OrdNum + Signed, E: OrdNum + Signed {
     fn draw(&self, image: &mut RgbImage, colour: Rgb<u8>) {
-        let x = self.x.to_u32().unwrap();
-        let y = self.y.to_u32().unwrap();
-        let w = self.w.to_u32().unwrap();
-        let h = self.h.to_u32().unwrap();
+        let x = self.x.to_i32().unwrap();
+        let y = self.y.to_i32().unwrap();
+        let w = self.w.to_i32().unwrap();
+        let h = self.h.to_i32().unwrap();
         let a = Vec2::new(x, y);
         let b = Vec2::new(x + w, y);
         let c = Vec2::new(x, y + h);
@@ -31,36 +31,36 @@ impl<T, E> Draw<T> for Rect<T, E> where T: ToPrimitive + Copy, E: OrdNum {
     }
 }
 
-impl<T> Draw<T> for Triangle<T> where T: OrdNum {
+impl<T> Draw<T> for Triangle<T> where T: OrdNum + Signed {
     fn draw(&self, image: &mut RgbImage, colour: Rgb<u8>) {
-        let a = self.a.map(|x| x.to_u32().unwrap());
-        let b = self.b.map(|x| x.to_u32().unwrap());
-        let c = self.c.map(|x| x.to_u32().unwrap());
+        let a = self.a.map(|x| x.to_i32().unwrap());
+        let b = self.b.map(|x| x.to_i32().unwrap());
+        let c = self.c.map(|x| x.to_i32().unwrap());
         draw_line(image, a, b, colour);
         draw_line(image, b, c, colour);
         draw_line(image, c, a, colour);
     }
 }
 
-impl<T> Draw<T> for Polygon<T> where T: OrdNum {
+impl<T> Draw<T> for Polygon<T> where T: OrdNum + Signed {
     fn draw(&self, image: &mut RgbImage, colour: Rgb<u8>) {
         for v in self.edges().iter() {
-            let a = v.start.map(|x| x.to_u32().unwrap());
-            let b = v.end.map(|x| x.to_u32().unwrap());
+            let a = v.start.map(|x| x.to_i32().unwrap());
+            let b = v.end.map(|x| x.to_i32().unwrap());
             draw_line(image, a, b, colour);
         }
     }
 }
 
-impl<T, E> Draw<T> for Disk<T, E> where T: OrdNum, E: OrdNum {
+impl<T, E> Draw<T> for Disk<T, E> where T: OrdNum + Signed, E: OrdNum + Signed {
     fn draw(&self, image: &mut RgbImage, colour: Rgb<u8>) {
-        let r = self.radius.to_u32().unwrap();
-        let p = self.center.map(|x| x.to_u32().unwrap());
+        let r = self.radius.to_i32().unwrap();
+        let p = self.center.map(|x| x.to_i32().unwrap());
         draw_circle(image, p, r, colour);
     }
 }
 
-impl<T, E> Draw<T> for Ellipsis<T, E> where T: OrdNum, E: OrdNum {
+impl<T, E> Draw<T> for Ellipsis<T, E> where T: OrdNum + Signed, E: OrdNum + Signed {
     fn draw(&self, image: &mut RgbImage, colour: Rgb<u8>) {
         // just use the formula for an elipse
         let center = self.center.map(|x| x.to_f64().unwrap());

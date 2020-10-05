@@ -1,7 +1,15 @@
+use crate::core::OrdNum;
 use super::Line;
 use super::is_triangle_convex;
 use vek::{Vec2};
-use crate::core::OrdNum;
+use std::cmp::Ordering;
+
+#[derive(PartialEq)]
+pub enum Orientation {
+    Linear,
+    Clockwise,
+    CounterClockwise,
+}
 
 pub struct Triangle<T> where T: OrdNum {
     pub a: Vec2<T>,
@@ -67,5 +75,19 @@ impl<T> Triangle<T> where T: OrdNum {
 
     pub fn is_convex(&self) -> bool {
         is_triangle_convex(self.a, self.b, self.c)
+    }
+
+    pub fn orientation(&self) -> Orientation {
+        let val = (self.b.y - self.a.y) * (self.c.x - self.b.x) - (self.b.x - self.a.x) * (self.c.y - self.b.y);
+
+        match val.partial_cmp(&T::zero()).expect("Cannot get triangle orientation when val = zero") {
+            Ordering::Less => Orientation::CounterClockwise,
+            Ordering::Greater => Orientation::Clockwise,
+            Ordering::Equal => Orientation::Linear,
+        }
+    }
+
+    pub fn to_tripple(self) -> (Vec2<T>, Vec2<T>, Vec2<T>) {
+        (self.a, self.b, self.c)
     }
 }

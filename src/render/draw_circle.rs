@@ -1,15 +1,15 @@
+use crate::core::OrdNum;
 use super::{RgbImage, draw_line};
 use vek::{Vec2, Rgb};
-use num::{Num, Integer, Unsigned, ToPrimitive, FromPrimitive};
+use num::{Signed};
 use std::f64::consts::PI;
-use std::fmt::Display;
 
 const NUM_STEPS: usize = 128;
 
 /// fake circle, using a many sides polygon.
 pub fn draw_circle<T>(image: &mut RgbImage, point: Vec2<T>, radius: T, colour: Rgb<u8>) 
 where 
-    T: Num + Integer + Unsigned + ToPrimitive + FromPrimitive + Copy + Display {
+    T: OrdNum + Signed {
 
     let angle = (2. * PI) / NUM_STEPS as f64; 
     let r: f64 = radius.to_f64().unwrap();

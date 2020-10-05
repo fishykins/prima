@@ -1,10 +1,11 @@
 use super::{RgbImage, RgbRaw, paint_pixel};
 use crate::geom::{Line, LineExt};
+use crate::core::OrdNum;
 use vek::{Vec2, Aabr, Extent2, Rgb};
-use num::{Num, Integer, Unsigned, ToPrimitive};
+use num::Signed;
 
 
-pub fn draw_line<T>(image: &mut RgbImage, a: Vec2<T>, b: Vec2<T>, colour: Rgb<u8>) where T: Num + Integer + Unsigned + ToPrimitive + Copy {
+pub fn draw_line<T>(image: &mut RgbImage, a: Vec2<T>, b: Vec2<T>, colour: Rgb<u8>) where T: OrdNum + Signed {
     let line = Line {
         start: a,
         end: b,
@@ -13,7 +14,7 @@ pub fn draw_line<T>(image: &mut RgbImage, a: Vec2<T>, b: Vec2<T>, colour: Rgb<u8
 }
 
 /// Draws a pixel-level line onto the given image
-pub fn draw_line_segment<T>(image: &mut RgbImage, line: &Line<T>, colour: Rgb<u8>) where T: Num + Integer + Unsigned + ToPrimitive + Copy {
+pub fn draw_line_segment<T>(image: &mut RgbImage, line: &Line<T>, colour: Rgb<u8>) where T: OrdNum + Signed {
     if line.start == line.end {
         return;
     }
@@ -106,15 +107,15 @@ fn draw_line_test() {
     let v3 = Vec2::new(512,0);
 
     //draw lines
-    let l1: Line<u32> = Line {
+    let l1: Line<i32> = Line {
         start: v1,
         end: v2,
     };
-    let l2: Line<u32> = Line {
+    let l2: Line<i32> = Line {
         start: v2,
         end: v3,
     };
-    let l3: Line<u32> = Line {
+    let l3: Line<i32> = Line {
         start: v3,
         end: v1,
     };
