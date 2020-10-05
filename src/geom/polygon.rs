@@ -3,7 +3,6 @@ use std::f64::consts::PI;
 use crate::core::OrdNum;
 use super::Line;
 use super::Triangle;
-use super::is_convex;
 
 pub struct Polygon<T> where T: OrdNum {
     verticies: Vec<Vec2<T>>,
@@ -82,7 +81,32 @@ impl<T> Polygon<T> where T: OrdNum {
 
     /// Returns true if polygon is convex
     pub fn is_convex(&self) -> bool {
-        is_convex(self.verticies())
+        let n = self.verticies.len();
+        if n < 3 {
+            true
+        } else {
+            let mut i = 0;
+            let l = n - 2;
+
+            while i < l {
+                let triangle = Triangle::new(self.verticies[i], self.verticies[i + 1], self.verticies[i + 2]);
+                if !triangle.is_convex() {
+                    return false;
+                } else {
+                    i += 3;
+                }
+            }
+
+            let triangle = Triangle::new(self.verticies[l], self.verticies[l + 1], self.verticies[0]);
+            if !triangle.is_convex() {
+                return false;
+            }
+            let triangle = Triangle::new(self.verticies[l + 1], self.verticies[0], self.verticies[1]);
+            if !triangle.is_convex() {
+                return false;
+            }
+            true
+        }
     }
 
     /// Triangulates the polygon.

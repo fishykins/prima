@@ -1,6 +1,5 @@
 use crate::core::OrdNum;
 use super::Line;
-use super::is_triangle_convex;
 use vek::{Vec2};
 use std::cmp::Ordering;
 
@@ -74,7 +73,7 @@ impl<T> Triangle<T> where T: OrdNum {
     }
 
     pub fn is_convex(&self) -> bool {
-        is_triangle_convex(self.a, self.b, self.c)
+        ((self.a.y - self.b.y) * (self.c.x - self.b.x) + (self.b.x - self.a.x) * (self.c.y - self.b.y)) >= T::zero()
     }
 
     pub fn orientation(&self) -> Orientation {

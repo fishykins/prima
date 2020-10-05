@@ -1,13 +1,9 @@
 mod triangle;
 mod polygon;
-mod is_convex;
 mod line;
 mod disk;
 
 pub mod vec;
-
-// Locally used functions
-pub(crate) use is_convex::{is_convex, is_triangle_convex};
 
 // Organic geometric shapes
 pub use triangle::{Triangle, Orientation};
