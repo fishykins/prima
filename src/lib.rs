@@ -6,3 +6,6 @@ pub mod geom;
 
 /// Rendering utilities
 pub mod render;
+
+/// Mesh library
+pub mod mesh;

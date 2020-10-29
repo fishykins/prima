@@ -2,8 +2,11 @@ mod triangle;
 mod polygon;
 mod line;
 mod disk;
+mod vertex;
 
 pub mod vec;
+
+pub use vertex::Vertex;
 
 // Organic geometric shapes
 pub use triangle::{Triangle, Orientation};
