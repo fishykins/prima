@@ -9,3 +9,6 @@ pub mod render;
 
 /// Mesh library
 pub mod mesh;
+
+/// Graphs
+pub mod graphs;

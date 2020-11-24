@@ -3,6 +3,7 @@ mod polygon;
 mod line;
 mod disk;
 mod vertex;
+mod axis;
 
 pub mod vec;
 
@@ -11,6 +12,7 @@ pub use vertex::Vertex;
 // Organic geometric shapes
 pub use triangle::{Triangle, Orientation};
 pub use polygon::Polygon;
+pub use axis::Axis;
 
 // Vek re-exports
 pub use vek::Aabr as BoundingRect;
