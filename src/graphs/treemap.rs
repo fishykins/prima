@@ -1,7 +1,9 @@
 use crate::geom::{Axis, Rect, Line, Transverse};
-use num::{Num, Float};
+use crate::render::{Draw, draw_text, ImageBuffer, RgbRaw, load_font};
+use crate::core::OrdNum;
+use num::{Float, Signed};
 use std::ops::{DivAssign, AddAssign};
-use vek::Vec2;
+use vek::{Vec2, Rgb};
 use ordered_float::OrderedFloat;
 
 
@@ -36,6 +38,10 @@ impl<T> TreeRect<T> where T: Float + Copy + DivAssign + AddAssign {
             edges: Vec::new(),
         }
     }
+
+    fn active(&self) -> bool {
+        self.children.len() == 0
+    }
 }
 
 impl<T> Treemap<T> where T: Float + Copy + DivAssign + AddAssign {
@@ -57,7 +63,7 @@ impl<T> Treemap<T> where T: Float + Copy + DivAssign + AddAssign {
                 let w = self.rects[index].rect.w;
                 let y = self.rects[index].rect.y;
                 let h = self.rects[index].rect.h / (T::one() + T::one());
-                let rect_top = Rect::new(x, h, w, h);
+                let rect_top = Rect::new(x, y + h, w, h);
                 let rect_bottom = Rect::new(x, y, w, h);
 
                 let line = Line {
@@ -73,10 +79,10 @@ impl<T> Treemap<T> where T: Float + Copy + DivAssign + AddAssign {
                 let y = self.rects[index].rect.y;
                 let h = self.rects[index].rect.h;
                 let rect_left = Rect::new(x, y, w, h);
-                let rect_right = Rect::new(w, y, w, h);
+                let rect_right = Rect::new(x + w, y, w, h);
 
                 let line =  Line {
-                    start: Vec2::new(x, y + h),
+                    start: Vec2::new(x + w, y),
                     end: Vec2::new(x + w, y + h),
                 };
 
@@ -160,8 +166,8 @@ impl<T> Treemap<T> where T: Float + Copy + DivAssign + AddAssign {
                         },
                         Transverse::Right => {
                             let x = self.rects[new_edge.a].rect.x + self.rects[new_edge.a].rect.w;
-                            let y1 = a_y1.max(b_y1).into_inner();
-                            let y2 = a_y1.min(b_y2).into_inner();
+                            let y1 = a_y2.max(b_y1).into_inner();
+                            let y2 = a_y2.min(b_y2).into_inner();
                             (x, x, y1, y2)
                         },
                         _ => {
@@ -180,7 +186,36 @@ impl<T> Treemap<T> where T: Float + Copy + DivAssign + AddAssign {
     }
 }
 
+impl<T> Draw<T> for Treemap<T> where T: Float + Copy + DivAssign + AddAssign + OrdNum + Signed {
+    fn draw(&self, image: &mut ImageBuffer<RgbRaw<u8>, Vec<u8>>, colour: Rgb<u8>) {
+
+        let font = load_font("assets/DejaVuSans.ttf").unwrap();
+
+        for e in self.edges.iter() {
+            e.line.draw(image, colour);
+        }
+
+        for (i, r) in self.rects.iter().enumerate() {
+            let text = format!("{}", i);
+            let center = r.rect.center();
+            let col = if r.active() {Rgb::<u8>::green()} else {Rgb::<u8>::red()};
+            draw_text(image,center.x, center.y, &text, col, &font);
+            //r.rect.draw(image, col);
+        }
+
+        println!("there are {} edges", self.edges.len());
+        println!("there are {} rects", self.rects.len());
+    }
+}
+
 #[test]
 fn treemap_test() {
-    let _tree_map = Treemap::<f32>::new(Rect::new(0., 0., 64., 64.));
+    let mut tree_map = Treemap::<f32>::new(Rect::new(0., 0., 510., 510.));
+    tree_map.split(0, Axis::Horizontal);
+    tree_map.split(2, Axis::Vertical);
+    tree_map.split(4, Axis::Horizontal);
+    tree_map.split(1, Axis::Horizontal);
+    let mut img = ImageBuffer::new(512, 512);
+    tree_map.draw(&mut img, Rgb::red());
+    img.save("tree_test.png").unwrap();
 }

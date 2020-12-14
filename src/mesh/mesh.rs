@@ -9,7 +9,6 @@ pub trait Draw {
 }
 
 #[derive(Debug)]
-#[no_mangle]
 pub struct Mesh<T> where T: GeoNum {
     verticies: Vec<Vertex<T>>,
     faces: Vec<Face>,

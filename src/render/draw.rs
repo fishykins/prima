@@ -8,7 +8,7 @@ pub trait Draw<T> {
     fn draw(&self, image: &mut RgbImage, colour: Rgb<u8>);
 }
 
-impl<T> Draw<T> for Line<T> where T: OrdNum + Signed {
+impl<T> Draw<T> for Line<T> where T: OrdNum {
     fn draw(&self, image: &mut RgbImage, colour: Rgb<u8>) {
         draw_line(image, self.start.map(|x| x.to_i32().unwrap()), self.end.map(|x| x.to_i32().unwrap()), colour);
     }
