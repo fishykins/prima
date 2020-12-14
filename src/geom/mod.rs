@@ -4,10 +4,12 @@ mod line;
 mod disk;
 mod vertex;
 mod axis;
+mod transverse;
 
 pub mod vec;
 
 pub use vertex::Vertex;
+pub use transverse::Transverse;
 
 // Organic geometric shapes
 pub use triangle::{Triangle, Orientation};
