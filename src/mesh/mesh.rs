@@ -17,7 +17,7 @@ pub struct Mesh<T> where T: GeoNum {
 }
 
 impl<T> Clone for Mesh<T> where T: GeoNum {
-    /// note that cloneing a mesh will loose all filters. 
+    /// cloning a mesh will loose all filters. 
     fn clone(&self) -> Self {
         Self {
             verticies: self.verticies.clone(),

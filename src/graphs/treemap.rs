@@ -1,13 +1,12 @@
 use crate::geom::{Axis, Rect, Line, Transverse};
 use crate::render::{Draw, draw_text, ImageBuffer, RgbRaw, load_font};
-use crate::core::OrdNum;
-use num::{Float, Signed};
-use std::ops::{DivAssign, AddAssign};
+use crate::core::{OrdNum, maths::clamp01};
+use num::{Float};
+use std::fmt::Debug;
 use vek::{Vec2, Rgb};
 use ordered_float::OrderedFloat;
 
-
-struct TreeRect<T> where T: Float + Copy + DivAssign + AddAssign {
+struct TreeRect<T> where T: OrdNum {
     rect: Rect<T, T>,
     parent: Option<usize>,
     children: Vec<usize>,
@@ -15,7 +14,7 @@ struct TreeRect<T> where T: Float + Copy + DivAssign + AddAssign {
 }
 
 #[derive(Debug, Copy, Clone)]
-struct TreeEdge<T> where T: Float + Copy + DivAssign + AddAssign {
+struct TreeEdge<T> where T: OrdNum + Float {
     a: usize,
     b: usize,
     line: Line<T>,
@@ -23,13 +22,13 @@ struct TreeEdge<T> where T: Float + Copy + DivAssign + AddAssign {
     active: bool,
 }
 
-pub struct Treemap<T> where T: Float + Copy + DivAssign + AddAssign {
+pub struct Treemap<T> where T: OrdNum + Float {
     rects: Vec<TreeRect<T>>,
     edges: Vec<TreeEdge<T>>,
 }
 
 
-impl<T> TreeRect<T> where T: Float + Copy + DivAssign + AddAssign {
+impl<T> TreeRect<T> where T: OrdNum + Float {
     fn new(rect: Rect<T, T>, parent: Option<usize>) -> Self {
         Self {
             rect,
@@ -44,7 +43,7 @@ impl<T> TreeRect<T> where T: Float + Copy + DivAssign + AddAssign {
     }
 }
 
-impl<T> Treemap<T> where T: Float + Copy + DivAssign + AddAssign {
+impl<T> Treemap<T> where T: OrdNum + Float {
     pub fn new(rect: Rect<T, T>) -> Self {
         Self {
             rects: vec![TreeRect::new(rect, None)],
@@ -52,71 +51,121 @@ impl<T> Treemap<T> where T: Float + Copy + DivAssign + AddAssign {
         }
     }
 
-    pub fn split(&mut self, index: usize, axis: Axis) -> (usize, usize) {
+    pub fn intersect_point(&mut self, index: usize, axis: Axis, offset: T) {
+        let clamped_offset = clamp01(offset);
+        let x_a = self.rects[index].rect.x;
+        let y_a = self.rects[index].rect.y;
+        let w_a: T;
+        let h_a: T;
 
+        let x_b: T;
+        let y_b: T;
+        let h_b: T;
+        let w_b: T;
+        let transverse: Transverse;
+        let split_line: Line<T>;
+
+        match axis {
+            Axis::Horizontal => {
+                w_a = self.rects[index].rect.w;
+                h_a = self.rects[index].rect.h * clamped_offset;
+                x_b = x_a;
+                y_b = y_a + h_a;
+                w_b = w_a;
+                h_b = self.rects[index].rect.h - h_a;
+                
+                transverse = Transverse::Right;
+                split_line = Line {
+                    start:  Vec2::new(x_a, y_a + h_a),
+                    end:    Vec2::new(x_a + w_a, y_a + h_a),
+                };
+            }
+            Axis::Vertical => {
+                w_a = self.rects[index].rect.w * clamped_offset;
+                h_a = self.rects[index].rect.h;
+                x_b = x_a + w_a;
+                y_b = y_a;
+                w_b = self.rects[index].rect.w - w_a;
+                h_b = h_a;
+                transverse = Transverse::Up;
+                split_line = Line {
+                    start:  Vec2::new(x_a + w_a, y_a),
+                    end:    Vec2::new(x_a + w_a, y_a + h_a),
+                };
+            }
+            _ => {panic!("No axis")},
+        };
+
+        let rect_a = Rect::<T,T>::new(x_a, y_a, w_a, h_a);
+        let rect_b = Rect::<T,T>::new(x_b, y_b, w_b, h_b);
         let index_a = self.rects.len();
         let index_b = index_a + 1;
-
-        let (a, b, line, transverse) = match axis {
-            Axis::Horizontal => {
-                let x = self.rects[index].rect.x;
-                let w = self.rects[index].rect.w;
-                let y = self.rects[index].rect.y;
-                let h = self.rects[index].rect.h / (T::one() + T::one());
-                let rect_top = Rect::new(x, y + h, w, h);
-                let rect_bottom = Rect::new(x, y, w, h);
-
-                let line = Line {
-                    start: Vec2::new(x, y + h),
-                    end: Vec2::new(x + w, y + h),
-                };
-                
-                (rect_bottom, rect_top, line, Transverse::Left)
-            },
-            Axis::Vertical => {
-                let x = self.rects[index].rect.x;
-                let w = self.rects[index].rect.w  / (T::one() + T::one());
-                let y = self.rects[index].rect.y;
-                let h = self.rects[index].rect.h;
-                let rect_left = Rect::new(x, y, w, h);
-                let rect_right = Rect::new(x + w, y, w, h);
-
-                let line =  Line {
-                    start: Vec2::new(x + w, y),
-                    end: Vec2::new(x + w, y + h),
-                };
-
-                (rect_left, rect_right, line, Transverse::Down)
-            },
-            _ => {
-                panic!();
-            }
-        };
 
         let edge_index = self.edges.len();
         self.edges.push(TreeEdge {
             a: index_a,
             b: index_b,
-            line,
+            line: split_line.clone(),
             axis,
             active: true,
         });
 
-        let mut node_a = TreeRect::new(a, Some(index));
-        let mut node_b = TreeRect::new(b, Some(index));
-
-        node_a.edges.push((edge_index, transverse));
-        node_b.edges.push((edge_index, transverse.opposite()));
-
+        self.rects.push(TreeRect::new(rect_a, Some(index)));
+        self.rects.push(TreeRect::new(rect_b, Some(index)));
         self.rects[index].children.push(index_a);
         self.rects[index].children.push(index_b);
-        self.rects.push(node_a);
-        self.rects.push(node_b);
-
         self.inherit_edges(index_a, transverse);
-        self.inherit_edges(index_b, transverse.opposite());
+        self.inherit_edges(index_b, transverse);
 
-        (index_a, index_b)
+        self.rects[index_a].edges.push((edge_index, transverse));
+        self.rects[index_b].edges.push((edge_index, transverse.opposite()));
+    }
+
+    pub fn split(&mut self, index: usize, axis: Axis, cuts: usize) -> Vec<usize> {
+        let new_rects= Vec::new();
+
+        let n = T::from_usize(cuts + 1).unwrap();
+        let x = self.rects[index].rect.x;
+        let y = self.rects[index].rect.y;
+
+        let (w, h, p, q, transverse) = match axis {
+            Axis::Horizontal => (self.rects[index].rect.w, self.rects[index].rect.h / n, T::zero(), T::one(), Transverse::Right),
+            Axis::Vertical => (self.rects[index].rect.w  / n, self.rects[index].rect.h, T::one(), T::zero(), Transverse::Up),
+            _ => {panic!("No axis")},
+        };
+
+        for i in 0..cuts + 1 {
+            let j: T = T::from_usize(i).unwrap();
+            let rect = Rect::<T,T>::new(x + w * p * j, y + h * q * j, w, h);
+            let index_b = self.rects.len();
+            self.rects.push(TreeRect::new(rect, Some(index)));
+            self.rects[index].children.push(index_b);
+            self.inherit_edges(index_b, transverse);
+
+            if i > 0 {
+                let index_a = index_b - 1;
+                let line = Line {
+                    start:  Vec2::new(x + w * j * p,            y + h * j * q),
+                    end:    Vec2::new(x + w * j * p + w * q,    y + h * j * q + h * p),
+                };
+
+                let edge_index = self.edges.len();
+                self.edges.push(TreeEdge {
+                    a: index_a,
+                    b: index_b,
+                    line: line.clone(),
+                    axis,
+                    active: true,
+                });
+
+                println!("Edge {} ({} -> {}): {:?} -> {:?}", edge_index, index_a, index_b, line.start, line.end);
+
+                self.rects[index_a].edges.push((edge_index, transverse));
+                self.rects[index_b].edges.push((edge_index, transverse.opposite()));
+            }
+        }
+
+        new_rects
     }
 
     fn inherit_edges(&mut self, index: usize, applied_edge: Transverse) {
@@ -186,7 +235,7 @@ impl<T> Treemap<T> where T: Float + Copy + DivAssign + AddAssign {
     }
 }
 
-impl<T> Draw<T> for Treemap<T> where T: Float + Copy + DivAssign + AddAssign + OrdNum + Signed {
+impl<T> Draw<T> for Treemap<T> where T: OrdNum + Float {
     fn draw(&self, image: &mut ImageBuffer<RgbRaw<u8>, Vec<u8>>, colour: Rgb<u8>) {
 
         let font = load_font("assets/DejaVuSans.ttf").unwrap();
@@ -201,8 +250,8 @@ impl<T> Draw<T> for Treemap<T> where T: Float + Copy + DivAssign + AddAssign + O
             let col = if r.active() {Rgb::<u8>::green()} else {Rgb::<u8>::red()};
             draw_text(image,center.x, center.y, &text, col, &font);
             //r.rect.draw(image, col);
+            println!("Rect {}: {:?}", i, r.rect);
         }
-
         println!("there are {} edges", self.edges.len());
         println!("there are {} rects", self.rects.len());
     }
@@ -211,10 +260,10 @@ impl<T> Draw<T> for Treemap<T> where T: Float + Copy + DivAssign + AddAssign + O
 #[test]
 fn treemap_test() {
     let mut tree_map = Treemap::<f32>::new(Rect::new(0., 0., 510., 510.));
-    tree_map.split(0, Axis::Horizontal);
-    tree_map.split(2, Axis::Vertical);
-    tree_map.split(4, Axis::Horizontal);
-    tree_map.split(1, Axis::Horizontal);
+    tree_map.intersect_point(0, Axis::Horizontal, 0.25);
+    tree_map.intersect_point(1, Axis::Vertical, 0.25);
+    tree_map.split(4, Axis::Horizontal, 2);
+    tree_map.split(2, Axis::Vertical, 3);
     let mut img = ImageBuffer::new(512, 512);
     tree_map.draw(&mut img, Rgb::red());
     img.save("tree_test.png").unwrap();
