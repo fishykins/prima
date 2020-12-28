@@ -2,7 +2,7 @@ use crate::geom::{Axis, Rect, Line, Transverse};
 use crate::render::{Draw, draw_text, ImageBuffer, RgbRaw, load_font};
 use crate::core::{OrdNum, maths::clamp01};
 use num::{Float};
-use std::fmt::Debug;
+use std::{fmt::Debug};
 use vek::{Vec2, Rgb};
 use ordered_float::OrderedFloat;
 
@@ -22,17 +22,26 @@ pub struct TreeEdge<T> where T: OrdNum + Float {
     b: usize,
     line: Line<T>,
     axis: Axis,
-    child_count: u8,
+    birth_cycle: Option<usize>,
 }
 
 pub struct Treemap<T> where T: OrdNum + Float {
     rects: Vec<TreeRect<T>>,
     edges: Vec<TreeEdge<T>>,
+    cycle: usize,
 }
 
 impl<T> TreeEdge<T> where T: OrdNum + Float {
     fn active(&self) -> bool {
-        self.child_count < 2
+        self.birth_cycle.is_none()
+    }
+
+    fn can_split(&self, current_cycle: usize) -> bool {
+        if self.birth_cycle.is_some() {
+            self.birth_cycle.unwrap() == current_cycle
+        } else {
+            true
+        }
     }
 }
 
@@ -56,6 +65,7 @@ impl<T> Treemap<T> where T: OrdNum + Float {
         Self {
             rects: vec![TreeRect::new(rect, None)],
             edges: Vec::new(),
+            cycle: 0,
         }
     }
 
@@ -74,14 +84,13 @@ impl<T> Treemap<T> where T: OrdNum + Float {
     }
 
     pub fn intersect_point(&mut self, index: usize, axis: Axis, offset: T) {
-        if index > self.rects.len() {
+        if index >= self.rects.len() {
             return;
         }
 
         if !self.rects[index].active() {
             return;
         }
-
 
         let clamped_offset = clamp01(offset);
         let x_a = self.rects[index].rect.x;
@@ -138,7 +147,7 @@ impl<T> Treemap<T> where T: OrdNum + Float {
             b: index_b,
             line: split_line.clone(),
             axis,
-            child_count: 0,
+            birth_cycle: None,
         });
 
         self.rects.push(TreeRect::new(rect_a, Some(index)));
@@ -149,6 +158,8 @@ impl<T> Treemap<T> where T: OrdNum + Float {
         self.rects[index_b].edges.push(EdgeRef(edge_index, transverse.opposite()));
         self.inherit_edges(index_a, transverse);
         self.inherit_edges(index_b, transverse.opposite());
+
+        self.cycle += 1;
     }
 
     pub fn split(&mut self, index: usize, axis: Axis, cuts: usize) -> Vec<usize> {
@@ -194,7 +205,7 @@ impl<T> Treemap<T> where T: OrdNum + Float {
                     b: index_b,
                     line: line.clone(),
                     axis,
-                    child_count: 0,
+                    birth_cycle: None,
                 });
 
                 println!("Edge {} ({} -> {}): {:?} -> {:?}", edge_index, index_a, index_b, line.start, line.end);
@@ -216,14 +227,11 @@ impl<T> Treemap<T> where T: OrdNum + Float {
             for EdgeRef(edge_index, transverse) in self.rects[parent_index].edges.iter() {
                 println!("  Checking E{}...", edge_index);
 
-                // TODO: Add check to see if this edge even touches our new rect!
-
-                if *transverse != applied_edge && self.edges[*edge_index].active() {
+                if *transverse != applied_edge && self.edges[*edge_index].can_split(self.cycle) {
                     let new_edge_index = self.edges.len();
                     let mut new_edge = self.edges[*edge_index].clone();
-                    new_edge.child_count = 0;
-                    self.edges[*edge_index].child_count += 1;
-
+                    self.edges[*edge_index].birth_cycle = Some(self.cycle);
+                    println!("    E{}: birth_cycle started at {}...", edge_index, self.edges[*edge_index].birth_cycle.unwrap());
                     println!("    E{}: cloning and modifying as E{} ({:?})...", edge_index, self.edges.len(), transverse);
                     let other;
 
@@ -247,29 +255,35 @@ impl<T> Treemap<T> where T: OrdNum + Float {
                     let a_y2 = OrderedFloat(self.rects[new_edge.a].rect.y + self.rects[new_edge.a].rect.h);
                     let b_y2 = OrderedFloat(self.rects[new_edge.b].rect.y + self.rects[new_edge.b].rect.h);
 
+                    let valid: bool;
+
                     let (x1, x2, y1, y2) = match transverse {
                         Transverse::Up => {
                             let x1 = a_x1.max(b_x1).into_inner();
                             let x2 = a_x2.min(b_x2).into_inner();
-                            let y = self.rects[new_edge.b].rect.y + self.rects[new_edge.b].rect.h;
+                            let y = self.rects[new_edge.b].rect.y;// + self.rects[new_edge.b].rect.h;
+                            valid = (b_x1 <= a_x2 && b_x1 >= a_x1) || (b_x2 <= a_x2 && b_x2 >= a_x1);
                             (x1, x2, y, y)
                         },
                         Transverse::Down => {
                             let x1 = a_x1.max(b_x1).into_inner();
                             let x2 = a_x2.min(b_x2).into_inner();
                             let y = self.rects[new_edge.b].rect.y;
+                            valid = (b_x1 <= a_x2 && b_x1 >= a_x1) || (b_x2 <= a_x2 && b_x2 >= a_x1);
                             (x1, x2, y, y)
                         },
                         Transverse::Left => {
-                            let x = self.rects[new_edge.a].rect.x;
+                            let x = self.rects[new_edge.b].rect.x;
                             let y1 = a_y1.max(b_y1).into_inner();
                             let y2 = a_y2.min(b_y2).into_inner();
+                            valid = (b_y1 <= a_y2 && b_y1 >= a_y1) || (b_y2 <= a_y2 && b_y2 >= a_y1);
                             (x, x, y1, y2)
                         },
                         Transverse::Right => {
-                            let x = self.rects[new_edge.a].rect.x + self.rects[new_edge.a].rect.w;
+                            let x = self.rects[new_edge.b].rect.x;
                             let y1 = a_y1.max(b_y1).into_inner();
                             let y2 = a_y2.min(b_y2).into_inner();
+                            valid = (b_y1 <= a_y2 && b_y1 >= a_y1) || (b_y2 <= a_y2 && b_y2 >= a_y1);
                             (x, x, y1, y2)
                         },
                         _ => {
@@ -277,15 +291,20 @@ impl<T> Treemap<T> where T: OrdNum + Float {
                         }
                     };
 
-                    println!("    Made E{}: x1: {}, x2: {}, y1: {}, y2: {}, a: R{}, b: R{}", new_edge_index, x1, x2, y1, y2, new_edge.a, new_edge.b);
-
-                    new_edge.line = Line {
-                        start: Vec2::new(x1, y1),
-                        end: Vec2::new(x2, y2),
-                    };
-                    self.edges.push(new_edge);
-                    edges_to_add.push((index, EdgeRef(new_edge_index, transverse.clone())));
-                    edges_to_add.push((other, EdgeRef(new_edge_index, transverse.opposite())));
+                    if valid {
+                        println!("    Made E{}: x1: {}, x2: {}, y1: {}, y2: {}, a: R{}, b: R{}", new_edge_index, x1, x2, y1, y2, new_edge.a, new_edge.b);
+                        
+                        new_edge.line = Line {
+                            start: Vec2::new(x1, y1),
+                            end: Vec2::new(x2, y2),
+                        };
+                        self.edges.push(new_edge);
+                        edges_to_add.push((index, EdgeRef(new_edge_index, transverse.clone())));
+                        edges_to_add.push((other, EdgeRef(new_edge_index, transverse.opposite())));
+                        self.edges[new_edge_index].birth_cycle = None;
+                    } else {
+                        println!("    Could not make E{}- does not lie on an adjacant to R{}", new_edge_index, index);
+                    }
                 }
             }
             for (i, eref) in edges_to_add {
@@ -330,18 +349,23 @@ impl<T> Draw<T> for Treemap<T> where T: OrdNum + Float {
 #[test]
 fn treemap_test() {
     let mut tree_map = Treemap::<f32>::new(Rect::new(0., 0., 510., 510.));
+    let mut img1 = ImageBuffer::new(512, 512);
+    let mut img2 = ImageBuffer::new(512, 512);
+
     tree_map.intersect_point(0, Axis::Horizontal, 0.25);
     tree_map.intersect_point(2, Axis::Vertical, 0.5);
-    tree_map.intersect_point(3, Axis::Vertical, 0.5);
-
-    println!("---------------------1");
-
-    tree_map.intersect_point(1, Axis::Vertical, 0.1);
-    //tree_map.split(3, Axis::Vertical, 2);
+    tree_map.intersect_point(3, Axis::Horizontal, 0.5);
+    
+    
+    tree_map.draw(&mut img1, Rgb::red());
+    println!("---------------------");
+    
+    tree_map.intersect_point(6, Axis::Vertical, 0.5);
+    tree_map.intersect_point(4, Axis::Horizontal, 0.6);
+    //tree_map.split(4, Axis::Vertical, 2);
     //tree_map.split(2, Axis::Vertical, 3);
-
-
-    let mut img = ImageBuffer::new(512, 512);
-    tree_map.draw(&mut img, Rgb::red());
-    img.save("tree_test_2.png").unwrap();
+    
+    tree_map.draw(&mut img2, Rgb::red());
+    img1.save("tree_test.png").unwrap();
+    img2.save("tree_test_2.png").unwrap();
 }
