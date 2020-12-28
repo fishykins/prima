@@ -6,20 +6,23 @@ use std::fmt::Debug;
 use vek::{Vec2, Rgb};
 use ordered_float::OrderedFloat;
 
-struct TreeRect<T> where T: OrdNum {
+#[derive(Debug, Copy, Clone)]
+pub struct EdgeRef(usize, Transverse);
+
+pub struct TreeRect<T> where T: OrdNum {
     rect: Rect<T, T>,
     parent: Option<usize>,
     children: Vec<usize>,
-    edges: Vec<(usize, Transverse)>,
+    edges: Vec<EdgeRef>,
 }
 
 #[derive(Debug, Copy, Clone)]
-struct TreeEdge<T> where T: OrdNum + Float {
+pub struct TreeEdge<T> where T: OrdNum + Float {
     a: usize,
     b: usize,
     line: Line<T>,
     axis: Axis,
-    active: bool,
+    child_count: u8,
 }
 
 pub struct Treemap<T> where T: OrdNum + Float {
@@ -27,6 +30,11 @@ pub struct Treemap<T> where T: OrdNum + Float {
     edges: Vec<TreeEdge<T>>,
 }
 
+impl<T> TreeEdge<T> where T: OrdNum + Float {
+    fn active(&self) -> bool {
+        self.child_count < 2
+    }
+}
 
 impl<T> TreeRect<T> where T: OrdNum + Float {
     fn new(rect: Rect<T, T>, parent: Option<usize>) -> Self {
@@ -51,7 +59,30 @@ impl<T> Treemap<T> where T: OrdNum + Float {
         }
     }
 
+    pub fn rect(&mut self, index: usize) -> Option<&TreeRect<T>> {
+        if index < self.rects.len() {
+            return Some(&self.rects[index]);
+        }
+        None
+    }
+
+    pub fn edge(&mut self, index: usize) -> Option<&TreeEdge<T>> {
+        if index < self.edges.len() {
+            return Some(&self.edges[index]);
+        }
+        None
+    }
+
     pub fn intersect_point(&mut self, index: usize, axis: Axis, offset: T) {
+        if index > self.rects.len() {
+            return;
+        }
+
+        if !self.rects[index].active() {
+            return;
+        }
+
+
         let clamped_offset = clamp01(offset);
         let x_a = self.rects[index].rect.x;
         let y_a = self.rects[index].rect.y;
@@ -74,7 +105,7 @@ impl<T> Treemap<T> where T: OrdNum + Float {
                 w_b = w_a;
                 h_b = self.rects[index].rect.h - h_a;
                 
-                transverse = Transverse::Right;
+                transverse = Transverse::Up;
                 split_line = Line {
                     start:  Vec2::new(x_a, y_a + h_a),
                     end:    Vec2::new(x_a + w_a, y_a + h_a),
@@ -87,7 +118,7 @@ impl<T> Treemap<T> where T: OrdNum + Float {
                 y_b = y_a;
                 w_b = self.rects[index].rect.w - w_a;
                 h_b = h_a;
-                transverse = Transverse::Up;
+                transverse = Transverse::Right;
                 split_line = Line {
                     start:  Vec2::new(x_a + w_a, y_a),
                     end:    Vec2::new(x_a + w_a, y_a + h_a),
@@ -107,21 +138,29 @@ impl<T> Treemap<T> where T: OrdNum + Float {
             b: index_b,
             line: split_line.clone(),
             axis,
-            active: true,
+            child_count: 0,
         });
 
         self.rects.push(TreeRect::new(rect_a, Some(index)));
         self.rects.push(TreeRect::new(rect_b, Some(index)));
         self.rects[index].children.push(index_a);
         self.rects[index].children.push(index_b);
+        self.rects[index_a].edges.push(EdgeRef(edge_index, transverse));
+        self.rects[index_b].edges.push(EdgeRef(edge_index, transverse.opposite()));
         self.inherit_edges(index_a, transverse);
-        self.inherit_edges(index_b, transverse);
-
-        self.rects[index_a].edges.push((edge_index, transverse));
-        self.rects[index_b].edges.push((edge_index, transverse.opposite()));
+        self.inherit_edges(index_b, transverse.opposite());
     }
 
     pub fn split(&mut self, index: usize, axis: Axis, cuts: usize) -> Vec<usize> {
+
+        if index > self.rects.len() {
+            return Vec::new();
+        }
+
+        if !self.rects[index].active() {
+            return Vec::new();
+        }
+
         let new_rects= Vec::new();
 
         let n = T::from_usize(cuts + 1).unwrap();
@@ -155,33 +194,47 @@ impl<T> Treemap<T> where T: OrdNum + Float {
                     b: index_b,
                     line: line.clone(),
                     axis,
-                    active: true,
+                    child_count: 0,
                 });
 
                 println!("Edge {} ({} -> {}): {:?} -> {:?}", edge_index, index_a, index_b, line.start, line.end);
 
-                self.rects[index_a].edges.push((edge_index, transverse));
-                self.rects[index_b].edges.push((edge_index, transverse.opposite()));
+                self.rects[index_a].edges.push(EdgeRef(edge_index, transverse));
+                self.rects[index_b].edges.push(EdgeRef(edge_index, transverse.opposite()));
             }
         }
 
         new_rects
     }
 
+    /// Allows a newly formed rect to inherit a parents edges
     fn inherit_edges(&mut self, index: usize, applied_edge: Transverse) {
         if let Some(parent_index) = self.rects[index].parent {
-            for (edge_index, transverse) in self.rects[parent_index].edges.iter() {
-                if *transverse != applied_edge {
-                    // Inherit edge:
-                    // - deactivate old edge
-                    // - create new one
+            println!("R{}'s parent is R{}: inheriting {} edges...", index, parent_index, self.rects[parent_index].edges.len());
+            let mut edges_to_add = Vec::<(usize, EdgeRef)>::new();
+
+            for EdgeRef(edge_index, transverse) in self.rects[parent_index].edges.iter() {
+                println!("  Checking E{}...", edge_index);
+
+                // TODO: Add check to see if this edge even touches our new rect!
+
+                if *transverse != applied_edge && self.edges[*edge_index].active() {
+                    let new_edge_index = self.edges.len();
                     let mut new_edge = self.edges[*edge_index].clone();
-                    self.edges[*edge_index].active = false;
+                    new_edge.child_count = 0;
+                    self.edges[*edge_index].child_count += 1;
+
+                    println!("    E{}: cloning and modifying as E{} ({:?})...", edge_index, self.edges.len(), transverse);
+                    let other;
 
                     if new_edge.a == parent_index {
                         new_edge.a = index;
+                        other = new_edge.b;
                     } else if new_edge.b == parent_index {
                         new_edge.b = index;
+                        other = new_edge.a;
+                    } else {
+                        panic!("Edge indexed does not belong to parent- this is bad");
                     }
 
                     let a_x1 = OrderedFloat(self.rects[new_edge.a].rect.x);
@@ -210,12 +263,12 @@ impl<T> Treemap<T> where T: OrdNum + Float {
                         Transverse::Left => {
                             let x = self.rects[new_edge.a].rect.x;
                             let y1 = a_y1.max(b_y1).into_inner();
-                            let y2 = a_y1.min(b_y2).into_inner();
+                            let y2 = a_y2.min(b_y2).into_inner();
                             (x, x, y1, y2)
                         },
                         Transverse::Right => {
                             let x = self.rects[new_edge.a].rect.x + self.rects[new_edge.a].rect.w;
-                            let y1 = a_y2.max(b_y1).into_inner();
+                            let y1 = a_y1.max(b_y1).into_inner();
                             let y2 = a_y2.min(b_y2).into_inner();
                             (x, x, y1, y2)
                         },
@@ -224,33 +277,50 @@ impl<T> Treemap<T> where T: OrdNum + Float {
                         }
                     };
 
+                    println!("    Made E{}: x1: {}, x2: {}, y1: {}, y2: {}, a: R{}, b: R{}", new_edge_index, x1, x2, y1, y2, new_edge.a, new_edge.b);
+
                     new_edge.line = Line {
                         start: Vec2::new(x1, y1),
                         end: Vec2::new(x2, y2),
                     };
                     self.edges.push(new_edge);
+                    edges_to_add.push((index, EdgeRef(new_edge_index, transverse.clone())));
+                    edges_to_add.push((other, EdgeRef(new_edge_index, transverse.opposite())));
                 }
+            }
+            for (i, eref) in edges_to_add {
+                self.rects[i].edges.push(eref);
+                println!("    Adding E{} to R{}....", eref.0, i);
             }
         }
     }
 }
 
 impl<T> Draw<T> for Treemap<T> where T: OrdNum + Float {
-    fn draw(&self, image: &mut ImageBuffer<RgbRaw<u8>, Vec<u8>>, colour: Rgb<u8>) {
+    fn draw(&self, image: &mut ImageBuffer<RgbRaw<u8>, Vec<u8>>, _colour: Rgb<u8>) {
 
         let font = load_font("assets/DejaVuSans.ttf").unwrap();
+        let mut rng = rand::thread_rng();
 
-        for e in self.edges.iter() {
-            e.line.draw(image, colour);
+        for (i, e ) in self.edges.iter().enumerate() {
+            if e.active() {
+                let col = crate::render::random_colour(&mut rng);
+                let text = format!("E{}", i);
+                let center = (e.line.start + e.line.end) / (T::one() + T::one());
+                e.line.draw(image, col);
+                draw_text(image, center.x, center.y, &text, col, &font);
+                //println!("E{}: {} -> {}", i, e.line.start, e.line.end);
+            }
         }
 
         for (i, r) in self.rects.iter().enumerate() {
-            let text = format!("{}", i);
-            let center = r.rect.center();
-            let col = if r.active() {Rgb::<u8>::green()} else {Rgb::<u8>::red()};
-            draw_text(image,center.x, center.y, &text, col, &font);
-            //r.rect.draw(image, col);
-            println!("Rect {}: {:?}", i, r.rect);
+            if r.active() {
+                let text = format!("R{}", i);
+                let center = r.rect.center();
+                let col = if r.active() {Rgb::<u8>::green()} else {Rgb::<u8>::red()};
+                draw_text(image,center.x, center.y, &text, col, &font);
+                println!("R{} edges: {:?}", i, r.edges);
+            }
         }
         println!("there are {} edges", self.edges.len());
         println!("there are {} rects", self.rects.len());
@@ -261,10 +331,17 @@ impl<T> Draw<T> for Treemap<T> where T: OrdNum + Float {
 fn treemap_test() {
     let mut tree_map = Treemap::<f32>::new(Rect::new(0., 0., 510., 510.));
     tree_map.intersect_point(0, Axis::Horizontal, 0.25);
-    tree_map.intersect_point(1, Axis::Vertical, 0.25);
-    tree_map.split(4, Axis::Horizontal, 2);
-    tree_map.split(2, Axis::Vertical, 3);
+    tree_map.intersect_point(2, Axis::Vertical, 0.5);
+    tree_map.intersect_point(3, Axis::Vertical, 0.5);
+
+    println!("---------------------1");
+
+    tree_map.intersect_point(1, Axis::Vertical, 0.1);
+    //tree_map.split(3, Axis::Vertical, 2);
+    //tree_map.split(2, Axis::Vertical, 3);
+
+
     let mut img = ImageBuffer::new(512, 512);
     tree_map.draw(&mut img, Rgb::red());
-    img.save("tree_test.png").unwrap();
+    img.save("tree_test_2.png").unwrap();
 }
