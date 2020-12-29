@@ -259,14 +259,6 @@ impl<T> Treemap<T> where T: OrdNum + Float {
         new_rects
     }
 
-    pub fn rect_edges(&self, rect_index: usize) -> Vec<usize> {
-        if rect_index >= self.rects.len() {
-            return Vec::new();
-        }
-        let rect = &self.rects[rect_index];
-        rect.edges.iter().filter(|x| self.edges[x.0].active() ).map(|x| x.0).collect()
-    }
-
     /// Allows a newly formed rect to inherit a parents edges
     fn inherit_edges(&mut self, rect_index: usize, applied_edge: Transverse) {
         println!("R{} is inheriting, using applied edge {:?} (cycle {})", rect_index, applied_edge, self.cycle);
