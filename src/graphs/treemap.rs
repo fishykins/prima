@@ -394,15 +394,15 @@ impl<T> Treemap<T> where T: OrdNum + Float {
 impl<T> Draw<T> for Treemap<T> where T: OrdNum + Float {
     fn draw(&self, image: &mut ImageBuffer<RgbRaw<u8>, Vec<u8>>, _colour: Rgb<u8>) {
 
-        let font = load_font("assets/DejaVuSans.ttf").unwrap();
+        let font = load_font("D:/Projects/prima/assets/DejaVuSans.ttf").unwrap();
         let mut rng = rand::thread_rng();
 
-        for (i, e ) in self.edges.iter().enumerate() {
+        for (_, e ) in self.edges.iter().enumerate() {
             if e.active() {
                 let col = crate::render::random_colour(&mut rng);
                 e.line.draw(image, col);
-                let center = (e.line.start + e.line.end) / (T::one() + T::one());
-                draw_text(image, center.x, center.y, &format!("E{}", i), col, &font);
+                //let center = (e.line.start + e.line.end) / (T::one() + T::one());
+                //draw_text(image, center.x, center.y, &format!("E{}", i), col, &font);
             }
         }
 
