@@ -119,13 +119,13 @@ impl<T> Treemap<T> where T: OrdNum + Float {
         rect.edges.iter().filter(|x| self.edges[x.0].active() ).map(|x| x.0).collect()
     }
 
-    pub fn intersect_point(&mut self, index: usize, axis: Axis, offset: T) {
+    pub fn intersect_point(&mut self, index: usize, axis: Axis, offset: T) -> bool {
         if index >= self.rects.len() {
-            return;
+            panic!("Index {} falls outside the range of {}: intersection will fail", index, self.rects.len());
         }
 
         if !self.rects[index].active() {
-            return;
+            return false;
         }
 
         let clamped_offset = clamp01(offset);
@@ -196,6 +196,7 @@ impl<T> Treemap<T> where T: OrdNum + Float {
         self.inherit_edges(index_b, transverse.opposite());
 
         self.cycle += 1;
+        true
     }
 
     pub fn split(&mut self, index: usize, axis: Axis, cuts: usize) -> Vec<usize> {
@@ -437,6 +438,7 @@ fn treemap_test() {
     img1.save("tree_test.png").unwrap();
     img2.save("tree_test_2.png").unwrap();
 
+    println!("there are a total of {} rects and {} edges", tree_map.rects().len(), tree_map.edges().len());
     let index = 12;
     println!("R{} has edges {:?}", index, tree_map.rect_edges(index));
 }
