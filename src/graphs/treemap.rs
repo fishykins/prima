@@ -301,30 +301,30 @@ impl<T> Treemap<T> where T: OrdNum + Float {
 
                     let (x1, x2, y1, y2) = match transverse {
                         Transverse::Up => {
-                            let x1 = a_x1.max(b_x1).into_inner();
-                            let x2 = a_x2.min(b_x2).into_inner();
+                            let x1 = Ord::max(a_x1, b_x1).into_inner();
+                            let x2 = Ord::min(a_x2, b_x2).into_inner();
                             let y = self.rects[new_edge.b].rect.y;// + self.rects[new_edge.b].rect.h;
                             valid = self.validate_horizontal(new_edge.a, new_edge.b);
                             (x1, x2, y, y)
                         },
                         Transverse::Down => {
-                            let x1 = a_x1.max(b_x1).into_inner();
-                            let x2 = a_x2.min(b_x2).into_inner();
+                            let x1 = Ord::max(a_x1, b_x1).into_inner();
+                            let x2 = Ord::min(a_x2, b_x2).into_inner();
                             let y = self.rects[new_edge.b].rect.y;
                             valid = self.validate_horizontal(new_edge.a, new_edge.b);
                             (x1, x2, y, y)
                         },
                         Transverse::Left => {
                             let x = self.rects[new_edge.b].rect.x;
-                            let y1 = a_y1.max(b_y1).into_inner();
-                            let y2 = a_y2.min(b_y2).into_inner();
+                            let y1 = Ord::max(a_y1, b_y1).into_inner();
+                            let y2 = Ord::min(a_y2, b_y2).into_inner();
                             valid = self.validate_vertical(new_edge.a, new_edge.b);
                             (x, x, y1, y2)
                         },
                         Transverse::Right => {
                             let x = self.rects[new_edge.b].rect.x;
-                            let y1 = a_y1.max(b_y1).into_inner();
-                            let y2 = a_y2.min(b_y2).into_inner();
+                            let y1 = Ord::max(a_y1, b_y1).into_inner();
+                            let y2 = Ord::min(a_y2, b_y2).into_inner();
                             valid = self.validate_vertical(new_edge.a, new_edge.b);
                             (x, x, y1, y2)
                         },
