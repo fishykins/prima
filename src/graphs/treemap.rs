@@ -43,7 +43,7 @@ impl<T> TreeEdge<T> where T: OrdNum + Float {
     }
 
     pub fn b(&self) -> usize {
-        self.a.clone()
+        self.b.clone()
     }
 
     pub fn other(&self, index: usize) -> Option<usize> {
@@ -103,10 +103,12 @@ impl<T> Treemap<T> where T: OrdNum + Float {
         None
     }
 
+    /// Getter for all active rectangles
     pub fn rects(&self) -> Vec<usize> {
         self.rects.iter().enumerate().filter(|(_, x)| x.active()).map(|(i,_)| i).collect()
     }
 
+    /// Getter for all active edges
     pub fn edges(&self) -> Vec<usize> {
         self.edges.iter().enumerate().filter(|(_, x)| x.active()).map(|(i,_)| i).collect()
     }
@@ -199,6 +201,7 @@ impl<T> Treemap<T> where T: OrdNum + Float {
         true
     }
 
+    /// Splits a node into n slices, where n is the number of cuts
     pub fn split(&mut self, index: usize, axis: Axis, cuts: usize) -> Vec<usize> {
 
         if index >= self.rects.len() {
@@ -395,7 +398,7 @@ impl<T> Treemap<T> where T: OrdNum + Float {
 impl<T> Draw<T> for Treemap<T> where T: OrdNum + Float {
     fn draw(&self, image: &mut ImageBuffer<RgbRaw<u8>, Vec<u8>>, _colour: Rgb<u8>) {
 
-        let font = load_font("D:/Projects/prima/assets/DejaVuSans.ttf").unwrap();
+        let font = load_font("assets/DejaVuSans.ttf").unwrap();
         let mut rng = rand::thread_rng();
 
         for (_, e ) in self.edges.iter().enumerate() {
