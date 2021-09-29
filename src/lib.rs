@@ -12,3 +12,5 @@ pub mod mesh;
 
 /// Graphs
 pub mod graphs;
+
+pub extern crate vek;
