@@ -56,6 +56,14 @@ impl<T> TreeEdge<T> where T: OrdNum + Float {
         Some(self.a)
     }
 
+    pub fn line(&self) -> &Line<T> {
+        &self.line
+    }
+
+    pub fn line_mut(&mut self) -> &mut Line<T> {
+        &mut self.line
+    }
+
     fn can_split(&self, current_cycle: usize) -> bool {
         if self.birth_cycle.is_some() {
             self.birth_cycle.unwrap() == current_cycle
@@ -96,7 +104,14 @@ impl<T> Treemap<T> where T: OrdNum + Float {
         None
     }
 
-    pub fn edge(&mut self, index: usize) -> Option<&TreeEdge<T>> {
+    pub fn edge(&self, index: usize) -> Option<&TreeEdge<T>> {
+        if index < self.edges.len() {
+            return Some(&self.edges[index]);
+        }
+        None
+    }
+
+    pub fn edge_mut(&mut self, index: usize) -> Option<&TreeEdge<T>> {
         if index < self.edges.len() {
             return Some(&self.edges[index]);
         }
