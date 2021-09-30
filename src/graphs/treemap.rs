@@ -1,5 +1,5 @@
 use crate::geom::{Axis, Rect, Line, Transverse};
-use crate::render::{Draw, draw_text, ImageBuffer, RgbRaw, load_font};
+use crate::render::{Draw, draw_text, ImageBuffer, RgbRaw, load_font_from_bytes};
 use crate::core::{OrdNum, maths::clamp01};
 use num::{Float};
 use std::{fmt::Debug};
@@ -397,8 +397,8 @@ impl<T> Treemap<T> where T: OrdNum + Float {
 
 impl<T> Draw<T> for Treemap<T> where T: OrdNum + Float {
     fn draw(&self, image: &mut ImageBuffer<RgbRaw<u8>, Vec<u8>>, _colour: Rgb<u8>) {
-
-        let font = load_font("assets/DejaVuSans.ttf").unwrap();
+        let deja_vu_sans = include_bytes!("../../assets/DejaVuSans.ttf");
+        let font = load_font_from_bytes(deja_vu_sans).unwrap();
         let mut rng = rand::thread_rng();
 
         for (_, e ) in self.edges.iter().enumerate() {

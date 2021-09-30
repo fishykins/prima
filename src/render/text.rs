@@ -16,6 +16,10 @@ pub fn load_font(filename: &str) -> Option<Font> {
     Font::try_from_vec(buffer)
 }
 
+pub fn load_font_from_bytes(bytes: &[u8]) -> Option<Font> {
+    Font::try_from_vec(bytes.to_vec())
+}
+
 pub fn draw_text<T>(image: &mut RgbImage, x: T, y: T, text: &str, colour: Rgb<u8>, font: &Font)
 where
     T: OrdNum,

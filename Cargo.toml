@@ -1,12 +1,8 @@
 [package]
 name = "prima"
-version = "0.1.1"
+version = "0.1.2"
 authors = ["Fishykins <caspar.m.green@gmail.com>"]
 edition = "2018"
-
-[lib]
-name = "prima"
-crate-type = ["dylib"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
