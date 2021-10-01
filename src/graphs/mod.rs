@@ -1,3 +1,1 @@
-mod treemap;
-
-pub use treemap::{Treemap, TreeEdge, TreeRect, EdgeRef};
+pub mod tree_map;
