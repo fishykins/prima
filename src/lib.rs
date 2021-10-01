@@ -5,6 +5,7 @@ pub mod core;
 pub mod geom;
 
 /// Rendering utilities
+#[cfg(feature = "rendering")]
 pub mod render;
 
 /// Mesh library

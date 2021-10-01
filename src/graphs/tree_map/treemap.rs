@@ -1,9 +1,9 @@
 use super::{TreeEdge, TreeRect};
 use crate::core::OrdNum;
 use crate::geom::Transverse;
-use crate::render::{draw_text, deja_vu_sans, Draw, ImageBuffer, RgbRaw};
+#[cfg(feature = "rendering")]
+use crate::render::{deja_vu_sans, draw_text, Draw, ImageBuffer, RgbRaw};
 use num::Float;
-use vek::Rgb;
 
 pub struct Treemap<T>
 where
@@ -114,12 +114,13 @@ where
     }
 }
 
+#[cfg(feature = "rendering")]
 impl<T> Draw<T> for Treemap<T>
 where
     T: OrdNum + Float,
 {
     // Renders the graph to an image buffer.
-    fn draw(&self, image: &mut ImageBuffer<RgbRaw<u8>, Vec<u8>>, _colour: Rgb<u8>) {
+    fn draw(&self, image: &mut ImageBuffer<RgbRaw<u8>, Vec<u8>>, _colour: vek::Rgb<u8>) {
         let font = deja_vu_sans();
         let mut rng = rand::thread_rng();
 
@@ -144,9 +145,9 @@ where
             let text = format!("R{}", i);
             let center = r.rect.center();
             let col = if r.active() {
-                Rgb::<u8>::green()
+                vek::Rgb::<u8>::green()
             } else {
-                Rgb::<u8>::red()
+                vek::Rgb::<u8>::red()
             };
             draw_text(image, center.x, center.y, &text, col, &font);
         }
@@ -156,21 +157,24 @@ where
 #[test]
 fn treemap_test() {
     use crate::geom::Axis;
+    #[cfg(feature = "rendering")]
     use crate::render::{Draw, ImageBuffer};
-    use vek::{Rect, Rgb};
+    use vek::Rect;
 
     let mut builder = super::TreemapBuilder::<f32>::new(Rect::new(0., 0., 510., 510.));
-    let mut img = ImageBuffer::new(512, 512);
-
     builder.intersect_point(0, Axis::Horizontal, 0.25);
     builder.split(1, Axis::Vertical, 2);
     builder.intersect_point(2, Axis::Vertical, 0.75);
     builder.split(6, Axis::Horizontal, 2);
     builder.intersect_point(8, Axis::Vertical, 0.75);
-
     let map: Treemap<f32> = builder.build();
-    map.draw(&mut img, Rgb::red());
-    img.save("tree_test.png").unwrap();
+
+    #[cfg(feature = "rendering")]
+    {
+        let mut img = ImageBuffer::new(512, 512);
+        map.draw(&mut img, vek::Rgb::red());
+        img.save("tree_test.png").unwrap();
+    }
 
     assert_eq!(map.rect_count(), 8);
     assert_eq!(map.edge_count(), 25);
