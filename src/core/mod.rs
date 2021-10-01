@@ -1,10 +1,8 @@
-mod direction;
 mod index_type;
 mod point;
 
 pub mod maths;
 
-pub use direction::Direction;
 pub use point::{Point, PointIndex};
 pub use index_type::IndexType;
 
