@@ -4,10 +4,10 @@ use num::Float;
 
 use std::fmt::Debug;
 
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Copy, Clone, PartialEq)]
 pub struct EdgeRef(pub usize, pub Transverse);
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct TreeRect<T>
 where
     T: OrdNum,

@@ -33,12 +33,38 @@ where
         return Some(&self.edges[index]);
     }
 
+    // Finds the index of the given rect.
+    pub fn rect_index(&self, rect: &TreeRect<T>) -> usize {
+        return self.rects.iter().position(|x| x == rect).unwrap();
+    }
+
+    // Finds the index of the given edge.
+    pub fn edge_index(&self, edge: &TreeEdge<T>) -> usize {
+        return self.edges.iter().position(|x| x == edge).unwrap();
+    }
+
+    // Counts the total number of rects in the graph.
+    pub fn rect_count(&self) -> usize {
+        self.rects.len()
+    }
+
+    // Counts the total number of edges in the graph.
+    pub fn edge_count(&self) -> usize {
+        self.edges.len()
+    }
+
+    // Returns a refference to every rect in the graph.
+    pub fn rects(&self) -> Vec<&TreeRect<T>> {
+        return self.rects.iter().map(|x| x).collect();
+    }
+
+    // Returns a refference to every edge in the graph.
+    pub fn edges(&self) -> Vec<&TreeEdge<T>> {
+        return self.edges.iter().map(|x| x).collect();
+    }
+
     // Gets the edges assosiated with the given rect index.
-    pub fn rect_edges(&self, rect_index: usize) -> Vec<(usize, &TreeEdge<T>, Transverse)> {
-        if rect_index >= self.rects.len() {
-            return Vec::new();
-        }
-        let rect = &self.rects[rect_index];
+    pub fn rect_edges(&self, rect: &TreeRect<T>) -> Vec<(usize, &TreeEdge<T>, Transverse)> {
         return rect
             .edges
             .iter()
@@ -62,14 +88,12 @@ where
     }
 
     // Gets all neighbor rects for the given rect index.
-    pub fn rect_neighbors(&self, rect_index: usize) -> Vec<(usize, &TreeRect<T>)> {
+    pub fn rect_neighbors(&self, rect: &TreeRect<T>) -> Vec<(usize, &TreeRect<T>)> {
         let mut neighbors = Vec::new();
-        if self.rect(rect_index).is_some() {
-            let edges = self.rect_edges(rect_index);
-            for e in edges.iter() {
-                if let Some(n) = self.rect_neighbor(rect_index, e.0) {
-                    neighbors.push(n);
-                }
+        let edges = self.rect_edges(rect);
+        for e in edges.iter() {
+            if let Some(n) = self.rect_neighbor(self.rect_index(rect), e.0) {
+                neighbors.push(n);
             }
         }
         return neighbors;

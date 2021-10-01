@@ -6,7 +6,7 @@ use std::{fmt::Debug};
 
 
 
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Copy, Clone, PartialEq)]
 // A graph edge between two points, connecting two TreeRects.
 pub struct TreeEdge<T> where T: OrdNum + Float {
     pub(crate) a: usize,
