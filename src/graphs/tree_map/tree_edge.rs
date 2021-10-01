@@ -35,6 +35,10 @@ impl<T> TreeEdge<T> where T: OrdNum + Float {
     }
 
     pub fn other(&self, index: usize) -> Option<usize> {
+        if self.a == self.b {
+            // This is a single edge so no neighbor
+            return None;
+        }
         if self.a != index && self.b != index {
             return None;
         }

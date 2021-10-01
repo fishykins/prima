@@ -8,7 +8,7 @@ pub use draw_line::draw_line;
 pub use draw_line::draw_line_segment;
 pub use draw_circle::draw_circle;
 pub use draw::Draw;
-pub use text::{load_font, load_font_from_bytes, draw_text};
+pub use text::{load_font, load_font_from_bytes, draw_text, deja_vu_sans};
 
 pub use image::{RgbImage, ImageBuffer, Pixel, Rgb as RgbRaw};
 

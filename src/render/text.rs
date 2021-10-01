@@ -20,6 +20,12 @@ pub fn load_font_from_bytes(bytes: &[u8]) -> Option<Font> {
     Font::try_from_vec(bytes.to_vec())
 }
 
+pub fn deja_vu_sans() -> Font<'static> {
+    let deja_vu_sans = include_bytes!("../../assets/DejaVuSans.ttf");
+    let font = load_font_from_bytes(deja_vu_sans).unwrap();
+    return font;
+}
+
 pub fn draw_text<T>(image: &mut RgbImage, x: T, y: T, text: &str, colour: Rgb<u8>, font: &Font)
 where
     T: OrdNum,

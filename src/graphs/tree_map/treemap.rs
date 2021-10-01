@@ -1,7 +1,7 @@
 use super::{TreeEdge, TreeRect};
 use crate::core::OrdNum;
 use crate::geom::Transverse;
-use crate::render::{draw_text, load_font_from_bytes, Draw, ImageBuffer, RgbRaw};
+use crate::render::{draw_text, deja_vu_sans, Draw, ImageBuffer, RgbRaw};
 use num::Float;
 use vek::Rgb;
 
@@ -72,6 +72,20 @@ where
             .collect();
     }
 
+    // Gets the edges assosiated with the given rect index on the given transverse.
+    pub fn rect_transverse(
+        &self,
+        rect: &TreeRect<T>,
+        trans: Transverse,
+    ) -> Vec<(usize, &TreeEdge<T>)> {
+        return rect
+            .edges
+            .iter()
+            .filter(|x| x.1 == trans)
+            .map(|x| (x.0, &self.edges[x.0]))
+            .collect();
+    }
+
     // Gets the neighbor rect that is joined via the given edge.
     pub fn rect_neighbor(
         &self,
@@ -106,15 +120,24 @@ where
 {
     // Renders the graph to an image buffer.
     fn draw(&self, image: &mut ImageBuffer<RgbRaw<u8>, Vec<u8>>, _colour: Rgb<u8>) {
-        let deja_vu_sans = include_bytes!("../../../assets/DejaVuSans.ttf");
-        let font = load_font_from_bytes(deja_vu_sans).unwrap();
+        let font = deja_vu_sans();
         let mut rng = rand::thread_rng();
 
-        for e in self.edges.iter() {
+        for (i, e) in self.edges.iter().enumerate() {
             let col = crate::render::random_colour(&mut rng);
             e.line.draw(image, col);
-            //let center = (e.line.start + e.line.end) / (T::one() + T::one());
-            //draw_text(image, center.x, center.y, &format!("E{}", i), col, &font);
+            let center = (e.line.start + e.line.end) / (T::one() + T::one());
+            draw_text(image, center.x, center.y, &format!("E{}", i), col, &font);
+            vek::LineSegment2 {
+                start: center,
+                end: self.rects[e.a].rect.center(),
+            }
+            .draw(image, col / 4);
+            vek::LineSegment2 {
+                start: center,
+                end: self.rects[e.b].rect.center(),
+            }
+            .draw(image, col / 4);
         }
 
         for (i, r) in self.rects.iter().enumerate() {
@@ -146,7 +169,9 @@ fn treemap_test() {
     builder.intersect_point(8, Axis::Vertical, 0.75);
 
     let map: Treemap<f32> = builder.build();
-
     map.draw(&mut img, Rgb::red());
     img.save("tree_test.png").unwrap();
+
+    assert_eq!(map.rect_count(), 8);
+    assert_eq!(map.edge_count(), 25);
 }

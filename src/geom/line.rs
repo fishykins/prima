@@ -11,6 +11,7 @@ pub trait LineExt<T> where T: OrdNum {
     fn intersects(&self, other: &Self) -> bool;
     fn intersection_point(&self, other: &Self) -> Option<Vec2<T>>;
     fn intersects_rect(&self, other: &Rect<T, T>) -> bool;
+    fn center(&self) -> Vec2<T>;
 }
 
 impl<T> LineExt<T> for Line<T>  where T: OrdNum + Signed {
@@ -26,6 +27,10 @@ impl<T> LineExt<T> for Line<T>  where T: OrdNum + Signed {
             start: self.end,
             end: self.start,
         }
+    }
+
+    fn center(&self) -> Vec2<T> {
+        return (self.start + self.end) / (T::one() + T::one());
     }
 
     fn intersects(&self, other: &Self) -> bool {

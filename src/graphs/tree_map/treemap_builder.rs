@@ -5,8 +5,8 @@ use crate::core::OrdNum;
 use crate::geom::{Axis, Line, Rect, Transverse};
 use num::Float;
 use ordered_float::OrderedFloat;
-use vek::Vec2;
 use std::collections::HashMap;
+use vek::Vec2;
 
 pub struct TreemapBuilder<T>
 where
@@ -31,16 +31,19 @@ where
 
     pub fn build(self) -> Treemap<T> {
         // Get a list of all active rects and edges
-        let active_rects : Vec<(usize, &TreeRect<T>)> = self.rects
-        .iter()
-        .enumerate()
-        .filter(|(_, x)| x.active()).collect();
+        let active_rects: Vec<(usize, &TreeRect<T>)> = self
+            .rects
+            .iter()
+            .enumerate()
+            .filter(|(_, x)| x.active())
+            .collect();
 
-        let active_edges : Vec<(usize, &TreeEdge<T>)> = self.edges
-        .iter()
-        .enumerate()
-        .filter(|(_, x)| x.active()).collect();
-        
+        let active_edges: Vec<(usize, &TreeEdge<T>)> = self
+            .edges
+            .iter()
+            .enumerate()
+            .filter(|(_, x)| x.active())
+            .collect();
         // (old index, new index)
         let mut rect_hashmap = HashMap::<usize, usize>::new();
         let mut edge_hashmap = HashMap::<usize, usize>::new();
@@ -61,10 +64,16 @@ where
                 rect: r.1.rect(),
                 children: Vec::new(),
                 parent: None,
-                edges: r.1.edges().iter().filter(|e| edge_hashmap.contains_key(&e.0)).map(|e| {
-                    let i = edge_hashmap.get(&e.0);
-                    EdgeRef(*i.unwrap(), e.1)
-                }).collect()
+                edges: r
+                    .1
+                    .edges()
+                    .iter()
+                    .filter(|e| edge_hashmap.contains_key(&e.0))
+                    .map(|e| {
+                        let i = edge_hashmap.get(&e.0);
+                        EdgeRef(*i.unwrap(), e.1)
+                    })
+                    .collect(),
             };
             rects.push(new_rect);
         }
@@ -76,17 +85,24 @@ where
                 b: *rect_hashmap.get(&old_edge.b).unwrap(),
                 axis: old_edge.axis,
                 birth_cycle: None,
-                line: *old_edge.line()
+                line: *old_edge.line(),
             };
             edges.push(new_edge);
         }
 
-        // TODO: Add edges to the edges of the map!
-
-        Treemap::<T> {
-            edges,
-            rects,
+        // Go round the actual edges of the map and add them in.
+        for i in 0..rects.len() {
+            let rect = &mut rects[i];
+            let new_edges = Self::calculate_map_edges(rect, i);
+            for (edge, transverse) in new_edges.iter() {
+                let edge_index = edges.len();
+                let edge_ref = EdgeRef(edge_index, *transverse);
+                edges.push(edge.clone());
+                rect.edges.push(edge_ref);
+            }
         }
+
+        return Treemap::<T> { edges, rects };
     }
 
     pub fn rect(&mut self, index: usize) -> Option<&TreeRect<T>> {
@@ -418,5 +434,95 @@ where
 
         (a_in_b || b_in_a || a_overlaps_down || a_overlaps_up)
             && (rect_a.x == rect_b_x2 || rect_a_x2 == rect_b.x)
+    }
+
+    fn calculate_map_edges(
+        rect: &TreeRect<T>,
+        rect_index: usize,
+    ) -> Vec<(TreeEdge<T>, Transverse)> {
+        let r = rect.rect();
+        let mut up = false;
+        let mut right = false;
+        let mut down = false;
+        let mut left = false;
+        for e in rect.edges.iter() {
+            match e.1 {
+                Transverse::Up => {
+                    up = true;
+                }
+                Transverse::Right => {
+                    right = true;
+                }
+                Transverse::Down => {
+                    down = true;
+                }
+                Transverse::Left => {
+                    left = true;
+                }
+                _ => {}
+            }
+        }
+
+        let mut additional_edges = Vec::new();
+
+        if !up {
+            // No edge on top
+            let new_edge = TreeEdge {
+                a: rect_index,
+                b: rect_index,
+                axis: Axis::Horizontal,
+                birth_cycle: None,
+                line: Line {
+                    start: Vec2::new(r.x, r.y + r.h),
+                    end: Vec2::new(r.x + r.w, r.y + r.h),
+                },
+            };
+            additional_edges.push((new_edge, Transverse::Up));
+        }
+
+        if !right {
+            // No edge on top
+            let new_edge = TreeEdge {
+                a: rect_index,
+                b: rect_index,
+                axis: Axis::Vertical,
+                birth_cycle: None,
+                line: Line {
+                    start: Vec2::new(r.x + r.w, r.y),
+                    end: Vec2::new(r.x + r.w, r.y + r.h),
+                },
+            };
+            additional_edges.push((new_edge, Transverse::Right));
+        }
+
+        if !down {
+            // No edge on top
+            let new_edge = TreeEdge {
+                a: rect_index,
+                b: rect_index,
+                axis: Axis::Horizontal,
+                birth_cycle: None,
+                line: Line {
+                    start: Vec2::new(r.x, r.y),
+                    end: Vec2::new(r.x + r.w, r.y),
+                },
+            };
+            additional_edges.push((new_edge, Transverse::Down));
+        }
+        if !left {
+            // No edge on top
+            let new_edge = TreeEdge {
+                a: rect_index,
+                b: rect_index,
+                axis: Axis::Vertical,
+                birth_cycle: None,
+                line: Line {
+                    start: Vec2::new(r.x, r.y),
+                    end: Vec2::new(r.x, r.y + r.h),
+                },
+            };
+            additional_edges.push((new_edge, Transverse::Left));
+        }
+        return additional_edges;
     }
 }
