@@ -1,20 +1,27 @@
 [package]
 name = "prima"
-version = "0.3.0"
+version = "0.3.1"
 authors = ["Fishykins <caspar.m.green@gmail.com>"]
 edition = "2018"
+description = "Generic 2D library used to handle graph structures, expanding on vek."
+keywords = ["vector", "graph", "geometry", "pathing"]
+categories = [ "algorithms", "data-structures"]
+license = "MIT/Apache-2.0"
+repository = "https://github.com/fishykins/prima"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [features]
 default = ["rendering"]
 rendering = ["imageproc", "image"]
+godot = ["gdnative"]
 
 [dependencies]
-vek = "^0.12.0"
-num = "^0.3.0"
 image = { version = "^0.23.6", optional = true }
 imageproc = { version = "^0.22.0", optional = true }
+gdnative = { version = "0.9.3", optional = true }
+vek = { version = "^0.12.0", optional = false, default-features = true }
+num = "^0.3.0"
 rusttype = "^0.9.2"
 obj-rs = "^0.6.1"
 ordered-float = "^2.0.0"

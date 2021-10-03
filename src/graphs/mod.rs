@@ -8,6 +8,7 @@ use crate::core::{DefaultIx, IndexType};
 pub use cell::Cell;
 pub use edge::Edge;
 pub use node::Node;
+use vek::{LineSegment2, Vec2};
 
 #[derive(Copy, Clone)]
 pub struct CellRef<'a, C, Ix = DefaultIx>(Ix, &'a Cell<C, Ix>)
@@ -94,4 +95,8 @@ where
     fn node_edges(&self, node_ref: NodeRef<T, N, Ix>) -> Vec<EdgeRef<E, Ix>>;
     fn node_cells(&self, node_ref: NodeRef<T, N, Ix>) -> Vec<CellRef<C, Ix>>;
     fn node_neighbors(&self, node_ref: NodeRef<T, N, Ix>) -> Vec<NodeRef<T, N, Ix>>;
+
+    // Cute helper classes
+    fn line(&self, edge_ref: EdgeRef<E, Ix>) -> LineSegment2<T>;
+    fn center(&self, cell_ref: CellRef<C, Ix>) -> Vec2<T>;
 }

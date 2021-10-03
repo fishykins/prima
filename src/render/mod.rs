@@ -1,5 +1,6 @@
 mod draw_line;
 mod draw_circle;
+mod draw_graph;
 mod text;
 
 pub mod draw;
@@ -7,6 +8,7 @@ pub mod draw;
 pub use draw_line::draw_line;
 pub use draw_line::draw_line_segment;
 pub use draw_circle::draw_circle;
+pub use draw_graph::draw_graph;
 pub use draw::Draw;
 pub use text::{load_font, load_font_from_bytes, draw_text, deja_vu_sans};
 

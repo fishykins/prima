@@ -46,23 +46,28 @@ where
     );
 }
 
-#[test]
-pub fn font_test() {
-    use imageproc::drawing::{draw_cross_mut, draw_text_mut};
+#[cfg(test)]
+mod tests {
+    use super::load_font;
 
-    let mut image = image::RgbImage::new(200u32, 200u32);
-    let red = super::RgbRaw([255u8, 0u8, 0u8]);
-    let font = load_font("assets/DejaVuSans.ttf").unwrap();
-    let height = 12.4;
-    let scale = rusttype::Scale {
-        x: height * 2.0,
-        y: height,
-    };
+    #[test]
+    pub fn font_test() {
+        use imageproc::drawing::{draw_cross_mut, draw_text_mut};
 
-    draw_cross_mut(&mut image, red, 5, 5);
+        let mut image = image::RgbImage::new(200u32, 200u32);
+        let red = super::RgbRaw([255u8, 0u8, 0u8]);
+        let font = load_font("assets/DejaVuSans.ttf").unwrap();
+        let height = 12.4;
+        let scale = rusttype::Scale {
+            x: height * 2.0,
+            y: height,
+        };
 
-    let text = "Hello, goon!";
-    draw_text_mut(&mut image, red, 0, 0, scale, &font, text);
+        draw_cross_mut(&mut image, red, 5, 5);
 
-    let _ = image.save("test.png").unwrap();
+        let text = "Hello, goon!";
+        draw_text_mut(&mut image, red, 0, 0, scale, &font, text);
+
+        let _ = image.save("test.png").unwrap();
+    }
 }

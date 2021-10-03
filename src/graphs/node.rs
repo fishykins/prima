@@ -1,4 +1,5 @@
 use crate::core::{DefaultIx, IndexType, OrdNum};
+#[cfg(not(feature = "godot"))]
 use vek::Vec2;
 
 pub struct Node<T, N, Ix = DefaultIx>
@@ -26,10 +27,16 @@ where
         }
     }
 
+    #[cfg(not(feature = "godot"))]
     pub fn pos(&self) -> Vec2<T> {
         Vec2::new(self.x.clone(), self.y.clone())
     }
 
+    #[cfg(feature = "godot")]
+    pub fn pos(&self) -> Vec2<T> {
+        Vec2::new(self.x.clone(), self.y.clone())
+    }
+    
     pub fn linked_edges(&self) -> &Vec<Ix> {
         &self.linked_edges
     }

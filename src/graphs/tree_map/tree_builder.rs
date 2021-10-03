@@ -9,7 +9,7 @@ use ordered_float::OrderedFloat;
 use std::collections::HashMap;
 use vek::Vec2;
 
-pub struct TreemapBuilder<T>
+pub struct TreeBuilder<T>
 where
     T: OrdNum + Float,
 {
@@ -18,12 +18,12 @@ where
     cycle: usize,
 }
 
-impl<T> TreemapBuilder<T>
+impl<T> TreeBuilder<T>
 where
     T: OrdNum + Float,
 {
     pub fn new(rect: Rect<T, T>) -> Self {
-        TreemapBuilder {
+        TreeBuilder {
             rects: vec![TreeRect::new(rect, None)],
             edges: Vec::new(),
             cycle: 0,

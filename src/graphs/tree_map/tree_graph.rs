@@ -1,6 +1,6 @@
 use crate::core::{DefaultIx, IndexType, OrdNum};
 use crate::graphs::*;
-use vek::Rect;
+use vek::{Rect, LineSegment2};
 
 macro_rules! get_graph_item {
     ($func_name:ident, $func_mut:ident, $func_ref:ident, $func_from_ref:ident, $func_collection:ident, $array:ident, $ref_type:ty, $node_type:ty) => {
@@ -185,9 +185,21 @@ where
         }
         return neighbors;
     }
+
+    fn line(&self, edge_ref: EdgeRef<E, Ix>) -> LineSegment2<T> {
+        let (a, b) = self.edge_nodes(edge_ref);
+        let node_a = self.node_from_ref(a);
+        let node_b = self.node_from_ref(b);
+        LineSegment2 { start: node_a.pos(), end: node_b.pos() }
+    }
+
+    fn center(&self, cell_ref: CellRef<C, Ix>) -> Vec2<T> {
+        let rect = self.cell_rect(cell_ref);
+        return rect.center()
+    }
 }
 
-// Special functions!
+// Special unique functions!
 impl<T, C, E, N, Ix> TreeGraph<T, C, E, N, Ix>
 where
     T: OrdNum,
@@ -205,7 +217,7 @@ mod tests {
     use vek::Rect;
 
     fn build_test_graph() -> TreeGraph<f32, u8, u8, u8> {
-        let mut builder = TreemapBuilder::<f32>::new(Rect::new(0., 0., 510., 510.));
+        let mut builder = TreeBuilder::<f32>::new(Rect::new(0., 0., 510., 510.));
         builder.intersect_point(0, Axis::Horizontal, 0.25);
         builder.split(1, Axis::Vertical, 2);
         builder.intersect_point(2, Axis::Vertical, 0.75);
@@ -220,5 +232,15 @@ mod tests {
 
         assert_eq!(graph.cells().len(), 8);
         assert_eq!(graph.edges().len(), 25);
+        assert_eq!(graph.nodes().len(), 18);
+    }
+
+    #[cfg(feature = "rendering")]
+    #[test]
+    fn treegraph_render_test() {
+        let graph = build_test_graph();
+        let mut image = image::RgbImage::new(510, 510);
+        crate::render::draw_graph(&mut image, Box::new(graph), false);
+        let _ = image.save("treegraph_render_test.png").unwrap();
     }
 }
