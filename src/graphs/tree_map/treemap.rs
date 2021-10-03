@@ -154,28 +154,3 @@ where
     }
 }
 
-#[test]
-fn treemap_test() {
-    use crate::geom::Axis;
-    #[cfg(feature = "rendering")]
-    use crate::render::{Draw, ImageBuffer};
-    use vek::Rect;
-
-    let mut builder = super::TreemapBuilder::<f32>::new(Rect::new(0., 0., 510., 510.));
-    builder.intersect_point(0, Axis::Horizontal, 0.25);
-    builder.split(1, Axis::Vertical, 2);
-    builder.intersect_point(2, Axis::Vertical, 0.75);
-    builder.split(6, Axis::Horizontal, 2);
-    builder.intersect_point(8, Axis::Vertical, 0.75);
-    let map: Treemap<f32> = builder.build();
-
-    #[cfg(feature = "rendering")]
-    {
-        let mut img = ImageBuffer::new(512, 512);
-        map.draw(&mut img, vek::Rgb::red());
-        img.save("tree_test.png").unwrap();
-    }
-
-    assert_eq!(map.rect_count(), 8);
-    assert_eq!(map.edge_count(), 25);
-}

@@ -1,8 +1,9 @@
 // A constructor class for TreeMap
-use super::{EdgeRef, TreeEdge, TreeRect, Treemap};
+use super::{EdgeRef, TreeEdge, TreeGraph, TreeRect};
 use crate::core::maths::clamp01;
-use crate::core::OrdNum;
+use crate::core::{IndexType, OrdNum};
 use crate::geom::{Axis, Line, Rect, Transverse};
+use crate::graphs::{Cell, Edge, Node};
 use num::Float;
 use ordered_float::OrderedFloat;
 use std::collections::HashMap;
@@ -29,7 +30,14 @@ where
         }
     }
 
-    pub fn build(self) -> Treemap<T> {
+    pub fn build_graph<C, E, N, Ix>(self) -> TreeGraph<T, C, E, N, Ix>
+    where
+        T: Clone,
+        C: Clone,
+        E: Clone,
+        N: Clone,
+        Ix: Clone + IndexType,
+    {
         // Get a list of all active rects and edges
         let active_rects: Vec<(usize, &TreeRect<T>)> = self
             .rects
@@ -44,6 +52,7 @@ where
             .enumerate()
             .filter(|(_, x)| x.active())
             .collect();
+
         // (old index, new index)
         let mut rect_hashmap = HashMap::<usize, usize>::new();
         let mut edge_hashmap = HashMap::<usize, usize>::new();
@@ -55,54 +64,127 @@ where
             edge_hashmap.insert(e.0, i);
         }
 
-        // Remap all values in every rect and edge
-        let mut rects = Vec::<TreeRect<T>>::new();
-        let mut edges = Vec::<TreeEdge<T>>::new();
-
-        for r in active_rects.iter() {
-            let new_rect = TreeRect {
-                rect: r.1.rect(),
-                children: Vec::new(),
-                parent: None,
-                edges: r
-                    .1
-                    .edges()
-                    .iter()
-                    .filter(|e| edge_hashmap.contains_key(&e.0))
-                    .map(|e| {
-                        let i = edge_hashmap.get(&e.0);
-                        EdgeRef(*i.unwrap(), e.1)
-                    })
-                    .collect(),
-            };
-            rects.push(new_rect);
+        let mut rects = Vec::<Rect<T, T>>::new();
+        let mut cells = Vec::<Cell<C, Ix>>::new();
+        let mut edges = Vec::<Edge<E, Ix>>::new();
+        let mut nodes = Vec::<Node<T, N, Ix>>::new();
+        // Remap all values in every active rect to a cell
+        for (_, r) in active_rects.iter() {
+            let edges = r
+                .edges()
+                .iter()
+                .filter(|e| edge_hashmap.contains_key(&e.0))
+                .map(|e| IndexType::new(*edge_hashmap.get(&e.0).unwrap()))
+                .collect();
+            rects.push(r.rect.clone());
+            cells.push(Cell::<C, Ix>::new(edges, None));
         }
 
-        for e in active_edges.iter() {
+        // All nodes, cells and edges are linked up propperly via this for loop
+        for (i, e) in active_edges.iter().enumerate() {
             let old_edge = e.1;
-            let new_edge = TreeEdge {
-                a: *rect_hashmap.get(&old_edge.a).unwrap(),
-                b: *rect_hashmap.get(&old_edge.b).unwrap(),
-                axis: old_edge.axis,
-                birth_cycle: None,
-                line: *old_edge.line(),
-            };
-            edges.push(new_edge);
+
+            // Get an index for both nodes and both cells
+            let node_ai: usize = Self::get_node(&mut nodes, old_edge.line.start);
+            let node_bi: usize = Self::get_node(&mut nodes, old_edge.line.end);
+            let cell_ai: usize = *rect_hashmap.get(&old_edge.a).unwrap();
+            let cell_bi: usize = *rect_hashmap.get(&old_edge.b).unwrap();
+
+            // Now we have both our nodes, update their values.
+            nodes[node_ai].linked_edges.push(IndexType::new(i));
+            nodes[node_bi].linked_edges.push(IndexType::new(i));
+
+            // Finally, create a new edge
+            edges.push(Edge {
+                node_a: IndexType::new(node_ai),
+                node_b: IndexType::new(node_bi),
+                cell_a: IndexType::new(cell_ai),
+                cell_b: IndexType::new(cell_bi),
+                data: None,
+            });
         }
 
         // Go round the actual edges of the map and add them in.
-        for i in 0..rects.len() {
-            let rect = &mut rects[i];
-            let new_edges = Self::calculate_map_edges(rect, i);
-            for (edge, transverse) in new_edges.iter() {
-                let edge_index = edges.len();
-                let edge_ref = EdgeRef(edge_index, *transverse);
-                edges.push(edge.clone());
-                rect.edges.push(edge_ref);
+        for i in 0..cells.len() {
+            let cell = &mut cells[i];
+            let rect = &rects[i];
+            let mut up = false;
+            let mut right = false;
+            let mut down = false;
+            let mut left = false;
+
+            let x1 = rect.x;
+            let x2 = rect.x + rect.w;
+            let y1 = rect.y;
+            let y2 = rect.y + rect.h;
+
+            for e in cell.edges().iter() {
+                let edge = &edges[e.index()];
+                let node_a = &nodes[edge.node_a.index()];
+                let node_b = &nodes[edge.node_b.index()];
+                if node_a.pos().x == x1 && node_b.pos().x == x1 {
+                    left = true;
+                    continue;
+                }
+                if node_a.pos().x == x2 && node_b.pos().x == x2 {
+                    right = true;
+                    continue;
+                }
+                if node_a.pos().y == y1 && node_b.pos().y == y1 {
+                    down = true;
+                    continue;
+                }
+                if node_a.pos().y == y2 && node_b.pos().y == y2 {
+                    up = true;
+                }
+            }
+
+            let cell_i = IndexType::new(i);
+
+            if !up {
+                // No edge on top
+                let node_ai = IndexType::new(Self::get_node(&mut nodes, Vec2::new(x1, y2)));
+                let node_bi = IndexType::new(Self::get_node(&mut nodes, Vec2::new(x2, y2)));
+                let edge_i = edges.len();
+                edges.push(Edge::<E, Ix>::new(node_ai, node_bi, cell_i, cell_i, None));
+                cells[i].edges.push(IndexType::new(edge_i));
+            }
+
+            if !right {
+                // No edge on the right
+                let node_ai = IndexType::new(Self::get_node(&mut nodes, Vec2::new(x2, y1)));
+                let node_bi = IndexType::new(Self::get_node(&mut nodes, Vec2::new(x2, y2)));
+                let edge_i = edges.len();
+                edges.push(Edge::<E, Ix>::new(node_ai, node_bi, cell_i, cell_i, None));
+                cells[i].edges.push(IndexType::new(edge_i));
+            }
+
+            if !down {
+                // No edge down
+                let node_ai = IndexType::new(Self::get_node(&mut nodes, Vec2::new(x1, y1)));
+                let node_bi = IndexType::new(Self::get_node(&mut nodes, Vec2::new(x2, y1)));
+                let edge_i = edges.len();
+                edges.push(Edge::<E, Ix>::new(node_ai, node_bi, cell_i, cell_i, None));
+                cells[i].edges.push(IndexType::new(edge_i));
+            }
+            if !left {
+                // No edge on the left
+                let node_ai = IndexType::new(Self::get_node(&mut nodes, Vec2::new(x1, y1)));
+                let node_bi = IndexType::new(Self::get_node(&mut nodes, Vec2::new(x1, y2)));
+                let edge_i = edges.len();
+                edges.push(Edge::<E, Ix>::new(node_ai, node_bi, cell_i, cell_i, None));
+                cells[i].edges.push(IndexType::new(edge_i));
             }
         }
 
-        return Treemap::<T> { edges, rects };
+        // Create final node, edge and cell structs
+
+        TreeGraph {
+            cells,
+            nodes,
+            edges,
+            rects,
+        }
     }
 
     pub fn rect(&mut self, index: usize) -> Option<&TreeRect<T>> {
@@ -436,93 +518,20 @@ where
             && (rect_a.x == rect_b_x2 || rect_a_x2 == rect_b.x)
     }
 
-    fn calculate_map_edges(
-        rect: &TreeRect<T>,
-        rect_index: usize,
-    ) -> Vec<(TreeEdge<T>, Transverse)> {
-        let r = rect.rect();
-        let mut up = false;
-        let mut right = false;
-        let mut down = false;
-        let mut left = false;
-        for e in rect.edges.iter() {
-            match e.1 {
-                Transverse::Up => {
-                    up = true;
-                }
-                Transverse::Right => {
-                    right = true;
-                }
-                Transverse::Down => {
-                    down = true;
-                }
-                Transverse::Left => {
-                    left = true;
-                }
-                _ => {}
-            }
-        }
-
-        let mut additional_edges = Vec::new();
-
-        if !up {
-            // No edge on top
-            let new_edge = TreeEdge {
-                a: rect_index,
-                b: rect_index,
-                axis: Axis::Horizontal,
-                birth_cycle: None,
-                line: Line {
-                    start: Vec2::new(r.x, r.y + r.h),
-                    end: Vec2::new(r.x + r.w, r.y + r.h),
-                },
-            };
-            additional_edges.push((new_edge, Transverse::Up));
-        }
-
-        if !right {
-            // No edge on top
-            let new_edge = TreeEdge {
-                a: rect_index,
-                b: rect_index,
-                axis: Axis::Vertical,
-                birth_cycle: None,
-                line: Line {
-                    start: Vec2::new(r.x + r.w, r.y),
-                    end: Vec2::new(r.x + r.w, r.y + r.h),
-                },
-            };
-            additional_edges.push((new_edge, Transverse::Right));
-        }
-
-        if !down {
-            // No edge on top
-            let new_edge = TreeEdge {
-                a: rect_index,
-                b: rect_index,
-                axis: Axis::Horizontal,
-                birth_cycle: None,
-                line: Line {
-                    start: Vec2::new(r.x, r.y),
-                    end: Vec2::new(r.x + r.w, r.y),
-                },
-            };
-            additional_edges.push((new_edge, Transverse::Down));
-        }
-        if !left {
-            // No edge on top
-            let new_edge = TreeEdge {
-                a: rect_index,
-                b: rect_index,
-                axis: Axis::Vertical,
-                birth_cycle: None,
-                line: Line {
-                    start: Vec2::new(r.x, r.y),
-                    end: Vec2::new(r.x, r.y + r.h),
-                },
-            };
-            additional_edges.push((new_edge, Transverse::Left));
-        }
-        return additional_edges;
+    fn get_node<N, Ix>(nodes: &mut Vec<Node<T, N, Ix>>, pos: Vec2<T>) -> usize
+    where
+        Ix: IndexType,
+    {
+        let index: usize;
+        if let Some(node_index_existing) = nodes
+            .iter()
+            .position(|n| n.pos().x == pos.x && n.pos().y == pos.y)
+        {
+            index = node_index_existing;
+        } else {
+            index = nodes.len();
+            nodes.push(Node::new(pos.x, pos.y, Vec::new(), None));
+        };
+        return index;
     }
 }
