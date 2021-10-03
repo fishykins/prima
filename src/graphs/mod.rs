@@ -1,6 +1,10 @@
 mod cell;
 mod edge;
 mod node;
+mod cell_ref;
+mod edge_ref;
+mod node_ref;
+
 pub mod tree_map;
 
 use crate::core::OrdNum;
@@ -8,51 +12,11 @@ use crate::core::{DefaultIx, IndexType};
 pub use cell::Cell;
 pub use edge::Edge;
 pub use node::Node;
+pub use cell_ref::CellRef;
+pub use edge_ref::EdgeRef;
+pub use node_ref::NodeRef;
 use vek::{LineSegment2, Vec2};
 
-#[derive(Copy, Clone)]
-pub struct CellRef<'a, C, Ix = DefaultIx>(Ix, &'a Cell<C, Ix>)
-where
-    Ix: IndexType;
-
-#[derive(Copy, Clone)]
-pub struct EdgeRef<'a, E, Ix = DefaultIx>(Ix, &'a Edge<E, Ix>)
-where
-    Ix: IndexType;
-
-#[derive(Copy, Clone)]
-pub struct NodeRef<'a, T, N, Ix = DefaultIx>(Ix, &'a Node<T, N, Ix>)
-where
-    T: OrdNum,
-    Ix: IndexType;
-
-impl<'a, C, Ix> CellRef<'a, C, Ix>
-where
-    Ix: IndexType,
-{
-    pub fn new(index: Ix, cell: &'a Cell<C, Ix>) -> Self {
-        Self(index, cell)
-    }
-}
-
-impl<'a, E, Ix> EdgeRef<'a, E, Ix>
-where
-    Ix: IndexType,
-{
-    pub fn new(index: Ix, edge: &'a Edge<E, Ix>) -> Self {
-        Self(index, edge)
-    }
-}
-
-impl<'a, T, N, Ix> NodeRef<'a, T, N, Ix>
-where
-    T: OrdNum,
-    Ix: IndexType,
-{
-    pub fn new(index: Ix, node: &'a Node<T, N, Ix>) -> Self {
-        Self(index, node)
-    }
-}
 
 pub trait Graph<T, C, E, N, Ix = DefaultIx>
 where
