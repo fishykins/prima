@@ -240,7 +240,7 @@ mod tests {
     fn treegraph_render_test() {
         let graph = build_test_graph();
         let mut image = image::RgbImage::new(510, 510);
-        crate::render::draw_graph(&mut image, Box::new(graph), false);
+        crate::render::draw_graph(&mut image, Box::new(&graph), false);
         let _ = image.save("treegraph_render_test.png").unwrap();
     }
 }

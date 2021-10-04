@@ -8,7 +8,7 @@ use vek::LineSegment2;
 /// draws a generic graph
 pub fn draw_graph<T, C, E, N, Ix>(
     image: &mut RgbImage,
-    graph: Box<dyn Graph<T, C, E, N, Ix>>,
+    graph: Box<&dyn Graph<T, C, E, N, Ix>>,
     draw_cell_edge_lines: bool,
 ) where
     C: Copy,
