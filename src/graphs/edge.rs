@@ -66,6 +66,12 @@ where
         }
         self.data.as_mut()
     }
+    pub fn set_data(&mut self, data: E) {
+        self.data = Some(data);
+    }
+    pub fn clear_data(&mut self) {
+        self.data = None;
+    }
 }
 
 impl<E, Ix> PartialEq for Edge<E, Ix>

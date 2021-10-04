@@ -1,6 +1,6 @@
 [package]
 name = "prima"
-version = "0.3.3"
+version = "0.3.31"
 authors = ["Fishykins <caspar.m.green@gmail.com>"]
 edition = "2018"
 description = "Generic 2D library used to handle graph structures, expanding on vek."

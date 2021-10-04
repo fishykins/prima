@@ -29,6 +29,13 @@ where
         self.data.as_mut()
     }
 
+    pub fn set_data(&mut self, data: C) {
+        self.data = Some(data);
+    }
+    pub fn clear_data(&mut self) {
+        self.data = None;
+    }
+
     pub fn edges(&self) -> Vec<Ix> {
         self.edges.clone()
     }
