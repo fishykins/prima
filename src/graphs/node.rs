@@ -1,3 +1,4 @@
+use super::{EdgeIndex, GraphData};
 use crate::core::{DefaultIx, IndexType, OrdNum};
 #[cfg(not(feature = "godot"))]
 use vek::Vec2;
@@ -9,8 +10,8 @@ where
 {
     x: T,
     y: T,
-    pub(crate) data: Option<N>,
-    pub(crate) linked_edges: Vec<Ix>,
+    data: Option<Box<N>>,
+    pub(crate) linked_edges: Vec<EdgeIndex<Ix>>,
 }
 
 impl<T, N, Ix> Node<T, N, Ix>
@@ -18,7 +19,7 @@ where
     T: OrdNum,
     Ix: IndexType,
 {
-    pub fn new(x: T, y: T, linked_edges: Vec<Ix>, data: Option<N>) -> Self {
+    pub fn new(x: T, y: T, linked_edges: Vec<EdgeIndex<Ix>>, data: Option<Box<N>>) -> Self {
         Self {
             x,
             y,
@@ -36,28 +37,9 @@ where
     pub fn pos(&self) -> Vec2<T> {
         Vec2::new(self.x.clone(), self.y.clone())
     }
-    
-    pub fn linked_edges(&self) -> &Vec<Ix> {
-        &self.linked_edges
-    }
 
-    pub fn data(&self) -> Option<&N> {
-        if self.data.is_none() {
-            return None;
-        }
-        self.data.as_ref()
-    }
-    pub fn data_mut(&mut self) -> Option<&mut N> {
-        if self.data.is_none() {
-            return None;
-        }
-        self.data.as_mut()
-    }
-    pub fn set_data(&mut self, data: N) {
-        self.data = Some(data);
-    }
-    pub fn clear_data(&mut self) {
-        self.data = None;
+    pub fn linked_edges(&self) -> Vec<EdgeIndex<Ix>> {
+        self.linked_edges.clone()
     }
 }
 
@@ -68,5 +50,25 @@ where
 {
     fn eq(&self, other: &Self) -> bool {
         self.x == other.x && self.y == other.y && self.linked_edges == other.linked_edges
+    }
+}
+
+impl<T, N, Ix> GraphData<N> for Node<T, N, Ix>
+where
+    T: OrdNum,
+    Ix: IndexType,
+{
+    fn data(&self) -> Option<&Box<N>> {
+        if self.data.is_none() {
+            return None;
+        }
+        self.data.as_ref()
+    }
+
+    fn data_mut(&mut self) -> Option<&mut Box<N>> {
+        if self.data.is_none() {
+            return None;
+        }
+        self.data.as_mut()
     }
 }

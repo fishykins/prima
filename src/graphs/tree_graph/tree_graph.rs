@@ -1,35 +1,26 @@
 use crate::core::{DefaultIx, IndexType, OrdNum};
 use crate::graphs::*;
-use vek::{Rect, LineSegment2};
+use vek::{LineSegment2, Rect};
 
-macro_rules! get_graph_item {
-    ($func_name:ident, $func_mut:ident, $func_ref:ident, $func_from_ref:ident, $func_collection:ident, $array:ident, $ref_type:ty, $node_type:ty) => {
-        fn $func_name(&self, index: Ix) -> Option<&$node_type> {
-            if index.index() >= self.$array.len() {
-                return None;
-            }
-            Some(&self.$array[index.index()])
-        }
-        fn $func_mut(&mut self, index: Ix) -> Option<&mut $node_type> {
-            if index.index() >= self.$array.len() {
-                return None;
-            }
-            Some(&mut self.$array[index.index()])
-        }
-        fn $func_ref(&self, index: Ix) -> Option<$ref_type> {
-            if index.index() >= self.$array.len() {
-                return None;
-            }
-            return Some(<$ref_type>::new(index, &self.$array[index.index()]));
-        }
-        fn $func_from_ref(&self, node_ref: $ref_type) -> &$node_type {
-            &self.$array[node_ref.0.index()]
-        }
-        fn $func_collection(&self) -> Vec<&$node_type> {
-            self.$array.iter().map(|x| x).collect()
-        }
-    };
-}
+// macro_rules! get_graph_item {
+//     ($collection:ident, $getter:ident, $getter_mut:ident, $getter_all:ident, $index_type:ty, $node_type:ty) => {
+//         fn $getter(&self, index: $index_type) -> Option<&$node_type> {
+//             if index.index() >= self.$collection.len() {
+//                 return None;
+//             }
+//             Some(&self.$collection[index.index()])
+//         }
+//         fn $getter_mut(&mut self, index: $index_type) -> Option<&mut $node_type> {
+//             if index.index() >= self.$collection.len() {
+//                 return None;
+//             }
+//             Some(&mut self.$collection[index.index()])
+//         }
+//         fn $getter_all(&self) -> Vec<&$node_type> {
+//             self.$collection.iter().map(|x| x).collect()
+//         }
+//     };
+// }
 
 // A graph for navigating a treemap. As the graph is consructed by a dedicated builder, some assumptions are made about certian calls.
 // It is assumed that if a node/cell/edge is in the graph, all its assosiated pointers will be valid.
@@ -54,31 +45,79 @@ where
     T: OrdNum,
     Ix: IndexType,
 {
-    get_graph_item!(cell, cell_mut, cell_ref, cell_from_ref, cells, cells, CellRef<C, Ix>, Cell<C, Ix>);
-    get_graph_item!(edge, edge_mut, edge_ref, edge_from_ref, edges, edges, EdgeRef<E, Ix>, Edge<E, Ix>);
-    get_graph_item!(node, node_mut, node_ref, node_from_ref, nodes, nodes, NodeRef<T, N, Ix>, Node<T, N, Ix>);
+    fn cell(&self, index: CellIndex<Ix>) -> Option<&Cell<C, Ix>> {
+        if index.index() >= self.cells.len() {
+            return None;
+        }
+        Some(&self.cells[index.index()])
+    }
 
-    fn cell_edges(&self, cell_ref: CellRef<C, Ix>) -> Vec<EdgeRef<E, Ix>> {
-        let cell = self.cell_from_ref(cell_ref);
-        cell.edges()
-            .iter()
-            .map(|e| self.edge_ref(*e).unwrap())
-            .collect()
+    fn edge(&self, index: EdgeIndex<Ix>) -> Option<&Edge<E, Ix>> {
+        if index.index() >= self.edges.len() {
+            return None;
+        }
+        Some(&self.edges[index.index()])
+    }
+
+    fn node(&self, index: NodeIndex<Ix>) -> Option<&Node<T, N, Ix>> {
+        if index.index() >= self.cells.len() {
+            return None;
+        }
+        Some(&self.nodes[index.index()])
+    }
+
+    fn cell_mut(&mut self, index: CellIndex<Ix>) -> Option<&mut Cell<C, Ix>> {
+        if index.index() >= self.cells.len() {
+            return None;
+        }
+        Some(&mut self.cells[index.index()])
+    }
+
+    fn edge_mut(&mut self, index: EdgeIndex<Ix>) -> Option<&mut Edge<E, Ix>> {
+        if index.index() >= self.edges.len() {
+            return None;
+        }
+        Some(&mut self.edges[index.index()])
+    }
+
+    fn node_mut(&mut self, index: NodeIndex<Ix>) -> Option<&mut Node<T, N, Ix>> {
+        if index.index() >= self.cells.len() {
+            return None;
+        }
+        Some(&mut self.nodes[index.index()])
+    }
+
+    fn cells(&self) -> Vec<&Cell<C, Ix>> {
+        self.cells.iter().map(|x| x).collect()
+    }
+
+    fn edges(&self) -> Vec<&Edge<E, Ix>> {
+        self.edges.iter().map(|x| x).collect()
+    }
+
+
+    fn nodes(&self) -> Vec<&Node<T, N, Ix>> {
+        self.nodes.iter().map(|x| x).collect()
+    }
+
+    fn cell_edges(&self, cell_ref: CellIndex<Ix>) -> Vec<EdgeIndex<Ix>> {
+        let cell = self.cell(cell_ref).expect("Cell index out of bounds");
+        return cell.edges()
     }
 
     // TODO: This is not very efficient, needs fewer loops
-    fn cell_nodes(&self, cell_ref: CellRef<C, Ix>) -> Vec<NodeRef<T, N, Ix>> {
+    fn cell_nodes(&self, cell_ref: CellIndex<Ix>) -> Vec<NodeIndex<Ix>> {
         let cell_edges = self.cell_edges(cell_ref);
-        let mut nodes = Vec::<NodeRef<T, N, Ix>>::new();
+        let mut nodes = Vec::<NodeIndex<Ix>>::new();
 
         for e in cell_edges.iter() {
             let edge_nodes = self.edge_nodes(*e);
             let mut found_a = false;
             let mut found_b = false;
             for node in nodes.iter() {
-                if node.0 == edge_nodes.0 .0 {
+                if node.index() == edge_nodes.0.index() {
                     found_a = true;
-                } else if node.0 == edge_nodes.1 .0 {
+                } else if node.index() == edge_nodes.1.index() {
                     found_b = true;
                 };
 
@@ -96,34 +135,28 @@ where
         return nodes;
     }
 
-    fn cell_neighbors(&self, cell_ref: CellRef<C, Ix>) -> Vec<CellRef<C, Ix>> {
+    fn cell_neighbors(&self, cell_ref: CellIndex<Ix>) -> Vec<CellIndex<Ix>> {
         let cell_edges = self.cell_edges(cell_ref);
         let mut neighbors = Vec::new();
         for e in cell_edges.iter() {
-            let edge = self.edge_from_ref(*e);
-            let other = edge.cell_other(cell_ref.0).unwrap();
-            neighbors.push(self.cell_ref(other).unwrap());
+            let edge = self.edge(*e).unwrap();
+            let other = edge.cell_other(cell_ref).unwrap();
+            neighbors.push(other);
         }
         return neighbors;
     }
 
-    fn edge_cells(&self, edge_ref: EdgeRef<E, Ix>) -> (CellRef<C, Ix>, CellRef<C, Ix>) {
-        let edge = self.edge_from_ref(edge_ref);
-        (
-            CellRef::new(edge.cell_a, &self.cells[edge.cell_a.index()]),
-            CellRef::new(edge.cell_b, &self.cells[edge.cell_b.index()]),
-        )
+    fn edge_cells(&self, edge_index: EdgeIndex<Ix>) -> (CellIndex<Ix>, CellIndex<Ix>) {
+        let edge = self.edge(edge_index).expect("Edge index out of bounds");
+        edge.cells()
     }
 
-    fn edge_nodes(&self, edge_ref: EdgeRef<E, Ix>) -> (NodeRef<T, N, Ix>, NodeRef<T, N, Ix>) {
-        let edge = self.edge_from_ref(edge_ref);
-        (
-            NodeRef::new(edge.node_a, &self.nodes[edge.node_a.index()]),
-            NodeRef::new(edge.node_b, &self.nodes[edge.node_b.index()]),
-        )
+    fn edge_nodes(&self, edge_ref: EdgeIndex<Ix>) -> (NodeIndex<Ix>, NodeIndex<Ix>) {
+        let edge = self.edge(edge_ref).expect("Edge index out of bounds");
+        edge.nodes()
     }
 
-    fn edge_neighbors(&self, edge_ref: EdgeRef<E, Ix>) -> Vec<EdgeRef<E, Ix>> {
+    fn edge_neighbors(&self, edge_ref: EdgeIndex<Ix>) -> Vec<EdgeIndex<Ix>> {
         let (node_a, node_b) = self.edge_nodes(edge_ref);
         let mut neighbors = Vec::new();
         for e in self.node_edges(node_a).iter() {
@@ -139,18 +172,14 @@ where
         return neighbors;
     }
 
-    fn node_edges(&self, node_ref: NodeRef<T, N, Ix>) -> Vec<EdgeRef<E, Ix>> {
-        let node = self.node_from_ref(node_ref);
-        return node
-            .linked_edges()
-            .iter()
-            .map(|e| self.edge_ref(*e).unwrap())
-            .collect();
+    fn node_edges(&self, node_ref: NodeIndex<Ix>) -> Vec<EdgeIndex<Ix>> {
+        let node = self.node(node_ref).expect("Node index out of bounds");
+        return node.linked_edges()
     }
 
-    fn node_cells(&self, node_ref: NodeRef<T, N, Ix>) -> Vec<CellRef<C, Ix>> {
+    fn node_cells(&self, node_ref: NodeIndex<Ix>) -> Vec<CellIndex<Ix>> {
         let node_edges = self.node_edges(node_ref);
-        let mut cells = Vec::<CellRef<C, Ix>>::new();
+        let mut cells = Vec::<CellIndex<Ix>>::new();
         for e in node_edges.iter() {
             let (a, b) = self.edge_cells(*e);
             let mut has_a = false;
@@ -175,27 +204,30 @@ where
         return cells;
     }
 
-    fn node_neighbors(&self, node_ref: NodeRef<T, N, Ix>) -> Vec<NodeRef<T, N, Ix>> {
+    fn node_neighbors(&self, node_ref: NodeIndex<Ix>) -> Vec<NodeIndex<Ix>> {
         let node_edges = self.node_edges(node_ref);
         let mut neighbors = Vec::new();
         for e in node_edges.iter() {
-            let edge = self.edge_from_ref(*e);
-            let other = edge.node_other(node_ref.0).unwrap();
-            neighbors.push(self.node_ref(other).unwrap());
+            let edge = self.edge(*e).expect("Edge index out of bounds");
+            let other = edge.node_other(node_ref).unwrap();
+            neighbors.push(other);
         }
         return neighbors;
     }
 
-    fn line(&self, edge_ref: EdgeRef<E, Ix>) -> LineSegment2<T> {
+    fn line(&self, edge_ref: EdgeIndex<Ix>) -> LineSegment2<T> {
         let (a, b) = self.edge_nodes(edge_ref);
-        let node_a = self.node_from_ref(a);
-        let node_b = self.node_from_ref(b);
-        LineSegment2 { start: node_a.pos(), end: node_b.pos() }
+        let node_a = self.node(a).unwrap();
+        let node_b = self.node(b).unwrap();
+        LineSegment2 {
+            start: node_a.pos(),
+            end: node_b.pos(),
+        }
     }
 
-    fn center(&self, cell_ref: CellRef<C, Ix>) -> Vec2<T> {
+    fn center(&self, cell_ref: CellIndex<Ix>) -> Vec2<T> {
         let rect = self.cell_rect(cell_ref);
-        return rect.center()
+        return rect.center();
     }
 }
 
@@ -205,7 +237,7 @@ where
     T: OrdNum,
     Ix: IndexType,
 {
-    pub fn cell_rect(&self, cell: CellRef<C, Ix>) -> &Rect<T, T> {
+    pub fn cell_rect(&self, cell: CellIndex<Ix>) -> &Rect<T, T> {
         &self.rects[cell.0.index()]
     }
 }

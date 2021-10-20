@@ -3,7 +3,7 @@ use super::{EdgeRef, TreeEdge, TreeGraph, TreeRect};
 use crate::core::maths::clamp01;
 use crate::core::{IndexType, OrdNum};
 use crate::geom::{Axis, Line, Rect, Transverse};
-use crate::graphs::{Cell, Edge, Node};
+use crate::graphs::{Cell, Edge, Node, EdgeIndex, CellIndex, NodeIndex};
 use num::Float;
 use ordered_float::OrderedFloat;
 use std::collections::HashMap;
@@ -74,7 +74,7 @@ where
                 .edges()
                 .iter()
                 .filter(|e| edge_hashmap.contains_key(&e.0))
-                .map(|e| IndexType::new(*edge_hashmap.get(&e.0).unwrap()))
+                .map(|e| EdgeIndex::new(*edge_hashmap.get(&e.0).unwrap()))
                 .collect();
             rects.push(r.rect.clone());
             cells.push(Cell::<C, Ix>::new(edges, None));
@@ -91,15 +91,15 @@ where
             let cell_bi: usize = *rect_hashmap.get(&old_edge.b).unwrap();
 
             // Now we have both our nodes, update their values.
-            nodes[node_ai].linked_edges.push(IndexType::new(i));
-            nodes[node_bi].linked_edges.push(IndexType::new(i));
+            nodes[node_ai].linked_edges.push(EdgeIndex::new(i));
+            nodes[node_bi].linked_edges.push(EdgeIndex::new(i));
 
             // Finally, create a new edge
             edges.push(Edge {
-                node_a: IndexType::new(node_ai),
-                node_b: IndexType::new(node_bi),
-                cell_a: IndexType::new(cell_ai),
-                cell_b: IndexType::new(cell_bi),
+                node_a: NodeIndex::new(node_ai),
+                node_b: NodeIndex::new(node_bi),
+                cell_a: CellIndex::new(cell_ai),
+                cell_b: CellIndex::new(cell_bi),
                 data: None,
             });
         }
@@ -139,41 +139,41 @@ where
                 }
             }
 
-            let cell_i = IndexType::new(i);
+            let cell_i = CellIndex::new(i);
 
             if !up {
                 // No edge on top
-                let node_ai = IndexType::new(Self::get_node(&mut nodes, Vec2::new(x1, y2)));
-                let node_bi = IndexType::new(Self::get_node(&mut nodes, Vec2::new(x2, y2)));
+                let node_ai = NodeIndex::new(Self::get_node(&mut nodes, Vec2::new(x1, y2)));
+                let node_bi = NodeIndex::new(Self::get_node(&mut nodes, Vec2::new(x2, y2)));
                 let edge_i = edges.len();
                 edges.push(Edge::<E, Ix>::new(node_ai, node_bi, cell_i, cell_i, None));
-                cells[i].edges.push(IndexType::new(edge_i));
+                cells[i].edges.push(EdgeIndex::new(edge_i));
             }
 
             if !right {
                 // No edge on the right
-                let node_ai = IndexType::new(Self::get_node(&mut nodes, Vec2::new(x2, y1)));
-                let node_bi = IndexType::new(Self::get_node(&mut nodes, Vec2::new(x2, y2)));
+                let node_ai = NodeIndex::new(Self::get_node(&mut nodes, Vec2::new(x2, y1)));
+                let node_bi = NodeIndex::new(Self::get_node(&mut nodes, Vec2::new(x2, y2)));
                 let edge_i = edges.len();
                 edges.push(Edge::<E, Ix>::new(node_ai, node_bi, cell_i, cell_i, None));
-                cells[i].edges.push(IndexType::new(edge_i));
+                cells[i].edges.push(EdgeIndex::new(edge_i));
             }
 
             if !down {
                 // No edge down
-                let node_ai = IndexType::new(Self::get_node(&mut nodes, Vec2::new(x1, y1)));
-                let node_bi = IndexType::new(Self::get_node(&mut nodes, Vec2::new(x2, y1)));
+                let node_ai = NodeIndex::new(Self::get_node(&mut nodes, Vec2::new(x1, y1)));
+                let node_bi = NodeIndex::new(Self::get_node(&mut nodes, Vec2::new(x2, y1)));
                 let edge_i = edges.len();
                 edges.push(Edge::<E, Ix>::new(node_ai, node_bi, cell_i, cell_i, None));
-                cells[i].edges.push(IndexType::new(edge_i));
+                cells[i].edges.push(EdgeIndex::new(edge_i));
             }
             if !left {
                 // No edge on the left
-                let node_ai = IndexType::new(Self::get_node(&mut nodes, Vec2::new(x1, y1)));
-                let node_bi = IndexType::new(Self::get_node(&mut nodes, Vec2::new(x1, y2)));
+                let node_ai = NodeIndex::new(Self::get_node(&mut nodes, Vec2::new(x1, y1)));
+                let node_bi = NodeIndex::new(Self::get_node(&mut nodes, Vec2::new(x1, y2)));
                 let edge_i = edges.len();
                 edges.push(Edge::<E, Ix>::new(node_ai, node_bi, cell_i, cell_i, None));
-                cells[i].edges.push(IndexType::new(edge_i));
+                cells[i].edges.push(EdgeIndex::new(edge_i));
             }
         }
 

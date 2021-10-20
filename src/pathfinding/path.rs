@@ -1,15 +1,16 @@
 use std::marker::PhantomData;
 
-use crate::{core::OrdNum, graphs::{Graph, GraphItem}};
+use crate::{core::{IndexType, OrdNum}, graphs::{Graph, GraphIndex}};
 
-pub struct Path<'a, G, T, C, E, N>
+pub struct Path<'a, G, T, C, E, N, Ix>
 where
     T: OrdNum,
-    G: Graph<T, C, E, N>,
+    G: Graph<T, C, E, N, Ix>,
+    Ix: IndexType
 {
     pub graph: &'a G,
-    pub start: GraphItem<'a, T, C, E, N>,
-    pub target: GraphItem<'a, T, C, E, N>,
+    pub start: GraphIndex<Ix>,
+    pub target: GraphIndex<Ix>,
     pub using_nodes: bool,
     pub using_edges: bool,
     pub using_cells: bool,
@@ -19,36 +20,37 @@ where
     p_node_data: PhantomData<N>,
 }
 
-impl<'a, G, T, C, E, N> Path<'a, G, T, C, E, N>
+impl<'a, G, T, C, E, N, Ix> Path<'a, G, T, C, E, N, Ix>
 where
     T: OrdNum,
-    G: Graph<T, C, E, N>,
+    G: Graph<T, C, E, N, Ix>,
+    Ix: IndexType
 {
-    pub fn new(graph: &'a G, start: GraphItem<'a, T, C, E, N>, target: GraphItem<'a, T, C, E, N>) -> Self {
+    pub fn new(graph: &'a G, start: GraphIndex<Ix>, target: GraphIndex<Ix>) -> Self {
 
         let mut using_nodes: bool = false;
         let mut using_edges: bool = false;
         let mut using_cells: bool = false;
 
         match start {
-            GraphItem::Cell(_) => {
+            GraphIndex::Cell(_) => {
                 using_cells = true;
             },
-            GraphItem::Edge(_) => {
+            GraphIndex::Edge(_) => {
                 using_edges = true;
             },
-            GraphItem::Node(_) => {
+            GraphIndex::Node(_) => {
                 using_nodes = true;
             },
         }
         match target {
-            GraphItem::Cell(_) => {
+            GraphIndex::Cell(_) => {
                 using_cells = true;
             },
-            GraphItem::Edge(_) => {
+            GraphIndex::Edge(_) => {
                 using_edges = true;
             },
-            GraphItem::Node(_) => {
+            GraphIndex::Node(_) => {
                 using_nodes = true;
             },
         }

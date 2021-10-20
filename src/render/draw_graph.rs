@@ -1,6 +1,6 @@
 use super::{deja_vu_sans, draw_line_segment, draw_text, RgbImage};
 use crate::core::{IndexType, OrdNum};
-use crate::graphs::Graph;
+use crate::graphs::{Graph, EdgeIndex, CellIndex};
 use num::Signed;
 use vek::LineSegment2;
 //use vek::{Rgb, Vec2};
@@ -23,7 +23,7 @@ pub fn draw_graph<T, C, E, N, Ix>(
     // First, lets draw every edge and label it
     for (i, _) in graph.edges().iter().enumerate() {
         let col = crate::render::random_colour(&mut rng);
-        let edge_ref = graph.edge_ref(IndexType::new(i)).unwrap();
+        let edge_ref = EdgeIndex::new(i);
         let line = graph.line(edge_ref);
         let center = (line.start + line.end) / (T::one() + T::one());
         draw_line_segment(image, &line, col);
@@ -33,7 +33,7 @@ pub fn draw_graph<T, C, E, N, Ix>(
     // First, lets draw every edge and label it
     for (i, _) in graph.cells().iter().enumerate() {
         let col = crate::render::random_colour(&mut rng);
-        let cell_ref = graph.cell_ref(IndexType::new(i)).unwrap();
+        let cell_ref = CellIndex::new(i);
         let cell_center = graph.center(cell_ref);
         draw_text(
             image,

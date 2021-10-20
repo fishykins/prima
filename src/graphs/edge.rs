@@ -1,21 +1,22 @@
 use crate::core::{DefaultIx, IndexType};
+use super::{CellIndex, GraphData, NodeIndex};
 
 pub struct Edge<E, Ix = DefaultIx>
 where
     Ix: IndexType,
 {
-    pub(crate) node_a: Ix,
-    pub(crate) node_b: Ix,
-    pub(crate) cell_a: Ix,
-    pub(crate) cell_b: Ix,
-    pub(crate) data: Option<E>,
+    pub(crate) node_a: NodeIndex<Ix>,
+    pub(crate) node_b: NodeIndex<Ix>,
+    pub(crate) cell_a: CellIndex<Ix>,
+    pub(crate) cell_b: CellIndex<Ix>,
+    pub data: Option<Box<E>>,
 }
 
 impl<E, Ix> Edge<E, Ix>
 where
     Ix: IndexType,
 {
-    pub fn new(node_a: Ix, node_b: Ix, cell_a: Ix, cell_b: Ix, data: Option<E>) -> Self {
+    pub fn new(node_a: NodeIndex<Ix>, node_b: NodeIndex<Ix>, cell_a: CellIndex<Ix>, cell_b: CellIndex<Ix>, data: Option<Box<E>>) -> Self {
         Self {
             node_a,
             node_b,
@@ -24,13 +25,10 @@ where
             data,
         }
     }
-    pub fn node_a(&self) -> Ix {
-        self.node_a.clone()
+    pub fn nodes(&self) -> (NodeIndex<Ix>, NodeIndex<Ix>) {
+        (self.node_a, self.node_b)
     }
-    pub fn node_b(&self) -> Ix {
-        self.node_b.clone()
-    }
-    pub fn node_other(&self, i: Ix) -> Option<Ix> {
+    pub fn node_other(&self, i: NodeIndex<Ix>) -> Option<NodeIndex<Ix>> {
         if i == self.node_a {
             return Some(self.node_b);
         } else if i == self.node_b {
@@ -39,13 +37,10 @@ where
             None
         }
     }
-    pub fn cell_a(&self) -> Ix {
-        self.cell_a.clone()
+    pub fn cells(&self) -> (CellIndex<Ix>, CellIndex<Ix>) {
+        (self.cell_a, self.cell_b)
     }
-    pub fn cell_b(&self) -> Ix {
-        self.cell_b.clone()
-    }
-    pub fn cell_other(&self, i: Ix) -> Option<Ix> {
+    pub fn cell_other(&self, i: CellIndex<Ix>) -> Option<CellIndex<Ix>> {
         if i == self.cell_a {
             return Some(self.cell_b);
         } else if i == self.cell_b {
@@ -53,24 +48,6 @@ where
         } else {
             None
         }
-    }
-    pub fn data(&self) -> Option<&E> {
-        if self.data.is_none() {
-            return None;
-        }
-        self.data.as_ref()
-    }
-    pub fn data_mut(&mut self) -> Option<&mut E> {
-        if self.data.is_none() {
-            return None;
-        }
-        self.data.as_mut()
-    }
-    pub fn set_data(&mut self, data: E) {
-        self.data = Some(data);
-    }
-    pub fn clear_data(&mut self) {
-        self.data = None;
     }
 }
 
@@ -83,5 +60,24 @@ where
         self.node_b == other.node_b &&
         self.cell_a == other.cell_a &&
         self.cell_b == other.cell_b
+    }
+}
+
+impl<E, Ix> GraphData<E> for Edge<E, Ix>
+where
+    Ix: IndexType,
+{
+    fn data(&self) -> Option<&Box<E>> {
+        if self.data.is_none() {
+            return None;
+        }
+        self.data.as_ref()
+    }
+
+    fn data_mut(&mut self) -> Option<&mut Box<E>> {
+        if self.data.is_none() {
+            return None;
+        }
+        self.data.as_mut()
     }
 }
