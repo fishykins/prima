@@ -1,5 +1,5 @@
 use crate::core::{DefaultIx, IndexType};
-use super::Edge;
+use super::{Edge};
 
 
 #[derive(Copy, Clone)]

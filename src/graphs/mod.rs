@@ -4,8 +4,9 @@ mod node;
 mod cell_ref;
 mod edge_ref;
 mod node_ref;
+mod graph_item;
 
-pub mod tree_map;
+pub mod tree_graph;
 
 use crate::core::OrdNum;
 use crate::core::{DefaultIx, IndexType};
@@ -15,6 +16,7 @@ pub use node::Node;
 pub use cell_ref::CellRef;
 pub use edge_ref::EdgeRef;
 pub use node_ref::NodeRef;
+pub use graph_item::GraphItem;
 use vek::{LineSegment2, Vec2};
 
 

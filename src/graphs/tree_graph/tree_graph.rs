@@ -213,7 +213,7 @@ where
 #[cfg(test)]
 mod tests {
     use crate::geom::Axis;
-    use crate::graphs::{tree_map::*, Graph};
+    use crate::graphs::{tree_graph::*, Graph};
     use vek::Rect;
 
     fn build_test_graph() -> TreeGraph<f32, u8, u8, u8> {
