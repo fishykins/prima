@@ -60,7 +60,7 @@ where
     }
 
     fn node(&self, index: NodeIndex<Ix>) -> Option<&Node<T, N, Ix>> {
-        if index.index() >= self.cells.len() {
+        if index.index() >= self.nodes.len() {
             return None;
         }
         Some(&self.nodes[index.index()])
@@ -217,8 +217,8 @@ where
 
     fn line(&self, edge_ref: EdgeIndex<Ix>) -> LineSegment2<T> {
         let (a, b) = self.edge_nodes(edge_ref);
-        let node_a = self.node(a).unwrap();
-        let node_b = self.node(b).unwrap();
+        let node_a = self.node(a).expect(&format!("Node index {:?} out of bounds ({})", a.index(), self.nodes.len()));
+        let node_b = self.node(b).expect(&format!("Node index {:?} out of bounds ({})", a.index(), self.nodes.len()));
         LineSegment2 {
             start: node_a.pos(),
             end: node_b.pos(),
