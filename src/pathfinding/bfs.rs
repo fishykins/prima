@@ -5,7 +5,7 @@ use crate::{
     graphs::{Graph, GraphIndex},
 };
 
-use super::Path;
+use super::Step;
 
 pub struct BreadthFirstSeach<'a, T, C, E, N, Ix>
 where
@@ -13,9 +13,9 @@ where
     Ix: IndexType,
 {
     graph: &'a dyn Graph<T, C, E, N, Ix>,
-    path: Path<Ix>,
-    open: VecDeque<Path<Ix>>,
-    closed: Vec<Path<Ix>>,
+    step: Step<Ix>,
+    open: VecDeque<Step<Ix>>,
+    closed: Vec<Step<Ix>>,
     route: Vec<GraphIndex<Ix>>,
 }
 
@@ -24,28 +24,28 @@ where
     T: OrdNum,
     Ix: IndexType,
 {
-    pub fn new(graph: &'a dyn Graph<T, C, E, N, Ix>, path: Path<Ix>) -> Self {
+    pub fn new(graph: &'a dyn Graph<T, C, E, N, Ix>, step: Step<Ix>) -> Self {
         let mut me = Self {
             graph,
-            path,
+            step,
             open: VecDeque::new(),
             closed: Vec::new(),
             route: Vec::new(),
         };
 
-        me.paths(Path::<Ix>::new(me.path.start, me.path.start), None);
+        me.steps(Step::<Ix>::new(me.step.start, me.step.start), None);
         return me;
     }
 
-    /// Calculates a single step of the path. Returns None if the path is finished, or has somehow failed.
-    /// To retreive the finished route, call [`route`]. [`calculate`] is the more appropriate way to obtain a path in 90% of cases,
-    /// this is only needed if you wish to split the pathfinding over several ticks.
-    pub fn step(&mut self) -> Option<Path<Ix>> {
+    /// Calculates a single step of the step. Returns None if the step is finished, or has somehow failed.
+    /// To retreive the finished route, call [`route`]. [`calculate`] is the more appropriate way to obtain a step in 90% of cases,
+    /// this is only needed if you wish to split the stepfinding over several ticks.
+    pub fn step(&mut self) -> Option<Step<Ix>> {
         if let Some(next) = self.open.pop_front() {
-            println!("Popped open path {}", next);
+            println!("Popped open step {}", next);
             let i = self.closed.len();
             self.closed.push(next);
-            let found_route = self.paths(next, Some(Ix::new(i)));
+            let found_route = self.steps(next, Some(Ix::new(i)));
             if found_route {
                 return None;
             }
@@ -54,7 +54,7 @@ where
         return None;
     }
 
-    /// Builds the full path in one swift pass. 
+    /// Builds the full step in one swift pass. 
     pub fn calculate(&mut self) -> Vec<GraphIndex<Ix>> {
         while self.step().is_some() {}
         return self.route()
@@ -64,39 +64,39 @@ where
         self.route.clone().into_iter().rev().collect()
     }
 
-    fn build_route(&mut self, path: Path<Ix>) {
-        self.route.push(path.end);
-        if let Some(last_path_index) = path.last {
-            let last_path = self.closed[last_path_index.index()];
-            self.build_route(last_path);
+    fn build_route(&mut self, step: Step<Ix>) {
+        self.route.push(step.end);
+        if let Some(last_step_index) = step.last {
+            let last_step = self.closed[last_step_index.index()];
+            self.build_route(last_step);
         } else {
-            self.route.push(path.start);
+            self.route.push(step.start);
         }
     }
 
-    // Gets all the paths from the given index and adds them to the open que.
-    fn paths(&mut self, next: Path<Ix>, last: Option<Ix>) -> bool {
+    // Gets all the steps from the given index and adds them to the open que.
+    fn steps(&mut self, next: Step<Ix>, last: Option<Ix>) -> bool {
         let index: GraphIndex<Ix> = next.end;
         match index {
             GraphIndex::Cell(cell_index) => {
                 // Cell -> Edges
                 for i in self.graph.cell_edges(cell_index) {
                     let x = GraphIndex::Edge(i);
-                    let path = Path::extend(index, x, last);
-                    if path.end == self.path.end {
+                    let step = Step::extend(index, x, last);
+                    if step.end == self.step.end {
                         // We have found it!
-                        self.build_route(path);
+                        self.build_route(step);
                         return true;
                     }
-                    let path_opposite = Path::new(x, index);
-                    if !self.closed.contains(&path)
-                        && !self.closed.contains(&path_opposite)
-                        && !self.open.contains(&path)
-                        && !self.open.contains(&path_opposite)
-                        && path_opposite != next
+                    let step_opposite = Step::new(x, index);
+                    if !self.closed.contains(&step)
+                        && !self.closed.contains(&step_opposite)
+                        && !self.open.contains(&step)
+                        && !self.open.contains(&step_opposite)
+                        && step_opposite != next
                     {
-                        println!("pushing {} to back of open", path);
-                        self.open.push_back(path);
+                        println!("pushing {} to back of open", step);
+                        self.open.push_back(step);
                     }
                 }
             }
@@ -104,21 +104,21 @@ where
                 let edge_cells = self.graph.edge_cells(edge_index);
                 for i in vec![edge_cells.0, edge_cells.1] {
                     let x = GraphIndex::Cell(i);
-                    let path = Path::extend(index, x, last);
-                    if path.end == self.path.end {
+                    let step = Step::extend(index, x, last);
+                    if step.end == self.step.end {
                         // We have found it!
-                        self.build_route(path);
+                        self.build_route(step);
                         return true;
                     }
-                    let path_opposite = path.reverse();
-                    if !self.closed.contains(&path)
-                        && !self.closed.contains(&path_opposite)
-                        && !self.open.contains(&path)
-                        && !self.open.contains(&path_opposite)
-                        && path_opposite != next
+                    let step_opposite = step.reverse();
+                    if !self.closed.contains(&step)
+                        && !self.closed.contains(&step_opposite)
+                        && !self.open.contains(&step)
+                        && !self.open.contains(&step_opposite)
+                        && step_opposite != next
                     {
-                        println!("pushing {} to back of open", path);
-                        self.open.push_back(path);
+                        println!("pushing {} to back of open", step);
+                        self.open.push_back(step);
                     }
                 }
             }
@@ -135,7 +135,7 @@ mod tests {
     use crate::{
         geom::Axis,
         graphs::{tree_graph::*, CellIndex},
-        pathfinding::Path,
+        pathfinding::Step,
     };
 
     use super::BreadthFirstSeach;
@@ -153,8 +153,8 @@ mod tests {
     #[test]
     fn bfs_test() {
         let graph = build_test_graph();
-        let path = Path::<usize>::new(CellIndex::new_graph_index(0), CellIndex::new_graph_index(3));
-        let mut bfs = BreadthFirstSeach::new(&graph, path);
+        let step = Step::<usize>::new(CellIndex::new_graph_index(0), CellIndex::new_graph_index(3));
+        let mut bfs = BreadthFirstSeach::new(&graph, step);
         let result = bfs.calculate();
         println!("result: {:?}", result);
 

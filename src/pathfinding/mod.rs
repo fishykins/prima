@@ -1,5 +1,5 @@
 mod astar;
-mod path;
+mod step;
 mod bfs;
 pub use bfs::BreadthFirstSeach;
-pub use path::Path;
+pub use step::Step;
