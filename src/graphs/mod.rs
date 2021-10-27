@@ -6,7 +6,9 @@ mod indexing;
 mod node;
 mod step;
 
+/// A graph type that is built upon splitting rects.
 pub mod rect_tree;
+/// A modern implimentation of a voronoi diagram.
 pub mod voronoi;
 
 pub use cell::Cell;

@@ -1,10 +1,12 @@
 use crate::core::*;
 use num::clamp as num_clamp;
 
+/// Clamps value between a and b.
 pub fn clamp<T>(a: T, b: T, value: T) -> T where T: OrdNum {
     num_clamp(value, a, b)
 }
 
+/// Clamps the value between 0 and 1.
 pub fn clamp01<T>(value: T) -> T where T: OrdNum {
     clamp(T::zero(), T::one(), value)
 }

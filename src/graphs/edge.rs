@@ -1,6 +1,7 @@
 use crate::core::{DefaultIx, IndexType};
 use super::{CellIndex, GraphData, NodeIndex};
 
+/// An edge that connects two [`super::Node`]s and two [`super::Cell`]s together. Carries data for the end user.
 pub struct Edge<E, Ix = DefaultIx>
 where
     Ix: IndexType,
@@ -9,6 +10,7 @@ where
     pub(crate) node_b: NodeIndex<Ix>,
     pub(crate) cell_a: CellIndex<Ix>,
     pub(crate) cell_b: CellIndex<Ix>,
+    /// The assosiated data attached to this Edge.
     pub data: Option<Box<E>>,
 }
 
@@ -16,6 +18,7 @@ impl<E, Ix> Edge<E, Ix>
 where
     Ix: IndexType,
 {
+    /// Produces a new Edge with the given nodes, cells and optional data.
     pub fn new(node_a: NodeIndex<Ix>, node_b: NodeIndex<Ix>, cell_a: CellIndex<Ix>, cell_b: CellIndex<Ix>, data: Option<Box<E>>) -> Self {
         Self {
             node_a,
@@ -25,9 +28,11 @@ where
             data,
         }
     }
+    /// Returns the two nodes attached to this edge.
     pub fn nodes(&self) -> (NodeIndex<Ix>, NodeIndex<Ix>) {
         (self.node_a, self.node_b)
     }
+    /// Given one of two nodes, returns its counterpart. Returns [`None`] if the given node is not found.
     pub fn node_other(&self, i: NodeIndex<Ix>) -> Option<NodeIndex<Ix>> {
         if i == self.node_a {
             return Some(self.node_b);
@@ -37,9 +42,11 @@ where
             None
         }
     }
+    /// Returns the two cells that connect to this edge.
     pub fn cells(&self) -> (CellIndex<Ix>, CellIndex<Ix>) {
         (self.cell_a, self.cell_b)
     }
+    /// Given one of two cells, returns its counterpart. Returns [`None`] if the given cell is not found.
     pub fn cell_other(&self, i: CellIndex<Ix>) -> Option<CellIndex<Ix>> {
         if i == self.cell_a {
             return Some(self.cell_b);

@@ -1,16 +1,24 @@
 use super::Axis;
 
+/// Defines the six planes of linear movement avalible in 3D space. 
 #[derive(Copy, Clone, Debug, PartialOrd, PartialEq)]
 pub enum Transverse {
+    /// Upward direction
     Up,
+    /// Downward direction
     Down,
+    /// Leftward direction
     Left,
+    /// Rightward direction
     Right,
+    /// Forward direction
     Forward,
+    /// Backward direction
     Backward,
 }
 
 impl Transverse {
+    /// Returns the opposite Transverse of self.
     pub fn opposite(self) -> Self {
         match self {
             Transverse::Up => Transverse::Down,
@@ -22,6 +30,7 @@ impl Transverse {
         }
     }
 
+    /// Converts Transverse into ['Axis'].
     pub fn axis(self) -> Axis {
         match self {
             Transverse::Up => Axis::Vertical,

@@ -1,22 +1,39 @@
-use super::{Vec2, Triangle, Float, PI, Line2};
+use super::{Float, Line2, Triangle, Vec2, PI};
 
+/// A complex polygon, defined by an array of vertices. It can be built from empty, as an ngon of n sides or with a set of verticies.
+/// # Examples
+///
+/// ```
+/// let poly = Polygon::new(Vec2::new(0.0, 0.0), Vec2::new(0.0, 8.0), Vec2::new(4.0, 8.0), Vec2::new(8.0, 8.0), Vec2::new(8.0, 0.0));
+/// assert_eq!(poly.n(), 5);
+/// 
+/// let poly2 = Polygon::new_ngon(Vec2::new(32.0, 32.0), 16.0, 8);
+/// assert_eq!(poly2.n(), 8);
+/// ```
 pub struct Polygon {
     verticies: Vec<Vec2>,
 }
 
 impl Polygon {
+    /// Builds a new Polygon from the given Vec of points.
+    pub fn new(verticies: Vec<Vec2>) -> Self {
+        Self { verticies }
+    }
+    /// Creates a new Polygon with no points or edges assigned.
     pub fn empty() -> Self {
         Self {
             verticies: Vec::new(),
         }
     }
 
+    /// Creates an empty Polygon with a set capacity for the number of points it may contain.
     pub fn with_capacity(capacity: usize) -> Self {
         Self {
             verticies: Vec::with_capacity(capacity),
         }
     }
-    
+
+    /// Builds an ngon of equal length sides.
     pub fn new_ngon(pos: Vec2, circumradius: Float, n: usize) -> Self {
         if n < 3 {
             panic!("Polygon must have at least 3 sides");
@@ -26,8 +43,8 @@ impl Polygon {
             verticies: Vec::new(),
         };
 
-        let angle = (2. * PI) / n as Float; 
-        
+        let angle = (2. * PI) / n as Float;
+
         for i in 0..n {
             // angle is ajusted by Pi/2 so triangulation starts from 12 O'clock
             let a = angle * i as Float + (PI / 2.);
@@ -38,22 +55,23 @@ impl Polygon {
         poly
     }
 
+    /// Adds a vertex to the polygon.
     pub fn add_vertex(&mut self, v: Vec2) {
         self.verticies.push(v);
     }
 
-    // The number of sides
+    /// The number of sides
     pub fn n(&self) -> usize {
         self.verticies.len()
     }
 
-    /// Calculates the interior angle for a regular poly of our size
+    /// Calculates the interior angle for a regular polygon of this size
     pub fn interior_angle(&self) -> Float {
         let n = self.verticies.len() as Float;
         ((n as Float - 2.) * PI) / n
     }
 
-    /// Returns all vecticies in the poly
+    /// Returns all vecticies in the polygon
     pub fn verticies(&self) -> Vec<Vec2> {
         self.verticies.clone()
     }
@@ -85,7 +103,11 @@ impl Polygon {
             let l = n - 2;
 
             while i < l {
-                let triangle = Triangle::new(self.verticies[i], self.verticies[i + 1], self.verticies[i + 2]);
+                let triangle = Triangle::new(
+                    self.verticies[i],
+                    self.verticies[i + 1],
+                    self.verticies[i + 2],
+                );
                 if !triangle.is_convex() {
                     return false;
                 } else {
@@ -93,11 +115,13 @@ impl Polygon {
                 }
             }
 
-            let triangle = Triangle::new(self.verticies[l], self.verticies[l + 1], self.verticies[0]);
+            let triangle =
+                Triangle::new(self.verticies[l], self.verticies[l + 1], self.verticies[0]);
             if !triangle.is_convex() {
                 return false;
             }
-            let triangle = Triangle::new(self.verticies[l + 1], self.verticies[0], self.verticies[1]);
+            let triangle =
+                Triangle::new(self.verticies[l + 1], self.verticies[0], self.verticies[1]);
             if !triangle.is_convex() {
                 return false;
             }
@@ -106,7 +130,7 @@ impl Polygon {
     }
 
     /// Triangulates the polygon.
-    /// impliments "Ear Clipping". See also: https://gitlab.com/nathanfaucett/rs-polygon2/-/blob/master/src/triangulate.rs
+    /// impliments "Ear Clipping". See also: <https://gitlab.com/nathanfaucett/rs-polygon2/-/blob/master/src/triangulate.rs>
     pub fn triangulate(&self) -> Vec<Triangle> {
         let mut triangles = Vec::new();
         let n = self.verticies.len();
@@ -118,11 +142,15 @@ impl Polygon {
 
         if n == 3 {
             //This IS a triangle, so simply return it as is
-            triangles.push(Triangle::new(self.verticies[0], self.verticies[1], self.verticies[2]));
+            triangles.push(Triangle::new(
+                self.verticies[0],
+                self.verticies[1],
+                self.verticies[2],
+            ));
             return triangles;
         }
 
-        //time to impliment "Ear Clipping". Wont work for complex polys, but meh. 
+        //time to impliment "Ear Clipping". Wont work for complex polys, but meh.
         let mut avl = Vec::with_capacity(n);
 
         for i in 0..n {
@@ -170,7 +198,11 @@ impl Polygon {
             }
         }
 
-        triangles.push(Triangle::new(self.verticies[avl[0]], self.verticies[avl[1]], self.verticies[avl[2]]));
+        triangles.push(Triangle::new(
+            self.verticies[avl[0]],
+            self.verticies[avl[1]],
+            self.verticies[avl[2]],
+        ));
         triangles
     }
 
@@ -183,13 +215,12 @@ impl Polygon {
                 return Some(Line2 {
                     a: self.verticies[i],
                     b: self.verticies[i + 1],
-                })
-            }
-            else if i < vert_count {
+                });
+            } else if i < vert_count {
                 return Some(Line2 {
                     a: self.verticies[i],
                     b: self.verticies[0],
-                })
+                });
             }
         } else {
             if i < vert_count {
@@ -197,12 +228,12 @@ impl Polygon {
                     return Some(Line2 {
                         a: self.verticies[i],
                         b: self.verticies[i - 1],
-                    })
+                    });
                 } else {
                     return Some(Line2 {
                         a: self.verticies[i],
                         b: self.verticies[vert_count - 1],
-                    })
+                    });
                 }
             }
         }
@@ -212,17 +243,14 @@ impl Polygon {
 
 #[cfg(test)]
 mod tests {
+    use super::Vec2;
     use crate::geom::polygon::Polygon;
-    use super::{Vec2};
 
     const POLY_SIZE: usize = 12;
 
     #[test]
     fn polygon_test() {
         let poly = Polygon::new_ngon(Vec2::new(256., 256.), 200., POLY_SIZE);
-
-        for (i, v) in poly.verticies().iter().enumerate() {
-            println!("v{} => {}", i, v);
-        }
+        assert_eq!(poly.n(), POLY_SIZE)
     }
 }

@@ -1,12 +1,13 @@
 use super::{EdgeIndex, GraphData};
 use crate::core::{DefaultIx, IndexType};
 
-/// A Cell is an entry point for data within the graph structure. It is formed by surrounding ['edge']s and represents area data.
+/// A Cell is an entry point for data within the graph structure. It is formed by surrounding [`super::Edge`]s and represents area data.
 pub struct Cell<D, Ix = DefaultIx>
 where
     Ix: IndexType,
 {
     pub(crate) edges: Vec<EdgeIndex<Ix>>,
+    /// The assosiated data attached to this Cell.
     pub data: Option<Box<D>>,
 }
 
@@ -14,6 +15,7 @@ impl<D, Ix> Cell<D, Ix>
 where
     Ix: IndexType,
 {
+    /// Produces a new Cell with the given edges and (optional) data.
     pub fn new(edges: Vec<EdgeIndex<Ix>>, data: Option<Box<D>>) -> Self {
         Self { edges, data }
     }

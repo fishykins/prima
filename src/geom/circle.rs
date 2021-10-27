@@ -1,11 +1,27 @@
 use super::{Triangle, Vec2, Float};
 
+/// A simple circle, defined by a center and radius.
+/// # Examples
+///
+/// ```
+/// let circle = Circle::new(Vec2::new(0.0, 0.0), 32.0);
+/// ```
 pub struct Circle {
+    /// The middle of the circle.
     pub center: Vec2,
+    /// Radius of the circle.
     pub radius: Float,
 }
 
 impl Circle {
+    /// Builds a circle from given center and radius.
+    pub fn new(center: Vec2, radius: Float) -> Self {
+        Self {
+            center,
+            radius,
+        }
+    }
+    /// Generates a new circle from the given triangle.
     pub fn from_triangle(triangle: Triangle) -> Option<Self> {
         let p1 = triangle.a;
         let p2 = triangle.b;

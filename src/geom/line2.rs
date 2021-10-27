@@ -1,15 +1,26 @@
 use super::{Orientation, Rect, Triangle, Vec2};
 
+/// A helper struct that represents a line bewtween points 'a' and 'b'.
+/// 
+/// # Examples
+/// ```
+/// let line = Line2::new(Vec2::ZERO, Vec2::ONE);
+/// assert_eq!(line.center(), Vec2::new(0.5, 0.5));
+/// ```
 pub struct Line2 {
+    /// Starting point of the line.
     pub a: Vec2,
+    /// End point of the line.
     pub b: Vec2,
 }
 
 impl Line2 {
+    /// Builds a new line from points a and b.
     pub fn new(a: Vec2, b: Vec2) -> Self {
         Self { a, b }
     }
 
+    /// Reverses the line to go b -> a.
     pub fn reverse(&self) -> Self {
         Self {
             a: self.b,
@@ -17,14 +28,17 @@ impl Line2 {
         }
     }
 
+    /// Returns the center point of the circle.
     pub fn center(&self) -> Vec2 {
         (self.a + self.b) / 2.0
     }
 
+    /// Returns a boundingbox [`Rect`] of the given line.
     pub fn bounds(&self) -> Rect {
         Rect::new(self.a, self.b).validate()
     }
 
+    /// Returns [`true`] if the two lines intersect.
     fn intersects(&self, other: &Self) -> bool {
         let o1 = Triangle::new(self.a, self.b, other.a).orientation();
         let o2 = Triangle::new(self.a, self.b, other.b).orientation();
@@ -59,6 +73,7 @@ impl Line2 {
         return false; // Doesn't fall in any of the above cases
     }
 
+    /// Returns the intersection point of two lines, or None if no intersection is present. 
     pub fn intersection_point(&self, other: &Self) -> Option<Vec2> {
         let a = self.a;
         let c = other.a;
@@ -83,6 +98,7 @@ impl Line2 {
         return Some(a + r * t);
     }
 
+    /// Returns [`true`] if this line intersects the given rect other.
     pub fn intersects_rect(&self, other: &Rect) -> bool {
         let l1 = Line2 {
             a: Vec2::new(other.min.x, other.min.y),

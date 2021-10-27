@@ -2,7 +2,7 @@
 name = "prima"
 version = "0.4.0"
 authors = ["Fishykins <caspar.m.green@gmail.com>"]
-edition = "2018"
+edition = "2021"
 description = "Generic 2D library used to handle graph structures, expanding on vek."
 keywords = ["vector", "graph", "geometry", "pathing"]
 categories = [ "algorithms", "data-structures"]
