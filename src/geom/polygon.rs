@@ -1,14 +1,10 @@
-use vek::{Vec2};
-use std::f64::consts::PI;
-use crate::core::OrdNum;
-use super::Line;
-use super::Triangle;
+use super::{Vec2, Triangle, Float, PI, Line2};
 
-pub struct Polygon<T> where T: OrdNum {
-    verticies: Vec<Vec2<T>>,
+pub struct Polygon {
+    verticies: Vec<Vec2>,
 }
 
-impl<T> Polygon<T> where T: OrdNum {
+impl Polygon {
     pub fn empty() -> Self {
         Self {
             verticies: Vec::new(),
@@ -21,7 +17,7 @@ impl<T> Polygon<T> where T: OrdNum {
         }
     }
     
-    pub fn new_ngon(pos: Vec2<T>, circumradius: T, n: usize) -> Self {
+    pub fn new_ngon(pos: Vec2, circumradius: Float, n: usize) -> Self {
         if n < 3 {
             panic!("Polygon must have at least 3 sides");
         }
@@ -30,19 +26,19 @@ impl<T> Polygon<T> where T: OrdNum {
             verticies: Vec::new(),
         };
 
-        let angle = (2. * PI) / n as f64; 
+        let angle = (2. * PI) / n as Float; 
         
         for i in 0..n {
             // angle is ajusted by Pi/2 so triangulation starts from 12 O'clock
-            let a = angle * i as f64 + (PI / 2.);
-            let x = T::from_f64(a.cos()).unwrap() * circumradius;
-            let y = T::from_f64(a.sin()).unwrap() * circumradius;
+            let a = angle * i as Float + (PI / 2.);
+            let x = a.cos() * circumradius;
+            let y = a.sin() * circumradius;
             poly.verticies.push(Vec2::new(x, y) + pos);
         }
         poly
     }
 
-    pub fn add_vertex(&mut self, v: Vec2<T>) {
+    pub fn add_vertex(&mut self, v: Vec2) {
         self.verticies.push(v);
     }
 
@@ -52,18 +48,18 @@ impl<T> Polygon<T> where T: OrdNum {
     }
 
     /// Calculates the interior angle for a regular poly of our size
-    pub fn interior_angle(&self) -> f64 {
-        let n = self.verticies.len() as f64;
-        ((n as f64 - 2.) * PI) / n
+    pub fn interior_angle(&self) -> Float {
+        let n = self.verticies.len() as Float;
+        ((n as Float - 2.) * PI) / n
     }
 
     /// Returns all vecticies in the poly
-    pub fn verticies(&self) -> Vec<Vec2<T>> {
+    pub fn verticies(&self) -> Vec<Vec2> {
         self.verticies.clone()
     }
 
     /// Generates all edges
-    pub fn edges(&self) -> Vec<Line<T>> {
+    pub fn edges(&self) -> Vec<Line2> {
         let mut lines = Vec::new();
         for (i, _) in self.verticies.iter().enumerate() {
             lines.push(self.edge(i, true).unwrap());
@@ -72,7 +68,7 @@ impl<T> Polygon<T> where T: OrdNum {
     }
 
     /// Getter for vertex at given index
-    pub fn vertex(&self, i: usize) -> Option<Vec2<T>> {
+    pub fn vertex(&self, i: usize) -> Option<Vec2> {
         if i < self.verticies.len() {
             return Some(self.verticies[i]);
         }
@@ -111,7 +107,7 @@ impl<T> Polygon<T> where T: OrdNum {
 
     /// Triangulates the polygon.
     /// impliments "Ear Clipping". See also: https://gitlab.com/nathanfaucett/rs-polygon2/-/blob/master/src/triangulate.rs
-    pub fn triangulate(&self) -> Vec<Triangle<T>> {
+    pub fn triangulate(&self) -> Vec<Triangle> {
         let mut triangles = Vec::new();
         let n = self.verticies.len();
 
@@ -179,33 +175,33 @@ impl<T> Polygon<T> where T: OrdNum {
     }
 
     /// Getter for edge, going from a given vertex (either clockwise or counter).
-    pub fn edge(&self, i: usize, clockwise: bool) -> Option<Line<T>> {
+    pub fn edge(&self, i: usize, clockwise: bool) -> Option<Line2> {
         let vert_count = self.verticies.len();
 
         if clockwise {
             if i + 1 < vert_count {
-                return Some(Line {
-                    start: self.verticies[i],
-                    end: self.verticies[i + 1],
+                return Some(Line2 {
+                    a: self.verticies[i],
+                    b: self.verticies[i + 1],
                 })
             }
             else if i < vert_count {
-                return Some(Line {
-                    start: self.verticies[i],
-                    end: self.verticies[0],
+                return Some(Line2 {
+                    a: self.verticies[i],
+                    b: self.verticies[0],
                 })
             }
         } else {
             if i < vert_count {
                 if i > 0 {
-                    return Some(Line {
-                        start: self.verticies[i],
-                        end: self.verticies[i - 1],
+                    return Some(Line2 {
+                        a: self.verticies[i],
+                        b: self.verticies[i - 1],
                     })
                 } else {
-                    return Some(Line {
-                        start: self.verticies[i],
-                        end: self.verticies[vert_count - 1],
+                    return Some(Line2 {
+                        a: self.verticies[i],
+                        b: self.verticies[vert_count - 1],
                     })
                 }
             }
@@ -217,7 +213,7 @@ impl<T> Polygon<T> where T: OrdNum {
 #[cfg(test)]
 mod tests {
     use crate::geom::polygon::Polygon;
-    use vek::{Vec2};
+    use super::{Vec2};
 
     const POLY_SIZE: usize = 12;
 

@@ -1,6 +1,8 @@
 use std::fmt;
 use std::hash::Hash;
 
+pub type DefaultIx = usize;
+
 pub unsafe trait IndexType: Copy + Default + Hash + Ord + fmt::Debug + 'static {
     fn new(x: usize) -> Self;
     fn index(&self) -> usize;

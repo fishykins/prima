@@ -1,28 +1,30 @@
 use super::{EdgeIndex, GraphData};
 use crate::core::{DefaultIx, IndexType};
 
-pub struct Cell<C, Ix = DefaultIx>
+/// A Cell is an entry point for data within the graph structure. It is formed by surrounding ['edge']s and represents area data.
+pub struct Cell<D, Ix = DefaultIx>
 where
     Ix: IndexType,
 {
     pub(crate) edges: Vec<EdgeIndex<Ix>>,
-    pub data: Option<Box<C>>,
+    pub data: Option<Box<D>>,
 }
 
-impl<C, Ix> Cell<C, Ix>
+impl<D, Ix> Cell<D, Ix>
 where
     Ix: IndexType,
 {
-    pub fn new(edges: Vec<EdgeIndex<Ix>>, data: Option<Box<C>>) -> Self {
+    pub fn new(edges: Vec<EdgeIndex<Ix>>, data: Option<Box<D>>) -> Self {
         Self { edges, data }
     }
 
+    /// Returns a vec of assosiated edge indicies.
     pub fn edges(&self) -> Vec<EdgeIndex<Ix>> {
         self.edges.clone()
     }
 }
 
-impl<C, Ix> PartialEq for Cell<C, Ix>
+impl<D, Ix> PartialEq for Cell<D, Ix>
 where
     Ix: IndexType,
 {
@@ -31,18 +33,18 @@ where
     }
 }
 
-impl<C, Ix> GraphData<C> for Cell<C, Ix>
+impl<D, Ix> GraphData<D> for Cell<D, Ix>
 where
     Ix: IndexType,
 {
-    fn data(&self) -> Option<&Box<C>> {
+    fn data(&self) -> Option<&Box<D>> {
         if self.data.is_none() {
             return None;
         }
         self.data.as_ref()
     }
 
-    fn data_mut(&mut self) -> Option<&mut Box<C>> {
+    fn data_mut(&mut self) -> Option<&mut Box<D>> {
         if self.data.is_none() {
             return None;
         }

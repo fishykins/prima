@@ -1,29 +1,15 @@
-mod triangle;
+mod line2;
 mod polygon;
-mod line;
-mod disk;
-mod vertex;
-mod axis;
-mod transverse;
+mod rect;
+mod triangle;
+mod circle;
 
-pub mod vec;
-
-pub use vertex::Vertex;
-pub use transverse::Transverse;
-
-// Organic geometric shapes
-pub use triangle::{Triangle, Orientation};
+pub use circle::Circle;
+pub use line2::Line2;
 pub use polygon::Polygon;
-pub use axis::Axis;
+pub use rect::Rect;
+pub use triangle::{Orientation, Triangle};
 
-// Vek re-exports
-pub use vek::Aabr as BoundingRect;
-pub use vek::Aabb as BoundingBox;
-pub use vek::LineSegment2 as Line;
-pub use vek::Rect;
-pub use vek::Disk;
-pub use vek::Ellipsis;
-
-// Vek extender traits
-pub use line::LineExt;
-pub use disk::DiskExt;
+pub type Vec2 = glam::Vec2;
+pub type Float = f32;
+pub const PI: Float = std::f32::consts::PI;
