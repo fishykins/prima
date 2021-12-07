@@ -1,4 +1,5 @@
 mod circle;
+mod cuboid;
 mod line1;
 mod line2;
 mod polygon;
@@ -6,6 +7,7 @@ mod rect;
 mod triangle;
 
 pub use circle::Circle;
+pub use cuboid::Cuboid;
 pub use line1::Line1;
 pub use line2::Line2;
 pub use polygon::Polygon;
@@ -18,4 +20,4 @@ pub type Float = f32;
 pub const PI: Float = std::f32::consts::PI;
 
 // Re-export glam
-pub use glam::{Vec2, Vec3, Vec4, Mat2, Mat3, Mat4, Quat};
+pub use glam::{Mat2, Mat3, Mat4, Quat, Vec2, Vec3, Vec4};
