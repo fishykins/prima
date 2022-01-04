@@ -1,4 +1,5 @@
 use crate::core::{DefaultIx, IndexType};
+use std::fmt::{Display, Formatter};
 
 macro_rules! index {
     ($index_type:ident, $graphindex_name:ident) => {
@@ -39,6 +40,12 @@ macro_rules! index {
                 GraphIndex::$graphindex_name(Self::new(x))
             }
         }
+
+        impl<Ix> Display for $index_type<Ix> where Ix: IndexType {
+            fn fmt(&self, f: &mut Formatter<'_>) -> Result<(), std::fmt::Error> {
+                write!(f, "{}", GraphIndex::$graphindex_name(self.clone()))
+            }
+        }
     };
 }
 
@@ -65,10 +72,10 @@ pub enum GraphIndex<Ix> where Ix : IndexType {
 impl<Ix> std::fmt::Display for GraphIndex<Ix> where Ix: IndexType {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            GraphIndex::Cell(i) => write!(f, "Cell {}", i.index()),
-            GraphIndex::Edge(i) => write!(f, "Edge {}", i.index()),
-            GraphIndex::Node(i) => write!(f, "Node {}", i.index()),
-            GraphIndex::Step(i) => write!(f, "Step {}", i.index()),
+            GraphIndex::Cell(i) => write!(f, "[CellIndex {}]", i.index()),
+            GraphIndex::Edge(i) => write!(f, "[EdgeIndex {}]", i.index()),
+            GraphIndex::Node(i) => write!(f, "[NodeIndex {}]", i.index()),
+            GraphIndex::Step(i) => write!(f, "[StepIndex {}]", i.index()),
             GraphIndex::None => todo!(),
         }
         
