@@ -107,7 +107,7 @@ where
         }
     }
 
-    /// Converts the RectTree into a [`VectorGrpah`]- the generic graph type of this crate.
+    /// Converts the RectTree into a [`VectorGraph`]- the generic graph type of this crate.
     pub fn build<D>(mut self) -> VectorGraph<D, Ix>
     where
         Ix: IndexType,

@@ -52,7 +52,6 @@ macro_rules! index {
 index!(EdgeIndex, Edge);
 index!(CellIndex, Cell);
 index!(NodeIndex, Node);
-index!(StepIndex, Step);
 
 /// A wrapper enum to hold all 
 #[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]
@@ -63,8 +62,6 @@ pub enum GraphIndex<Ix> where Ix : IndexType {
     Edge(EdgeIndex<Ix>),
     /// A [`super::Node`] refference;
     Node(NodeIndex<Ix>),
-    /// A [`super::Step`] refference;
-    Step(StepIndex<Ix>),
     /// None type for refference.
     None,
 }
@@ -75,7 +72,6 @@ impl<Ix> std::fmt::Display for GraphIndex<Ix> where Ix: IndexType {
             GraphIndex::Cell(i) => write!(f, "[CellIndex {}]", i.index()),
             GraphIndex::Edge(i) => write!(f, "[EdgeIndex {}]", i.index()),
             GraphIndex::Node(i) => write!(f, "[NodeIndex {}]", i.index()),
-            GraphIndex::Step(i) => write!(f, "[StepIndex {}]", i.index()),
             GraphIndex::None => todo!(),
         }
         
