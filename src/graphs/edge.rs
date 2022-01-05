@@ -2,6 +2,7 @@ use super::{CellIndex, GraphData, NodeIndex};
 use crate::core::{DefaultIx, IndexType};
 
 /// An edge that connects two [`super::Node`]s and two [`super::Cell`]s together. Carries data for the end user.
+#[derive(Debug, Clone)]
 pub struct Edge<E, Ix = DefaultIx>
 where
     Ix: IndexType,
@@ -106,10 +107,20 @@ where
     Ix: IndexType,
 {
     fn eq(&self, other: &Self) -> bool {
-        self.node_a == other.node_a
-            && self.node_b == other.node_b
-            && self.cell_a == other.cell_a
-            && self.cell_b == other.cell_b
+        let nodes = (self.node_a == other.node_a && self.node_b == other.node_b) || (self.node_a == other.node_b && self.node_b == other.node_a);
+        let cells: bool;
+        if self.cell_b.is_some() == other.cell_b.is_some() {
+            // Both edges have the same number of cells
+            if self.cell_b.is_some() {
+                // Both edges have two cells
+                cells = (self.cell_a == other.cell_a && self.cell_b.unwrap() == other.cell_b.unwrap()) || (self.cell_a == other.cell_b.unwrap() && self.cell_b.unwrap() == other.cell_a);
+            } else {
+                // Both edges have one cell
+                cells = self.cell_a == other.cell_a;
+            }
+            return nodes && cells;
+        }
+        return false;
     }
 }
 

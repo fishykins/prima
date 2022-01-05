@@ -226,7 +226,7 @@ impl Cuboid {
     }
 
     /// Returns the intersection on the x axis, if there is any.
-    pub fn x_intersection(&self, other: &Self) -> Option<Line1> {
+    pub fn intersection_x(&self, other: &Self) -> Option<Line1> {
         if !self.x_intersects(other) {
             return None;
         }
@@ -244,7 +244,7 @@ impl Cuboid {
     }
 
     /// Returns the intersection on the y axis, if there is any.
-    pub fn y_intersection(&self, other: &Cuboid) -> Option<Line1> {
+    pub fn intersection_y(&self, other: &Cuboid) -> Option<Line1> {
         if !self.y_intersects(other) {
             return None;
         }
@@ -262,7 +262,7 @@ impl Cuboid {
     }
 
     /// Returns the intersection on the z axis, if there is any.
-    pub fn z_intersection(&self, other: &Cuboid) -> Option<Line1> {
+    pub fn intersection_z(&self, other: &Cuboid) -> Option<Line1> {
         if !self.z_intersects(other) {
             return None;
         }

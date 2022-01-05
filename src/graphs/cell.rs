@@ -2,6 +2,7 @@ use super::{EdgeIndex, GraphData};
 use crate::core::{DefaultIx, IndexType};
 
 /// A Cell is an entry point for data within the graph structure. It is formed by surrounding [`super::Edge`]s and represents area data.
+#[derive(Debug, Clone)]
 pub struct Cell<D, Ix = DefaultIx>
 where
     Ix: IndexType,

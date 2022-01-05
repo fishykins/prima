@@ -137,16 +137,16 @@ impl Rect {
 
     /// Determines if two rects have overlapping bounds.
     pub fn intersects(&self, other: &Rect) -> bool {
-        self.x_intersects(other) && self.y_intersects(other)
+        self.intersects_x(other) && self.intersects_y(other)
     }
 
     /// Returns [`true`] if the other rect overlaps on the x axis.
-    pub fn x_intersects(&self, other: &Rect) -> bool {
+    pub fn intersects_x(&self, other: &Rect) -> bool {
         !(self.min.x > other.max.x || other.min.x > self.max.x)
     }
 
     /// Returns [`true`] if the other rect overlaps on the y axis.
-    pub fn y_intersects(&self, other: &Rect) -> bool {
+    pub fn intersects_y(&self, other: &Rect) -> bool {
         !(self.min.y > other.max.y || other.min.y > self.max.y)
     }
 
@@ -168,8 +168,8 @@ impl Rect {
     }
 
     /// Returns the intersection on the x axis, if there is any.
-    pub fn x_intersection(&self, other: &Rect) -> Option<Line1> {
-        if !self.x_intersects(other) {
+    pub fn intersection_x(&self, other: &Rect) -> Option<Line1> {
+        if !self.intersects_x(other) {
             return None;
         }
         let min = if self.min.x > other.min.x {self.min.x} else {other.min.x};
@@ -178,8 +178,8 @@ impl Rect {
     }
 
     /// Returns the intersection on the y axis, if there is any.
-    pub fn y_intersection(&self, other: &Rect) -> Option<Line1> {
-        if !self.y_intersects(other) {
+    pub fn intersection_y(&self, other: &Rect) -> Option<Line1> {
+        if !self.intersects_y(other) {
             return None;
         }
         let min = if self.min.y > other.min.y {self.min.y} else {other.min.y};

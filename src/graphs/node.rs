@@ -3,6 +3,7 @@ use crate::{core::{DefaultIx, IndexType}, geom::Vec2};
 
 /// A node represents an anchor point in a graph. It typically has positional data
 /// in the form of a [`glam::Vec2`], and can hold aditional data for the end user. 
+#[derive(Debug, Clone, PartialEq)]
 pub struct Node<D, Ix = DefaultIx>
 where
     Ix: IndexType,
