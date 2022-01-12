@@ -19,7 +19,7 @@ rendering = ["imageproc", "image"]
 [dependencies]
 image = { version = "^0.23.6", optional = true }
 imageproc = { version = "^0.22.0", optional = true }
-glam = "0.19.0"
+glam = "0.20.0"
 num = "^0.3.0"
 rusttype = "^0.9.2"
 obj-rs = "^0.6.1"
