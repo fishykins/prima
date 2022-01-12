@@ -1,4 +1,4 @@
-use super::{Float, Line1, Vec2};
+use super::{Float, Line1, Vec2, Line2};
 use crate::core::Axis;
 
 /// Axis aligned rectangle
@@ -9,7 +9,7 @@ use crate::core::Axis;
 /// assert_eq!(rect.width(), 8.0);
 /// assert_eq!(rect.height(), 8.0);
 /// ```
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Default, Debug, PartialEq)]
 pub struct Rect {
     /// The min point of the Rect.
     pub min: Vec2,
@@ -82,6 +82,17 @@ impl Rect {
         ]
     }
 
+    /// Returns four lines that represent the edges of this rect.
+    pub fn edges(&self) -> [Line2; 4] {
+        let points = self.corners();
+        [
+            Line2::new(points[0], points[1]),
+            Line2::new(points[1], points[2]),
+            Line2::new(points[3], points[2]),
+            Line2::new(points[0], points[3]),
+        ]
+    }
+
     /// Returns [`true`] if the Rect contains the point 'p'.
     pub fn contains_point(&self, p: Vec2) -> bool {
         p.x >= self.min.x && p.x <= self.max.x && p.y >= self.min.y && p.y <= self.max.y
@@ -121,7 +132,7 @@ impl Rect {
             self.min,
             self.min + Vec2::new(self.width() * position, self.height()),
         );
-        let b = Rect::new(self.min + Vec2::new(self.width(), 0.0), self.max);
+        let b = Rect::new(self.min + Vec2::new(self.width() * position, 0.0), self.max);
         (a, b)
     }
 
@@ -131,8 +142,20 @@ impl Rect {
             self.min,
             self.min + Vec2::new(self.width(), self.height() * position),
         );
-        let b = Rect::new(self.min + Vec2::new(0.0, self.height()), self.max);
+        let b = Rect::new(self.min + Vec2::new(0.0, self.height() * position), self.max);
         (a, b)
+    }
+
+    /// Splits the rect into four equal rects.
+    pub fn into_quad(self) -> [Self; 4] {
+        let [a, b, c, _] = self.corners();
+        let m = a + Vec2::new(self.width() / 2.0, self.height() / 2.0);
+        [
+            Rect::new(a, m),
+            Rect::new(Vec2::new(a.x, m.y), b),
+            Rect::new(m, c),
+            Rect::new(Vec2::new(m.x, a.y), Vec2::new(c.x, m.y)),
+        ]
     }
 
     /// Determines if two rects have overlapping bounds.

@@ -1,4 +1,4 @@
-/// A Graph item that can hold generic data will impliment this.
+/// A Graph item that can hold generic data will implement this.
 pub trait GraphData<T> {
     /// Returns a borrowed refference to the data.
     fn data(&self) -> Option<&Box<T>>;

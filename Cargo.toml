@@ -8,6 +8,7 @@ keywords = ["vector", "graph", "geometry", "pathing"]
 categories = [ "algorithms", "data-structures"]
 license = "MIT/Apache-2.0"
 repository = "https://github.com/fishykins/prima"
+documentation = "https://docs.rs/prima"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 

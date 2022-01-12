@@ -1,4 +1,4 @@
-use crate::core::{DefaultIx, IndexType};
+use crate::{core::{DefaultIx, IndexType}, geom::Line2};
 use std::collections::HashMap;
 
 use super::{Cell, CellIndex, Edge, EdgeIndex, Node, NodeIndex};
@@ -39,8 +39,8 @@ where
     }
 
     /// Adds a node to the graph and returns it's index.
-    /// If already in the graph, returns the index of the existing node and updates.
-    pub fn add_node(&mut self, node: Node<D, Ix>) -> NodeIndex<Ix> {
+    /// If a node is already in the graph at the same position, returns the index of the existing node and updates.
+    pub fn add_or_update_node(&mut self, node: Node<D, Ix>) -> NodeIndex<Ix> {
         for  (i, n) in self.nodes.iter_mut() {
             if n.position == node.position {
                 // Update the node
@@ -61,6 +61,7 @@ where
     }
 
     /// Adds an edge to the graph and returns it's index.
+    /// When added, the edge is linked to the cells of the nodes it connects automatically.
     pub fn add_edge(&mut self, edge: Edge<D, Ix>) -> EdgeIndex<Ix> {
         for (i, e) in self.edges.iter() {
            if e == &edge {
@@ -69,6 +70,40 @@ where
         }
         let index = EdgeIndex::new(self.edges.len());
         self.edges.insert(index, edge);
+        // Check if the refferenced nodes and cells know about this edge
+        let node_ai = self.edges[&index].node_a;
+        let node_bi = self.edges[&index].node_b;
+        let cell_ai = self.edges[&index].cell_a;
+        let opt_cell_bi = self.edges[&index].cell_b;
+
+        let node_a = self.nodes.get_mut(&node_ai).expect("Node 'a' not found in graph");
+        if !node_a.edges.contains(&index) {
+            node_a.edges.push(index.clone());
+        }
+        let node_b = self.nodes.get_mut(&node_bi).expect("Node 'b' not found in graph");
+        if !node_b.edges.contains(&index) {
+            node_b.edges.push(index.clone());
+        }
+        let cell_a = self.cells.get_mut(&cell_ai).expect("Cell 'a' not found in graph");
+        if !cell_a.edges.contains(&index) {
+            cell_a.edges.push(index.clone());
+        }
+        if let Some(cell_bi) = opt_cell_bi {
+            let cell_b = self.cells.get_mut(&cell_bi).expect("Cell 'b' not found in graph");
+            if !cell_b.edges.contains(&index) {
+                cell_b.edges.push(index.clone());
+            }
+        }
         index
+    }
+
+    /// Builds a [Line2] from the given edge.
+    pub fn edge_line(&self, edge: EdgeIndex<Ix>) -> Option<Line2> {
+        if !self.edges.contains_key(&edge) {
+            return None;
+        }
+        let point_a  = self.nodes[&self.edges[&edge].node_a].position;
+        let point_b  = self.nodes[&self.edges[&edge].node_b].position;
+        return Some(Line2::new(point_a, point_b));
     }
 }

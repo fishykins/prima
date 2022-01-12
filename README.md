@@ -2,6 +2,7 @@
 <div id="top"></div>
 
 [![Latest Version]][crates.io] 
+[![docs]][docs.rs]
 [![Minimum Supported Rust Version]][Rust 1.56]
 
 a collection of geometry and graph based utilities with emphasis on simple code and readability.
@@ -62,3 +63,5 @@ Project Link: [https://github.com/fishykins/prima](https://github.com/fishykins/
 [Rust 1.56]: https://github.com/rust-lang/rust/blob/master/RELEASES.md#version-1560-2021-10-21
 [Code of Conduct]: https://www.rust-lang.org/en-US/conduct.html
 [contributors]: https://github.com/bitshifter/glam-rs/graphs/contributors
+[docs]: "https://img.shields.io/docsrs/prima/"
+[docs.rs]: "https://docs.rs/prima/latest/prima/"

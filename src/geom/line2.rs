@@ -1,12 +1,17 @@
-use super::{Orientation, Rect, Triangle, Vec2};
+use std::fmt::{Display, Formatter, Error};
+
+use crate::core::Axis;
+
+use super::{Line1, Orientation, Rect, Triangle, Vec2};
 
 /// A helper struct that represents a line bewtween points 'a' and 'b'.
-/// 
+///
 /// # Examples
 /// ```
 /// let line = Line2::new(Vec2::ZERO, Vec2::ONE);
 /// assert_eq!(line.center(), Vec2::new(0.5, 0.5));
 /// ```
+#[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Line2 {
     /// Starting point of the line.
     pub a: Vec2,
@@ -73,7 +78,7 @@ impl Line2 {
         return false; // Doesn't fall in any of the above cases
     }
 
-    /// Returns the intersection point of two lines, or None if no intersection is present. 
+    /// Returns the intersection point of two lines, or None if no intersection is present.
     pub fn intersection_point(&self, other: &Self) -> Option<Vec2> {
         let a = self.a;
         let c = other.a;
@@ -121,6 +126,92 @@ impl Line2 {
         };
 
         self.intersects(&l1) || self.intersects(&l2) || self.intersects(&l3) || self.intersects(&l4)
+    }
+
+    /// Computes the length of the line.
+    pub fn length(&self) -> f32 {
+        (self.a - self.b).length()
+    }
+
+    /// Returns the y length of the line.
+    pub fn length_y(&self) -> f32 {
+        (self.a.y - self.b.y).abs()
+    }
+
+    /// Returns the x length of the line.
+    pub fn length_x(&self) -> f32 {
+        (self.a.x - self.b.x).abs()
+    }
+
+    /// If the line is axis aligned, returns the axis it is aligned to.
+    pub fn axis_aligned(&self) -> Option<Axis> {
+        if self.length_x() == 0.0 {
+            return Some(Axis::Vertical);
+        }
+
+        if self.length_y() == 0.0 {
+            return Some(Axis::Horizontal);
+        }
+
+        return None;
+    }
+
+    /// Geometrically subtracts the given line from this line, resulting in new segmented line(s).
+    pub fn subtract(self, other: Self) -> Vec<Self> {
+        if self == other || self == other.reverse() {
+            return Vec::new();
+        }
+        let my_aa = self.axis_aligned();
+        let other_aa = other.axis_aligned();
+        if my_aa.is_some() && other_aa.is_some() {
+            let my_axis = my_aa.unwrap();
+            let other_axis = other_aa.unwrap();
+            if my_axis == other_axis {
+                match my_axis {
+                    Axis::Vertical => {
+                        if self.a.x == other.a.x {
+                            let my_line1 = Line1::from_line2(self.clone(), Axis::Vertical);
+                            let other_line1 = Line1::from_line2(other.clone(), Axis::Vertical);
+                            let subs = my_line1.subtract(other_line1);
+                            return subs
+                                .iter()
+                                .map(|l| l.to_line2(Axis::Vertical, self.a.x))
+                                .collect();
+                        }
+                    }
+                    Axis::Horizontal => {
+                        if self.a.y == other.a.y {
+                            let my_line1 = Line1::from_line2(self.clone(), Axis::Horizontal);
+                            let other_line1 = Line1::from_line2(other.clone(), Axis::Horizontal);
+                            let subs = my_line1.subtract(other_line1);
+                            return subs
+                                .iter()
+                                .map(|l| l.to_line2(Axis::Horizontal, self.a.y))
+                                .collect();
+                        }
+                    }
+                    _ => panic!("What in blazes are these lines up to then eh?"),
+                }
+            }
+        } else {
+            // TODO: Handle non-axis aligned cases
+        }
+        return vec![self]
+    }
+
+    /// Subtracts the given line from the collection.
+    pub fn subtract_collection(lines: Vec<Self>, other: Self) -> Vec<Self> {
+        let mut result = Vec::new();
+        for line in lines {
+            result.extend(line.subtract(other));
+        }
+        return result;
+    }
+}
+
+impl Display for Line2 {
+    fn fmt(&self, f: &mut Formatter) -> Result<(), Error> {
+        write!(f, "Line2({}, {})", self.a, self.b)
     }
 }
 

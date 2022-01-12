@@ -1,11 +1,12 @@
 use crate::{
     core::{Axis, DefaultIx, IndexType},
-    geom::{Rect, Vec2},
+    geom::{Line2, Rect, Vec2},
     graphs::Edge,
 };
 
-use super::{Cell, CellIndex, Node, VectorGraph};
+use super::{Cell, CellIndex, EdgeIndex, Node, VectorGraph};
 
+#[derive(Debug)]
 struct RtCell<Ix = DefaultIx>
 where
     Ix: IndexType,
@@ -38,7 +39,7 @@ where
     }
 
     /// Splits the given cell in two.
-    pub fn split(&mut self, i: usize, position: f32, axis: Axis) {
+    pub fn split(&mut self, i: usize, position: f32, axis: Axis) -> &mut Self {
         let j = self.cells.len();
         let old_cell = &self.cells[i];
         let (a, b) = old_cell.rect.split(position, axis);
@@ -65,10 +66,11 @@ where
 
         self.cells[i] = cell_a;
         self.cells.push(cell_b);
+        self
     }
 
     /// Splits the given cell into n cells.
-    pub fn split_n(&mut self, i: usize, n: usize, axis: Axis) {
+    pub fn split_n(&mut self, i: usize, n: usize, axis: Axis) -> &mut Self {
         let cell = &self.cells[i];
         let x = cell.rect.min.x;
         let y = cell.rect.min.y;
@@ -105,6 +107,7 @@ where
                 self.cells.push(new_cell);
             }
         }
+        self
     }
 
     /// Converts the RectTree into a [`VectorGraph`]- the generic graph type of this crate.
@@ -127,38 +130,64 @@ where
             let cell = &self.cells[i];
             let rect = cell.rect;
 
-            for n in 0..cell.neighbours.len() {
-                let other = &self.cells[cell.neighbours[n]];
+            for n in 0..self.cells[i].neighbours.len() {
+                let j = self.cells[i].neighbours[n];
+                let other = &self.cells[j];
+                let a;
+                let b;
+
                 // Build edges between cells
                 if rect.max.x == other.rect.min.x {
-                    let a = Vec2::new(rect.max.x, f32::max(rect.min.y, other.rect.min.y));
-                    let b = Vec2::new(rect.max.x, f32::min(rect.max.y, other.rect.max.y));
-                    let node_a = Node::<D, Ix>::new(a, Vec::new(), None);
-                    let node_b = Node::<D, Ix>::new(b, Vec::new(), None);
-                    let node_a_index = graph.add_node(node_a);
-                    let node_b_index = graph.add_node(node_b);
-                    let edge = Edge::<D, Ix>::new(
-                        node_a_index,
-                        node_b_index,
-                        cell.index.unwrap(),
-                        other.index.unwrap(),
-                        None,
-                    );
-                    let edge_index = graph.add_edge(edge);
-                    graph
-                        .cells
-                        .get_mut(&cell.index.unwrap())
-                        .unwrap()
-                        .edges
-                        .push(edge_index);
+                    a = Vec2::new(rect.max.x, f32::max(rect.min.y, other.rect.min.y));
+                    b = Vec2::new(rect.max.x, f32::min(rect.max.y, other.rect.max.y));
+                } else if rect.min.x == other.rect.max.x {
+                    a = Vec2::new(rect.min.x, f32::max(rect.min.y, other.rect.min.y));
+                    b = Vec2::new(rect.min.x, f32::min(rect.max.y, other.rect.max.y));
                 } else if rect.max.y == other.rect.min.y {
-                    let a = Vec2::new(f32::max(rect.min.x, other.rect.min.x), rect.max.y);
-                    let b = Vec2::new(f32::min(rect.max.x, other.rect.max.x), rect.max.y);
-                    Self::add_cell_to_graph(cell, other, a, b, &mut graph);
+                    a = Vec2::new(f32::max(rect.min.x, other.rect.min.x), rect.max.y);
+                    b = Vec2::new(f32::min(rect.max.x, other.rect.max.x), rect.max.y);
+                } else if rect.min.y == other.rect.max.y {
+                    a = Vec2::new(f32::max(rect.min.x, other.rect.min.x), rect.min.y);
+                    b = Vec2::new(f32::min(rect.max.x, other.rect.max.x), rect.min.y);
+                } else {
+                    continue;
                 }
+                Self::make_edge(&self.cells[i], other, a, b, &mut graph);
             }
         }
+
+        // Complete the graph by adding non-linking edges.
+        for i in 0..self.cells.len() {
+            let cell_index = self.cells[i].index.unwrap();
+            let mut raw_edges: Vec<Line2> = self.cells[i].rect.edges().into_iter().collect();
+            let cell = graph.cells.get(&cell_index).unwrap();
+            for j in cell.edges.iter() {
+                let edge = graph.edge_line(*j).unwrap();
+                raw_edges = Line2::subtract_collection(raw_edges.clone(), edge);
+            }
+            for edge in raw_edges {
+                let node_a = graph.add_or_update_node(Node::<D, Ix>::new(edge.a, Vec::new(), None));
+                let node_b = graph.add_or_update_node(Node::<D, Ix>::new(edge.b, Vec::new(), None));
+                let edge = Edge::<D, Ix>::new_single_cell(node_a, node_b, cell_index, None);
+                graph.add_edge(edge);
+            }
+        }
+
         return graph;
+    }
+
+    /// Returns the [Rect] at given index.
+    pub fn get_rect(&self, i: usize) -> Rect {
+        self.cells[i].rect
+    }
+
+    /// Returns the neighbors of the given [Rect] index.
+    pub fn get_neighbours(&self, i: usize) -> Vec<Rect> {
+        self.cells[i]
+            .neighbours
+            .iter()
+            .map(|j| self.cells[*j].rect)
+            .collect()
     }
 
     /// Asseses a cells neighbors and removes any that are infact, not.
@@ -177,18 +206,19 @@ where
         self.cells[i].neighbours = valid;
     }
 
-    /// Take a cell and constructs an edge between it and the other cell, before adding it to the graph.
-    fn add_cell_to_graph<D>(
+    /// Takes a pair of RtCells and constructs an edge between them.
+    /// The resulting edge is added to the graph and returned as an index.
+    fn make_edge<D>(
         cell: &RtCell<Ix>,
         other: &RtCell<Ix>,
         a: Vec2,
         b: Vec2,
         graph: &mut VectorGraph<D, Ix>,
-    ) {
+    ) -> EdgeIndex<Ix> {
         let node_a = Node::<D, Ix>::new(a, Vec::new(), None);
         let node_b = Node::<D, Ix>::new(b, Vec::new(), None);
-        let node_a_index = graph.add_node(node_a);
-        let node_b_index = graph.add_node(node_b);
+        let node_a_index = graph.add_or_update_node(node_a);
+        let node_b_index = graph.add_or_update_node(node_b);
         let edge = Edge::<D, Ix>::new(
             node_a_index,
             node_b_index,
@@ -197,17 +227,34 @@ where
             None,
         );
         let edge_index = graph.add_edge(edge);
-        graph
-            .cells
-            .get_mut(&cell.index.unwrap())
-            .unwrap()
-            .edges
-            .push(edge_index);
-        graph
-            .cells
-            .get_mut(&other.index.unwrap())
-            .unwrap()
-            .edges
-            .push(edge_index);
+        return edge_index;
+    }
+}
+
+// Tests
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn rect_tree_test() {
+        use super::*;
+        let mut rt =
+            RectTree::<usize>::new(Rect::new(Vec2::new(0.0, 0.0), Vec2::new(100.0, 100.0)));
+        rt.split(0, 0.5, Axis::Vertical);
+
+        for c in rt.cells.iter() {
+            println!("RtCell {:?}", c.rect);
+        }
+
+        let graph = rt.build::<f32>();
+        for c in graph.cells.iter() {
+            println!("Cell {:?}", c);
+        }
+        for e in graph.edges.iter() {
+            println!("Edge {:?}", e);
+        }
+
+        for n in graph.nodes.iter() {
+            println!("Node {:?}", n);
+        }
     }
 }
