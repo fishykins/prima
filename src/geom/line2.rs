@@ -175,7 +175,7 @@ impl Line2 {
                             let subs = my_line1.subtract(other_line1);
                             return subs
                                 .iter()
-                                .map(|l| l.to_line2(Axis::Vertical, self.a.x))
+                                .map(|l| l.into_line2(Axis::Vertical, self.a.x))
                                 .collect();
                         }
                     }
@@ -186,7 +186,7 @@ impl Line2 {
                             let subs = my_line1.subtract(other_line1);
                             return subs
                                 .iter()
-                                .map(|l| l.to_line2(Axis::Horizontal, self.a.y))
+                                .map(|l| l.into_line2(Axis::Horizontal, self.a.y))
                                 .collect();
                         }
                     }

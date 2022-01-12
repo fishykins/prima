@@ -60,7 +60,7 @@ impl Line1 {
     }
 
     /// Converts this into a line2, using n as the second (flat) axis.
-    pub fn to_line2(self, axis: Axis, n: Float) -> Line2 {
+    pub fn into_line2(self, axis: Axis, n: Float) -> Line2 {
         match axis {
             Axis::Vertical => Line2::new(Vec2::new(n, self.a), Vec2::new(n, self.b)),
             Axis::Horizontal => Line2::new(Vec2::new(self.a, n), Vec2::new(self.b, n)),

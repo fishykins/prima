@@ -4,7 +4,7 @@ use crate::{
     graphs::Edge,
 };
 
-use super::{Cell, CellIndex, EdgeIndex, Node, VectorGraph};
+use super::{Cell, CellIndex, Node, VectorGraph};
 
 #[derive(Debug)]
 struct RtCell<Ix = DefaultIx>
@@ -133,26 +133,20 @@ where
             for n in 0..self.cells[i].neighbours.len() {
                 let j = self.cells[i].neighbours[n];
                 let other = &self.cells[j];
-                let a;
-                let b;
-
-                // Build edges between cells
-                if rect.max.x == other.rect.min.x {
-                    a = Vec2::new(rect.max.x, f32::max(rect.min.y, other.rect.min.y));
-                    b = Vec2::new(rect.max.x, f32::min(rect.max.y, other.rect.max.y));
-                } else if rect.min.x == other.rect.max.x {
-                    a = Vec2::new(rect.min.x, f32::max(rect.min.y, other.rect.min.y));
-                    b = Vec2::new(rect.min.x, f32::min(rect.max.y, other.rect.max.y));
-                } else if rect.max.y == other.rect.min.y {
-                    a = Vec2::new(f32::max(rect.min.x, other.rect.min.x), rect.max.y);
-                    b = Vec2::new(f32::min(rect.max.x, other.rect.max.x), rect.max.y);
-                } else if rect.min.y == other.rect.max.y {
-                    a = Vec2::new(f32::max(rect.min.x, other.rect.min.x), rect.min.y);
-                    b = Vec2::new(f32::min(rect.max.x, other.rect.max.x), rect.min.y);
-                } else {
-                    continue;
+                if let Some(intersection) = rect.get_touching_region(&other.rect) {
+                    let node_a = Node::<D, Ix>::new(intersection.a, Vec::new(), None);
+                    let node_b = Node::<D, Ix>::new(intersection.b, Vec::new(), None);
+                    let node_a_index = graph.add_or_update_node(node_a);
+                    let node_b_index = graph.add_or_update_node(node_b);
+                    let edge = Edge::<D, Ix>::new(
+                        node_a_index,
+                        node_b_index,
+                        cell.index.unwrap(),
+                        other.index.unwrap(),
+                        None,
+                    );
+                    graph.add_edge(edge);
                 }
-                Self::make_edge(&self.cells[i], other, a, b, &mut graph);
             }
         }
 
@@ -204,30 +198,6 @@ where
             }
         }
         self.cells[i].neighbours = valid;
-    }
-
-    /// Takes a pair of RtCells and constructs an edge between them.
-    /// The resulting edge is added to the graph and returned as an index.
-    fn make_edge<D>(
-        cell: &RtCell<Ix>,
-        other: &RtCell<Ix>,
-        a: Vec2,
-        b: Vec2,
-        graph: &mut VectorGraph<D, Ix>,
-    ) -> EdgeIndex<Ix> {
-        let node_a = Node::<D, Ix>::new(a, Vec::new(), None);
-        let node_b = Node::<D, Ix>::new(b, Vec::new(), None);
-        let node_a_index = graph.add_or_update_node(node_a);
-        let node_b_index = graph.add_or_update_node(node_b);
-        let edge = Edge::<D, Ix>::new(
-            node_a_index,
-            node_b_index,
-            cell.index.unwrap(),
-            other.index.unwrap(),
-            None,
-        );
-        let edge_index = graph.add_edge(edge);
-        return edge_index;
     }
 }
 

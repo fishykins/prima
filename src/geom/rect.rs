@@ -209,4 +209,33 @@ impl Rect {
         let max = if self.max.y < other.max.y {self.max.y} else {other.max.y};
         Some(Line1::new(min, max))
     }
+
+    /// Returns true if the two [Rects] are touching on the x axis (not intersecting).
+    pub fn touching_x(&self, other: &Rect) -> bool {
+        (self.min.x == other.max.x || self.max.x == other.min.x) && self.intersects_y(other)
+    }
+
+    /// Returns true if the two [Rects] are touching on the y axis (not intersecting).
+    pub fn touching_y(&self, other: &Rect) -> bool {
+        (self.min.y == other.max.y || self.max.y == other.min.y) && self.intersects_x(other)
+    }
+
+    /// Returns true if the two [Rects] are touching, and NOT intersecting.
+    pub fn touching(&self, other: &Rect) -> bool {
+        (self.touching_x(other) || self.touching_y(other)) && !self.intersects(other)
+    }
+
+    /// Returns the region of contact between two [Rects] (the line  at which they touch).
+    /// Returns None if there is no contact, or if they are overlapping.
+    pub fn get_touching_region(&self, other: &Rect) -> Option<Line2> {
+        if self.touching_x(other) {
+            let x = if self.min.x > other.min.x {self.min.x} else {other.min.x};
+            return Some(self.intersection_y(other).unwrap().into_line2(Axis::Vertical, x));
+        }
+        if self.touching_y(other) {
+            let y = if self.min.y > other.min.y {self.min.y} else {other.min.y};
+            return Some(self.intersection_x(other).unwrap().into_line2(Axis::Horizontal, y));
+        }
+        return None;
+    }
 }
