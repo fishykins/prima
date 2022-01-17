@@ -1,6 +1,6 @@
 use crate::{core::Axis, geom::Vec2};
 
-use super::{Float, Line2};
+use super::{Float, Line2, Intersect};
 
 /// A one dimensional line. Useful for analysing only a single axis
 #[derive(Clone, Copy, Default, Debug, PartialEq)]
@@ -25,28 +25,6 @@ impl Line1 {
     /// Returns false is b is less than or equal to a.
     pub fn is_valid(&self) -> bool {
         self.a < self.b
-    }
-
-    /// Checks if these two lines intersect.
-    pub fn intersects(&self, other: &Self) -> bool {
-        if self.a > other.b {
-            return false;
-        }
-        if other.a > self.b {
-            return false;
-        }
-        true
-    }
-
-    /// Gets the intersection line between these two, if any.
-    pub fn intersection(&self, other: &Self) -> Option<Self> {
-        if !self.intersects(other) {
-            return None;
-        }
-
-        let min = if self.a > other.a { self.a } else { other.a };
-        let max = if self.b < other.b { self.b } else { other.b };
-        Some(Self::new(min, max))
     }
 
     /// Returns true if point lies on the line. It cannot be equal to an end point.
@@ -102,5 +80,27 @@ impl Line1 {
             new.extend(line.subtract(other.clone()));
         }
         return new;
+    }
+}
+
+impl Intersect<Self, Self> for Line1 {
+    fn intersection(&self, other: &Self) -> Option<Self> {
+        if !self.intersects(other) {
+            return None;
+        }
+
+        let min = if self.a > other.a { self.a } else { other.a };
+        let max = if self.b < other.b { self.b } else { other.b };
+        Some(Self::new(min, max))
+    }
+
+    fn intersects(&self, other: &Self) -> bool {
+        if self.a > other.b {
+            return false;
+        }
+        if other.a > self.b {
+            return false;
+        }
+        true
     }
 }

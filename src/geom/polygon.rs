@@ -11,25 +11,26 @@ use super::{Float, Line2, Triangle, Vec2, PI};
 /// assert_eq!(poly2.n(), 8);
 /// ```
 pub struct Polygon {
-    verticies: Vec<Vec2>,
+    vertices: Vec<Vec2>,
 }
 
 impl Polygon {
     /// Builds a new Polygon from the given Vec of points.
-    pub fn new(verticies: Vec<Vec2>) -> Self {
-        Self { verticies }
+    pub fn new(vertices: Vec<Vec2>) -> Self {
+        Self { vertices }
     }
+    
     /// Creates a new Polygon with no points or edges assigned.
     pub fn empty() -> Self {
         Self {
-            verticies: Vec::new(),
+            vertices: Vec::new(),
         }
     }
 
     /// Creates an empty Polygon with a set capacity for the number of points it may contain.
     pub fn with_capacity(capacity: usize) -> Self {
         Self {
-            verticies: Vec::with_capacity(capacity),
+            vertices: Vec::with_capacity(capacity),
         }
     }
 
@@ -40,7 +41,7 @@ impl Polygon {
         }
 
         let mut poly = Self {
-            verticies: Vec::new(),
+            vertices: Vec::new(),
         };
 
         let angle = (2. * PI) / n as Float;
@@ -50,36 +51,36 @@ impl Polygon {
             let a = angle * i as Float + (PI / 2.);
             let x = a.cos() * circumradius;
             let y = a.sin() * circumradius;
-            poly.verticies.push(Vec2::new(x, y) + pos);
+            poly.vertices.push(Vec2::new(x, y) + pos);
         }
         poly
     }
 
     /// Adds a vertex to the polygon.
     pub fn add_vertex(&mut self, v: Vec2) {
-        self.verticies.push(v);
+        self.vertices.push(v);
     }
 
     /// The number of sides
     pub fn n(&self) -> usize {
-        self.verticies.len()
+        self.vertices.len()
     }
 
     /// Calculates the interior angle for a regular polygon of this size
     pub fn interior_angle(&self) -> Float {
-        let n = self.verticies.len() as Float;
+        let n = self.vertices.len() as Float;
         ((n as Float - 2.) * PI) / n
     }
 
     /// Returns all vecticies in the polygon
     pub fn verticies(&self) -> Vec<Vec2> {
-        self.verticies.clone()
+        self.vertices.clone()
     }
 
     /// Generates all edges
     pub fn edges(&self) -> Vec<Line2> {
         let mut lines = Vec::new();
-        for (i, _) in self.verticies.iter().enumerate() {
+        for (i, _) in self.vertices.iter().enumerate() {
             lines.push(self.edge(i, true).unwrap());
         }
         lines
@@ -87,15 +88,15 @@ impl Polygon {
 
     /// Getter for vertex at given index
     pub fn vertex(&self, i: usize) -> Option<Vec2> {
-        if i < self.verticies.len() {
-            return Some(self.verticies[i]);
+        if i < self.vertices.len() {
+            return Some(self.vertices[i]);
         }
         return None;
     }
 
     /// Returns true if polygon is convex
     pub fn is_convex(&self) -> bool {
-        let n = self.verticies.len();
+        let n = self.vertices.len();
         if n < 3 {
             true
         } else {
@@ -104,9 +105,9 @@ impl Polygon {
 
             while i < l {
                 let triangle = Triangle::new(
-                    self.verticies[i],
-                    self.verticies[i + 1],
-                    self.verticies[i + 2],
+                    self.vertices[i],
+                    self.vertices[i + 1],
+                    self.vertices[i + 2],
                 );
                 if !triangle.is_convex() {
                     return false;
@@ -116,12 +117,12 @@ impl Polygon {
             }
 
             let triangle =
-                Triangle::new(self.verticies[l], self.verticies[l + 1], self.verticies[0]);
+                Triangle::new(self.vertices[l], self.vertices[l + 1], self.vertices[0]);
             if !triangle.is_convex() {
                 return false;
             }
             let triangle =
-                Triangle::new(self.verticies[l + 1], self.verticies[0], self.verticies[1]);
+                Triangle::new(self.vertices[l + 1], self.vertices[0], self.vertices[1]);
             if !triangle.is_convex() {
                 return false;
             }
@@ -133,7 +134,7 @@ impl Polygon {
     /// impliments "Ear Clipping". See also: <https://gitlab.com/nathanfaucett/rs-polygon2/-/blob/master/src/triangulate.rs>
     pub fn triangulate(&self) -> Vec<Triangle> {
         let mut triangles = Vec::new();
-        let n = self.verticies.len();
+        let n = self.vertices.len();
 
         if n < 3 {
             //This is not going to triangulate- return nothing
@@ -143,9 +144,9 @@ impl Polygon {
         if n == 3 {
             //This IS a triangle, so simply return it as is
             triangles.push(Triangle::new(
-                self.verticies[0],
-                self.verticies[1],
-                self.verticies[2],
+                self.vertices[0],
+                self.vertices[1],
+                self.vertices[2],
             ));
             return triangles;
         }
@@ -164,9 +165,9 @@ impl Polygon {
             let i1 = avl[(i + 1) % al];
             let i2 = avl[(i + 2) % al];
 
-            let a = self.verticies[i0];
-            let b = self.verticies[i1];
-            let c = self.verticies[i2];
+            let a = self.vertices[i0];
+            let b = self.vertices[i1];
+            let c = self.vertices[i2];
 
             let t = Triangle::new(a, b, c);
 
@@ -178,7 +179,7 @@ impl Polygon {
                     let vi = avl[j];
 
                     if vi != i0 && vi != i1 && vi != i2 {
-                        if t.contains_point(self.verticies[vi]) {
+                        if t.contains_point(self.vertices[vi]) {
                             ear_found = false;
                             break;
                         }
@@ -199,40 +200,40 @@ impl Polygon {
         }
 
         triangles.push(Triangle::new(
-            self.verticies[avl[0]],
-            self.verticies[avl[1]],
-            self.verticies[avl[2]],
+            self.vertices[avl[0]],
+            self.vertices[avl[1]],
+            self.vertices[avl[2]],
         ));
         triangles
     }
 
     /// Getter for edge, going from a given vertex (either clockwise or counter).
     pub fn edge(&self, i: usize, clockwise: bool) -> Option<Line2> {
-        let vert_count = self.verticies.len();
+        let vert_count = self.vertices.len();
 
         if clockwise {
             if i + 1 < vert_count {
                 return Some(Line2 {
-                    a: self.verticies[i],
-                    b: self.verticies[i + 1],
+                    a: self.vertices[i],
+                    b: self.vertices[i + 1],
                 });
             } else if i < vert_count {
                 return Some(Line2 {
-                    a: self.verticies[i],
-                    b: self.verticies[0],
+                    a: self.vertices[i],
+                    b: self.vertices[0],
                 });
             }
         } else {
             if i < vert_count {
                 if i > 0 {
                     return Some(Line2 {
-                        a: self.verticies[i],
-                        b: self.verticies[i - 1],
+                        a: self.vertices[i],
+                        b: self.vertices[i - 1],
                     });
                 } else {
                     return Some(Line2 {
-                        a: self.verticies[i],
-                        b: self.verticies[vert_count - 1],
+                        a: self.vertices[i],
+                        b: self.vertices[vert_count - 1],
                     });
                 }
             }

@@ -1,4 +1,4 @@
-use super::{Float, Line1, Vec2, Line2};
+use super::{Circle, Float, Intersect, Line1, Line2, Shape, Vec2, PointIntersection};
 use crate::core::Axis;
 
 /// Axis aligned rectangle
@@ -57,6 +57,11 @@ impl Rect {
         }
     }
 
+    /// Returns the size of the Rect.
+    pub fn size(&self) -> Vec2 {
+        self.max - self.min
+    }
+
     /// Returns the width of the Rect.
     pub fn width(&self) -> Float {
         self.max.x - self.min.x
@@ -65,6 +70,26 @@ impl Rect {
     /// Returns the height of the Rect.
     pub fn height(&self) -> Float {
         self.max.y - self.min.y
+    }
+
+    /// Returns the min x of the rect.
+    pub fn left(&self) -> Float {
+        self.min.x
+    }
+
+    /// Returns the max x of the rect.
+    pub fn right(&self) -> Float {
+        self.max.x
+    }
+
+    /// Returns the max y of the rect.
+    pub fn top(&self) -> Float {
+        self.max.y
+    }
+
+    /// Returns the min y of the rect.
+    pub fn bottom(&self) -> Float {
+        self.min.y
     }
 
     /// Calculates the central point of the Rect.
@@ -91,11 +116,6 @@ impl Rect {
             Line2::new(points[3], points[2]),
             Line2::new(points[0], points[3]),
         ]
-    }
-
-    /// Returns [`true`] if the Rect contains the point 'p'.
-    pub fn contains_point(&self, p: Vec2) -> bool {
-        p.x >= self.min.x && p.x <= self.max.x && p.y >= self.min.y && p.y <= self.max.y
     }
 
     /// Returns [`true`] if this contains the given Rect.
@@ -142,7 +162,10 @@ impl Rect {
             self.min,
             self.min + Vec2::new(self.width(), self.height() * position),
         );
-        let b = Rect::new(self.min + Vec2::new(0.0, self.height() * position), self.max);
+        let b = Rect::new(
+            self.min + Vec2::new(0.0, self.height() * position),
+            self.max,
+        );
         (a, b)
     }
 
@@ -158,11 +181,6 @@ impl Rect {
         ]
     }
 
-    /// Determines if two rects have overlapping bounds.
-    pub fn intersects(&self, other: &Rect) -> bool {
-        self.intersects_x(other) && self.intersects_y(other)
-    }
-
     /// Returns [`true`] if the other rect overlaps on the x axis.
     pub fn intersects_x(&self, other: &Rect) -> bool {
         !(self.min.x > other.max.x || other.min.x > self.max.x)
@@ -171,43 +189,6 @@ impl Rect {
     /// Returns [`true`] if the other rect overlaps on the y axis.
     pub fn intersects_y(&self, other: &Rect) -> bool {
         !(self.min.y > other.max.y || other.min.y > self.max.y)
-    }
-
-    /// Returns the rect that contains the intersection of the two rects,
-    /// or none if no intersection exists.
-    pub fn intersection(&self, other: &Rect) -> Option<Rect> {
-        if !self.intersects(other) {
-            return None;
-        }
-        // Maximum of mins
-        let min_x = if self.min.x > other.min.x {self.min.x} else {other.min.x};
-        let min_y = if self.min.y > other.min.y {self.min.y} else {other.min.y};
-
-        // Minimum of maxs
-        let max_x = if self.max.x < other.max.x {self.max.x} else {other.max.x};
-        let max_y = if self.max.y < other.max.y {self.max.y} else {other.max.y};
-        
-        Some(Rect::new(Vec2::new(min_x, min_y), Vec2::new(max_x, max_y)))
-    }
-
-    /// Returns the intersection on the x axis, if there is any.
-    pub fn intersection_x(&self, other: &Rect) -> Option<Line1> {
-        if !self.intersects_x(other) {
-            return None;
-        }
-        let min = if self.min.x > other.min.x {self.min.x} else {other.min.x};
-        let max = if self.max.x < other.max.x {self.max.x} else {other.max.x};
-        Some(Line1::new(min, max))
-    }
-
-    /// Returns the intersection on the y axis, if there is any.
-    pub fn intersection_y(&self, other: &Rect) -> Option<Line1> {
-        if !self.intersects_y(other) {
-            return None;
-        }
-        let min = if self.min.y > other.min.y {self.min.y} else {other.min.y};
-        let max = if self.max.y < other.max.y {self.max.y} else {other.max.y};
-        Some(Line1::new(min, max))
     }
 
     /// Returns true if the two [Rects] are touching on the x axis (not intersecting).
@@ -229,13 +210,146 @@ impl Rect {
     /// Returns None if there is no contact, or if they are overlapping.
     pub fn get_touching_region(&self, other: &Rect) -> Option<Line2> {
         if self.touching_x(other) {
-            let x = if self.min.x > other.min.x {self.min.x} else {other.min.x};
-            return Some(self.intersection_y(other).unwrap().into_line2(Axis::Vertical, x));
+            let x = if self.min.x > other.min.x {
+                self.min.x
+            } else {
+                other.min.x
+            };
+            return Some(
+                self.y_range()
+                    .intersection(&other.y_range())
+                    .unwrap()
+                    .into_line2(Axis::Vertical, x),
+            );
         }
         if self.touching_y(other) {
-            let y = if self.min.y > other.min.y {self.min.y} else {other.min.y};
-            return Some(self.intersection_x(other).unwrap().into_line2(Axis::Horizontal, y));
+            let y = if self.min.y > other.min.y {
+                self.min.y
+            } else {
+                other.min.y
+            };
+            return Some(
+                self.x_range()
+                    .intersection(&other.x_range())
+                    .unwrap()
+                    .into_line2(Axis::Horizontal, y),
+            );
         }
         return None;
+    }
+}
+
+impl Shape for Rect {
+    fn center(&self) -> Vec2 {
+        self.min + self.size() / 2.0
+    }
+
+    fn bounds(&self) -> Rect {
+        return self.clone();
+    }
+
+    fn x_range(&self) -> Line1 {
+        return Line1::new(self.min.x, self.max.x);
+    }
+
+    fn y_range(&self) -> Line1 {
+        return Line1::new(self.min.y, self.max.y);
+    }
+
+    fn contains_point(&self, p: Vec2) -> bool {
+        p.x >= self.min.x && p.x <= self.max.x && p.y >= self.min.y && p.y <= self.max.y
+    }
+}
+
+impl Intersect<Rect, Rect> for Rect {
+    fn intersects(&self, other: &Rect) -> bool {
+        self.intersects_x(other) && self.intersects_y(other)
+    }
+
+    fn intersection(&self, other: &Rect) -> Option<Rect> {
+        if !self.intersects(other) {
+            return None;
+        }
+        // Maximum of mins
+        let min_x = if self.min.x > other.min.x {
+            self.min.x
+        } else {
+            other.min.x
+        };
+        let min_y = if self.min.y > other.min.y {
+            self.min.y
+        } else {
+            other.min.y
+        };
+
+        // Minimum of maxs
+        let max_x = if self.max.x < other.max.x {
+            self.max.x
+        } else {
+            other.max.x
+        };
+        let max_y = if self.max.y < other.max.y {
+            self.max.y
+        } else {
+            other.max.y
+        };
+
+        Some(Rect::new(Vec2::new(min_x, min_y), Vec2::new(max_x, max_y)))
+    }
+}
+
+impl Intersect<Circle, Line2> for Rect {
+    fn intersects(&self, other: &Circle) -> bool {
+        let closest_x = other.center.x.clamp(self.left(), self.right());
+        let closest_y = other.center.y.clamp(self.bottom(), self.top());
+        return Vec2::new(closest_x, closest_y).distance_squared(other.center)
+            <= other.radius * other.radius;
+    }
+
+    fn intersection(&self, other: &Circle) -> Option<Line2> {
+        if !self.intersects(other) {
+            return None;
+        }
+        todo!();
+    }
+}
+
+impl Intersect<Line2, PointIntersection> for Rect {
+    fn intersects(&self, other: &Line2) -> bool {
+        if self.contains_point(other.a) || self.contains_point(other.b) {
+            return true;
+        }
+        let edges = self.edges();
+        for edge in edges {
+            if edge.intersects(other) {
+                return true;
+            }
+        }
+        false
+    }
+
+    fn intersection(&self, other: &Line2) -> Option<PointIntersection> {
+        if !self.intersects(other) {
+            return None;
+        }
+        let mut result = None;
+        let edges = self.edges();
+        let one_result = self.contains_point(other.a) || self.contains_point(other.b);
+        for edge in edges {
+            if let Some(intersection) = edge.intersection(other) {
+                if result.is_none() {
+                    result = Some(PointIntersection::One(intersection));
+                    if one_result {
+                        // As one point is inside the rect, we can return early.
+                        return result;
+                    }
+                } else {
+                    result = Some(result.unwrap().add(intersection));
+                    // Only two intersections possible so return.
+                    return result;
+                }
+            }
+        }
+        result
     }
 }

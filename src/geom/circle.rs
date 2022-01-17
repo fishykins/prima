@@ -1,4 +1,4 @@
-use super::{Triangle, Vec2, Float};
+use super::{Float, Intersect, Line2, Shape, Triangle, Vec2, PointIntersection};
 
 /// A simple circle, defined by a center and radius.
 /// # Examples
@@ -16,10 +16,7 @@ pub struct Circle {
 impl Circle {
     /// Builds a circle from given center and radius.
     pub fn new(center: Vec2, radius: Float) -> Self {
-        Self {
-            center,
-            radius,
-        }
+        Self { center, radius }
     }
     /// Generates a new circle from the given triangle.
     pub fn from_triangle(triangle: Triangle) -> Option<Self> {
@@ -51,5 +48,49 @@ impl Circle {
         let center = Vec2::new(x_cen, y_cen);
         let radius = center.distance(p1);
         Some(Self { center, radius })
+    }
+}
+
+impl Shape for Circle {
+    fn bounds(&self) -> super::Rect {
+        let r = Vec2::splat(self.radius);
+        super::Rect::new(self.center - r, self.center + r)
+    }
+
+    fn x_range(&self) -> super::Line1 {
+        super::Line1::new(self.center.x - self.radius, self.center.x + self.radius)
+    }
+
+    fn y_range(&self) -> super::Line1 {
+        super::Line1::new(self.center.y - self.radius, self.center.y + self.radius)
+    }
+
+    fn contains_point(&self, p: Vec2) -> bool {
+        self.center.distance_squared(p) <= self.radius * self.radius
+    }
+
+    fn center(&self) -> Vec2 {
+        self.center
+    }
+}
+
+impl Intersect<Circle, Circle> for Circle {
+    fn intersects(&self, other: &Circle) -> bool {
+        self.center.distance_squared(other.center)
+            <= (self.radius + other.radius) * (self.radius + other.radius)
+    }
+
+    fn intersection(&self, _other: &Circle) -> Option<Circle> {
+        todo!();
+    }
+}
+
+impl Intersect<Line2, PointIntersection> for Circle {
+    fn intersects(&self, _other: &Line2) -> bool {
+        todo!();
+    }
+
+    fn intersection(&self, _other: &Line2) -> Option<PointIntersection> {
+        todo!();
     }
 }

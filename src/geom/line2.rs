@@ -1,8 +1,8 @@
-use std::fmt::{Display, Formatter, Error};
+use std::fmt::{Display, Error, Formatter};
 
 use crate::core::Axis;
 
-use super::{Line1, Orientation, Rect, Triangle, Vec2};
+use super::{Intersect, Line1, Orientation, PointIntersection, Rect, Shape, Triangle, Vec2};
 
 /// A helper struct that represents a line bewtween points 'a' and 'b'.
 ///
@@ -31,76 +31,6 @@ impl Line2 {
             a: self.b,
             b: self.a,
         }
-    }
-
-    /// Returns the center point of the circle.
-    pub fn center(&self) -> Vec2 {
-        (self.a + self.b) / 2.0
-    }
-
-    /// Returns a boundingbox [`Rect`] of the given line.
-    pub fn bounds(&self) -> Rect {
-        Rect::new(self.a, self.b).validate()
-    }
-
-    /// Returns [`true`] if the two lines intersect.
-    fn intersects(&self, other: &Self) -> bool {
-        let o1 = Triangle::new(self.a, self.b, other.a).orientation();
-        let o2 = Triangle::new(self.a, self.b, other.b).orientation();
-        let o3 = Triangle::new(other.a, other.b, self.a).orientation();
-        let o4 = Triangle::new(other.a, other.b, self.b).orientation();
-
-        if o1 != o2 && o3 != o4 {
-            return true;
-        }
-
-        // Special Cases
-        // p1, q1 and p2 are colinear and p2 lies on segment p1q1
-        if o1 == Orientation::Linear && on_segment(self.a, other.a, self.b) {
-            return true;
-        }
-
-        // p1, q1 and q2 are colinear and q2 lies on segment p1q1
-        if o2 == Orientation::Linear && on_segment(self.a, other.b, self.b) {
-            return true;
-        }
-
-        // p2, q2 and p1 are colinear and p1 lies on segment p2q2
-        if o3 == Orientation::Linear && on_segment(other.a, self.a, other.b) {
-            return true;
-        }
-
-        // p2, q2 and q1 are colinear and q1 lies on segment p2q2
-        if o4 == Orientation::Linear && on_segment(other.a, self.b, other.b) {
-            return true;
-        }
-
-        return false; // Doesn't fall in any of the above cases
-    }
-
-    /// Returns the intersection point of two lines, or None if no intersection is present.
-    pub fn intersection_point(&self, other: &Self) -> Option<Vec2> {
-        let a = self.a;
-        let c = other.a;
-        let r = self.b - a;
-        let s = other.b - c;
-
-        let denom = cross(r, s);
-        if denom == 0.0 {
-            return None;
-        }
-
-        let numer_a = cross(c - a, s);
-        let numer_c = cross(c - a, r);
-
-        let t = numer_a / denom;
-        let u = numer_c / denom;
-
-        if t < 0.0 || t > 1.0 || u < 0.0 || u > 1.0 {
-            return None;
-        }
-
-        return Some(a + r * t);
     }
 
     /// Returns [`true`] if this line intersects the given rect other.
@@ -196,7 +126,7 @@ impl Line2 {
         } else {
             // TODO: Handle non-axis aligned cases
         }
-        return vec![self]
+        return vec![self];
     }
 
     /// Subtracts the given line from the collection.
@@ -204,6 +134,115 @@ impl Line2 {
         let mut result = Vec::new();
         for line in lines {
             result.extend(line.subtract(other));
+        }
+        return result;
+    }
+}
+
+impl Shape for Line2 {
+    fn bounds(&self) -> Rect {
+        Rect::new(self.a, self.b).validate()
+    }
+
+    fn x_range(&self) -> Line1 {
+        Line1::from_line2(self.clone(), Axis::Horizontal)
+    }
+
+    fn y_range(&self) -> Line1 {
+        Line1::from_line2(self.clone(), Axis::Vertical)
+    }
+
+    fn contains_point(&self, point: Vec2) -> bool {
+        let dist_a = self.a.distance(point);
+        let dist_b = self.b.distance(point);
+        return dist_a + dist_b == self.length();
+    }
+
+    fn center(&self) -> Vec2 {
+        (self.a + self.b) / 2.0
+    }
+}
+
+impl Intersect<Self, Vec2> for Line2 {
+    fn intersects(&self, other: &Self) -> bool {
+        let o1 = Triangle::new(self.a, self.b, other.a).orientation();
+        let o2 = Triangle::new(self.a, self.b, other.b).orientation();
+        let o3 = Triangle::new(other.a, other.b, self.a).orientation();
+        let o4 = Triangle::new(other.a, other.b, self.b).orientation();
+
+        if o1 != o2 && o3 != o4 {
+            return true;
+        }
+
+        // Special Cases
+        // p1, q1 and p2 are colinear and p2 lies on segment p1q1
+        if o1 == Orientation::Linear && on_segment(self.a, other.a, self.b) {
+            return true;
+        }
+
+        // p1, q1 and q2 are colinear and q2 lies on segment p1q1
+        if o2 == Orientation::Linear && on_segment(self.a, other.b, self.b) {
+            return true;
+        }
+
+        // p2, q2 and p1 are colinear and p1 lies on segment p2q2
+        if o3 == Orientation::Linear && on_segment(other.a, self.a, other.b) {
+            return true;
+        }
+
+        // p2, q2 and q1 are colinear and q1 lies on segment p2q2
+        if o4 == Orientation::Linear && on_segment(other.a, self.b, other.b) {
+            return true;
+        }
+
+        return false; // Doesn't fall in any of the above cases
+    }
+
+    fn intersection(&self, other: &Self) -> Option<Vec2> {
+        let a = self.a;
+        let c = other.a;
+        let r = self.b - a;
+        let s = other.b - c;
+
+        let denom = cross(r, s);
+        if denom == 0.0 {
+            return None;
+        }
+
+        let numer_a = cross(c - a, s);
+        let numer_c = cross(c - a, r);
+
+        let t = numer_a / denom;
+        let u = numer_c / denom;
+
+        if t < 0.0 || t > 1.0 || u < 0.0 || u > 1.0 {
+            return None;
+        }
+
+        return Some(a + r * t);
+    }
+}
+
+impl Intersect<Rect, PointIntersection> for Line2 {
+    fn intersects(&self, other: &Rect) -> bool {
+        for line in other.edges() {
+            if self.intersects(&line) {
+                return true;
+            }
+        }
+        false
+    }
+
+    fn intersection(&self, other: &Rect) -> Option<PointIntersection> {
+        let mut result = None;
+        for line in other.edges() {
+            if let Some(intersection) = self.intersection(&line) {
+                if result.is_none() {
+                    result = Some(PointIntersection::One(intersection));
+                } else {
+                    result = Some(result.unwrap().add(intersection));
+                }
+            }
         }
         return result;
     }

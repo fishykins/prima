@@ -1,6 +1,6 @@
 use crate::{
     core::{Axis, DefaultIx, IndexType},
-    geom::{Line2, Rect, Vec2},
+    geom::{Line2, Rect, Vec2, Intersect},
     graphs::Edge,
 };
 
