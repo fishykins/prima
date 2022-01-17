@@ -74,23 +74,23 @@ impl Shape for Circle {
     }
 }
 
-impl Intersect<Circle, Circle> for Circle {
+impl Intersect<Circle, PointIntersection> for Circle {
     fn intersects(&self, other: &Circle) -> bool {
         self.center.distance_squared(other.center)
             <= (self.radius + other.radius) * (self.radius + other.radius)
     }
 
-    fn intersection(&self, _other: &Circle) -> Option<Circle> {
+    fn intersection(&self, _other: &Circle) -> Option<PointIntersection> {
         todo!();
     }
 }
 
 impl Intersect<Line2, PointIntersection> for Circle {
-    fn intersects(&self, _other: &Line2) -> bool {
-        todo!();
+    fn intersects(&self, other: &Line2) -> bool {
+        other.intersects(self)
     }
 
-    fn intersection(&self, _other: &Line2) -> Option<PointIntersection> {
-        todo!();
+    fn intersection(&self, other: &Line2) -> Option<PointIntersection> {
+        other.intersection(self)
     }
 }

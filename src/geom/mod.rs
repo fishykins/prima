@@ -61,5 +61,3 @@ impl PointIntersection {
         }
     }
 }
-
-// TODO: Implement Intersect for Vec2 and Vec3

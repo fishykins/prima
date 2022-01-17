@@ -2,7 +2,9 @@ use std::fmt::{Display, Error, Formatter};
 
 use crate::core::Axis;
 
-use super::{Intersect, Line1, Orientation, PointIntersection, Rect, Shape, Triangle, Vec2};
+use super::{
+    Circle, Intersect, Line1, Orientation, PointIntersection, Rect, Shape, Triangle, Vec2,
+};
 
 /// A helper struct that represents a line bewtween points 'a' and 'b'.
 ///
@@ -245,6 +247,25 @@ impl Intersect<Rect, PointIntersection> for Line2 {
             }
         }
         return result;
+    }
+}
+
+impl Intersect<Circle, PointIntersection> for Line2 {
+    fn intersects(&self, circle: &Circle) -> bool {
+        if circle.contains_point(self.a) || circle.contains_point(self.b) {
+            return true;
+        }
+        let dot = (((circle.center.x - self.a.x) * (self.b.x - self.a.x))
+            + ((circle.center.y - self.a.y) * (self.b.y - self.a.y)))
+            / self.length().powi(2);
+        let closest_x = self.a.x + (dot * (self.b.x - self.a.x));
+        let closest_y = self.a.y + (dot * (self.b.y - self.a.y));
+        let closest = Vec2::new(closest_x, closest_y);
+        return self.contains_point(closest) && circle.contains_point(closest)
+    }
+
+    fn intersection(&self, _other: &Circle) -> Option<PointIntersection> {
+        todo!();
     }
 }
 

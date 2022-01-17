@@ -47,7 +47,7 @@ impl Polygon {
         let angle = (2. * PI) / n as Float;
 
         for i in 0..n {
-            // angle is ajusted by Pi/2 so triangulation starts from 12 O'clock
+            // angle is adjusted by Pi/2 so triangulation starts from 12 O'clock
             let a = angle * i as Float + (PI / 2.);
             let x = a.cos() * circumradius;
             let y = a.sin() * circumradius;
@@ -72,8 +72,8 @@ impl Polygon {
         ((n as Float - 2.) * PI) / n
     }
 
-    /// Returns all vecticies in the polygon
-    pub fn verticies(&self) -> Vec<Vec2> {
+    /// Returns all vertices in the polygon
+    pub fn vertices(&self) -> Vec<Vec2> {
         self.vertices.clone()
     }
 
@@ -131,7 +131,7 @@ impl Polygon {
     }
 
     /// Triangulates the polygon.
-    /// impliments "Ear Clipping". See also: <https://gitlab.com/nathanfaucett/rs-polygon2/-/blob/master/src/triangulate.rs>
+    /// implements "Ear Clipping". See also: <https://gitlab.com/nathanfaucett/rs-polygon2/-/blob/master/src/triangulate.rs>
     pub fn triangulate(&self) -> Vec<Triangle> {
         let mut triangles = Vec::new();
         let n = self.vertices.len();
