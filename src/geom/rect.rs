@@ -31,7 +31,7 @@ impl Rect {
         Self { min, max }
     }
 
-    /// Creates a new validated Rect from given min and max points.
+    /// Creates a new validated rect from given min and max points.
     /// # Example
     /// ```
     /// let rect = Rect::new(Vec2::ZERO, Vec2::splat(8.0));
@@ -57,17 +57,17 @@ impl Rect {
         }
     }
 
-    /// Returns the size of the Rect.
+    /// Returns the size of the rect.
     pub fn size(&self) -> Vec2 {
         self.max - self.min
     }
 
-    /// Returns the width of the Rect.
+    /// Returns the width of the rect.
     pub fn width(&self) -> Float {
         self.max.x - self.min.x
     }
 
-    /// Returns the height of the Rect.
+    /// Returns the height of the rect.
     pub fn height(&self) -> Float {
         self.max.y - self.min.y
     }
@@ -92,7 +92,7 @@ impl Rect {
         self.min.y
     }
 
-    /// Calculates the central point of the Rect.
+    /// Calculates the central point of the rect.
     pub fn center(&self) -> Vec2 {
         (self.min + self.max) / 2.0
     }
@@ -118,7 +118,7 @@ impl Rect {
         ]
     }
 
-    /// Returns [`true`] if this contains the given Rect.
+    /// Returns [`true`] if this contains the given rect.
     pub fn contains_rect(&self, other: &Rect) -> bool {
         other.min.x >= self.min.x
             && other.min.x <= self.max.x
@@ -130,7 +130,7 @@ impl Rect {
             && other.max.y <= self.max.y
     }
 
-    /// Splits this into two new Rects along the provided axis, lerped by position.
+    /// Splits this into two new rects along the provided axis, lerped by position.
     /// # Example
     /// ```
     /// let rect = Rect::new(Vec2::ZERO, Vec2::ONE);
@@ -191,22 +191,22 @@ impl Rect {
         !(self.min.y > other.max.y || other.min.y > self.max.y)
     }
 
-    /// Returns true if the two [Rects] are touching on the x axis (not intersecting).
+    /// Returns true if the two rects are touching on the x axis (not intersecting).
     pub fn touching_x(&self, other: &Rect) -> bool {
         (self.min.x == other.max.x || self.max.x == other.min.x) && self.intersects_y(other)
     }
 
-    /// Returns true if the two [Rects] are touching on the y axis (not intersecting).
+    /// Returns true if the two rects are touching on the y axis (not intersecting).
     pub fn touching_y(&self, other: &Rect) -> bool {
         (self.min.y == other.max.y || self.max.y == other.min.y) && self.intersects_x(other)
     }
 
-    /// Returns true if the two [Rects] are touching, and NOT intersecting.
+    /// Returns true if the two rects are touching, and NOT intersecting.
     pub fn touching(&self, other: &Rect) -> bool {
         (self.touching_x(other) || self.touching_y(other)) && !self.intersects(other)
     }
 
-    /// Returns the region of contact between two [Rects] (the line  at which they touch).
+    /// Returns the region of contact between two rects (the line  at which they touch).
     /// Returns None if there is no contact, or if they are overlapping.
     pub fn get_touching_region(&self, other: &Rect) -> Option<Line2> {
         if self.touching_x(other) {
