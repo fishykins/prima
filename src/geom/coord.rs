@@ -9,6 +9,13 @@ pub struct Coord {
     pub y: u32,
 }
 
+impl Coord {
+    /// Builds a new coordinate.
+    pub fn new(x: u32, y: u32) -> Coord {
+        Coord { x, y }
+    }
+}
+
 impl Display for Coord {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "Coord({},{})", self.x, self.y)
