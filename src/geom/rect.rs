@@ -1,3 +1,5 @@
+use std::fmt::{Display, Formatter, Error};
+
 use super::{Circle, Float, Intersect, Line1, Line2, Shape, Vec2, PointIntersection};
 use crate::core::Axis;
 
@@ -29,6 +31,14 @@ impl Rect {
     /// ```
     pub fn new(min: Vec2, max: Vec2) -> Self {
         Self { min, max }
+    }
+
+    /// Builds a rect with the given size, so that the center is [Vec2::ZERO].
+    pub fn new_sized(size: Vec2) -> Self {
+        Self {
+            min: Vec2::ZERO - size / 2.0,
+            max: size / 2.0,
+        }
     }
 
     /// Creates a new validated rect from given min and max points.
@@ -351,5 +361,11 @@ impl Intersect<Line2, PointIntersection> for Rect {
             }
         }
         result
+    }
+}
+
+impl Display for Rect {
+    fn fmt(&self, f: &mut Formatter) -> Result<(), Error> {
+        write!(f, "Rect({} -> {})", self.min, self.max)
     }
 }

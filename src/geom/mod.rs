@@ -1,4 +1,5 @@
 mod circle;
+mod coord;
 mod cuboid;
 mod line1;
 mod line2;
@@ -7,6 +8,7 @@ mod rect;
 mod triangle;
 
 pub use circle::Circle;
+pub use coord::Coord;
 pub use cuboid::Cuboid;
 pub use line1::Line1;
 pub use line2::Line2;

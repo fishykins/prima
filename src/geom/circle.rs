@@ -1,3 +1,5 @@
+use std::fmt::{Error, Formatter, Display};
+
 use super::{Float, Intersect, Line2, Shape, Triangle, Vec2, PointIntersection};
 
 /// A simple circle, defined by a center and radius.
@@ -6,6 +8,7 @@ use super::{Float, Intersect, Line2, Shape, Triangle, Vec2, PointIntersection};
 /// ```
 /// let circle = Circle::new(Vec2::new(0.0, 0.0), 32.0);
 /// ```
+#[derive(Clone, Copy, Debug, Default)]
 pub struct Circle {
     /// The middle of the circle.
     pub center: Vec2,
@@ -92,5 +95,11 @@ impl Intersect<Line2, PointIntersection> for Circle {
 
     fn intersection(&self, other: &Line2) -> Option<PointIntersection> {
         other.intersection(self)
+    }
+}
+
+impl Display for Circle {
+    fn fmt(&self, f: &mut Formatter) -> Result<(), Error> {
+        write!(f, "Circle(r: {}, center: {})", self.radius, self.center)
     }
 }
