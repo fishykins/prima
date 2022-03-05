@@ -1,7 +1,7 @@
 use std::fmt;
 use std::hash::Hash;
 
-/// The standard indexing type to use if none is spesified.
+/// The standard indexing type to use if none is specified.
 pub type DefaultIx = usize;
 
 /// Black magic that allows most index type ints to be converted into usize while acting as generics.

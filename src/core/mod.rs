@@ -11,4 +11,4 @@ pub use axis::Axis;
 pub use index_type::{DefaultIx, IndexType};
 pub use ord_num::OrdNum;
 pub use plane::{Plane2D, Plane3D};
-pub use transverse::Transverse;
+pub use transverse::{Transverse2D, Transverse3D};

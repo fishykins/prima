@@ -8,10 +8,13 @@ pub trait OrdNum: Num + PartialOrd + Clone + Copy + Display + Debug + FromPrimit
 
 impl OrdNum for i64 {}
 impl OrdNum for i32 {}
+impl OrdNum for i16 {}
 impl OrdNum for i8 {}
+impl OrdNum for isize {}
 impl OrdNum for f64 {}
 impl OrdNum for f32 {}
 impl OrdNum for u64 {}
 impl OrdNum for u32 {}
+impl OrdNum for u16 {}
 impl OrdNum for u8 {}
 impl OrdNum for usize {}
