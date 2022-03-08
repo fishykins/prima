@@ -1,5 +1,7 @@
+use crate::AxisValue;
+
 /// A trait that represents any coordinate based unit of measurement.
-pub trait Point<Rhs = Self> {
+pub trait Distance<Rhs = Self> {
     /// The output value.
     type Output;
     /// Computes the manhattan distance between two points.
@@ -9,7 +11,7 @@ pub trait Point<Rhs = Self> {
 }
 
 /// A trait that represents distance between two points.
-pub trait FloatPoint<Rhs = Self>: Point<Rhs> {
+pub trait FloatDistance<Rhs = Self>: Distance<Rhs> {
     /// Computes the euclidean distance between two points.
     fn distance(&self, other: &Rhs) -> Self::Output;
 }
@@ -30,4 +32,13 @@ pub trait Dot<Rhs = Self> {
     type Output;
     /// Computes the dot product of two values.
     fn dot(&self, other: &Rhs) -> Self::Output;
+}
+
+/// A trait that ensures that the type is a point.
+pub trait Coordinate<N>
+where
+    N: num_traits::Num,
+{
+    /// The axis this point type covers.
+    fn axis(&self) -> AxisValue<N>;
 }

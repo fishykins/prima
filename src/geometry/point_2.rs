@@ -1,11 +1,14 @@
 use num_traits::{Float, Num};
 
-use crate::{xy_ops_impl, base::{FloatPoint, Point}};
+use crate::{
+    base::{Distance, FloatDistance},
+    xy_ops_impl,
+};
 
 use super::Vector2;
 
 /// A base struct for 2D points/vectors.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, PartialEq)]
 pub struct Point2<N> {
     /// The X coordinate.
     pub x: N,
@@ -15,7 +18,10 @@ pub struct Point2<N> {
 
 xy_ops_impl!(Point2);
 
-impl<N> Point2<N> where N: Float {
+impl<N> Point2<N>
+where
+    N: Float,
+{
     /// Returns the vector from the origin to the point.
     pub fn vector(&self, other: Self) -> Vector2<N> {
         Vector2 {
@@ -25,7 +31,7 @@ impl<N> Point2<N> where N: Float {
     }
 }
 
-impl<N> Point for Point2<N>
+impl<N> Distance for Point2<N>
 where
     N: Num + PartialOrd + Copy,
 {
@@ -38,24 +44,36 @@ where
     }
 
     fn manhatten_distance(&self, other: &Self) -> Self::Output {
-        let dx = if self.x >= other.x {self.x - other.x } else {other.x - self.x};
-        let dy = if self.y >= other.y {self.y - other.y } else {other.y - self.y};
+        let dx = if self.x >= other.x {
+            self.x - other.x
+        } else {
+            other.x - self.x
+        };
+        let dy = if self.y >= other.y {
+            self.y - other.y
+        } else {
+            other.y - self.y
+        };
         dx + dy
     }
 }
 
-impl<N> FloatPoint for Point2<N> where N: Float {
+impl<N> FloatDistance for Point2<N>
+where
+    N: Float,
+{
     fn distance(&self, other: &Self) -> Self::Output {
         self.distance_squared(other).sqrt()
     }
 }
 
-
 // ===========================================================================
 // ============================= IMPL VEC ====================================
 // ===========================================================================
 impl<N> Add<Vector2<N>> for Point2<N>
-    where N: Add<Output = N> {
+where
+    N: Add<Output = N>,
+{
     type Output = Self;
 
     fn add(self, other: Vector2<N>) -> Self {
@@ -66,8 +84,10 @@ impl<N> Add<Vector2<N>> for Point2<N>
     }
 }
 
-impl<N> Sub<Vector2<N> > for Point2<N>
-    where N: Sub<Output = N> {
+impl<N> Sub<Vector2<N>> for Point2<N>
+where
+    N: Sub<Output = N>,
+{
     type Output = Self;
 
     fn sub(self, other: Vector2<N>) -> Self {

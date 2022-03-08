@@ -3,6 +3,7 @@
 macro_rules! xy_ops_impl(
     ($T: ident) => {
         use std::ops::{Add, AddAssign, Div, Mul, Sub, SubAssign};
+        use crate::Coordinate;
 
         impl<N> $T<N> where N: Copy {
             /// Creates a new point.
@@ -13,6 +14,12 @@ macro_rules! xy_ops_impl(
             /// Creates point from a single value.
             pub fn splat(n: N) -> Self {
                 $T { x: n, y: n }
+            }
+        }
+
+        impl<N> Coordinate<N> for $T<N> where N: num_traits::Num + Copy {
+            fn axis(&self) -> crate::AxisValue<N> {
+                crate::base::AxisValue::XY(self.x, self.y)
             }
         }
 
@@ -38,6 +45,15 @@ macro_rules! xy_ops_impl(
                 Self {
                     x,
                     y,
+                }
+            }
+        }
+
+        impl<N> From<Vec<N>> for $T<N> where N: Copy {
+            fn from(v: Vec<N>) -> Self {
+                Self {
+                    x: v[0],
+                    y: v[1],
                 }
             }
         }
