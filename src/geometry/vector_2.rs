@@ -1,10 +1,10 @@
-use crate::{xy_ops_impl, base::{Dot, Magnitude, Direction}};
+use crate::{xy_ops_impl, base::{Dot, Vector, Direction}};
 use num_traits::{Float, Num, Signed};
 
 use super::Point2;
 
 /// A base struct for 2D points/vectors.
-#[derive(Debug, Clone, Copy, Eq, PartialEq, Hash)]
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
 pub struct Vector2<N> {
     /// The X magnitude.
     pub x: N,
@@ -23,7 +23,7 @@ impl<N> Dot for Vector2<N> where N: Num + Copy {
     }
 }
 
-impl<N> Magnitude for Vector2<N>
+impl<N> Vector for Vector2<N>
 where
     N: Float + Copy,
 {

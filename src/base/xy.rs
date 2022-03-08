@@ -4,10 +4,26 @@ macro_rules! xy_ops_impl(
     ($T: ident) => {
         use std::ops::{Add, AddAssign, Div, Mul, Sub, SubAssign};
 
-        impl<N> $T<N> {
+        impl<N> $T<N> where N: Copy {
             /// Creates a new point.
             pub fn new(x: N, y: N) -> Self {
                 $T { x, y }
+            }
+
+            /// Creates point from a single value.
+            pub fn splat(n: N) -> Self {
+                $T { x: n, y: n }
+            }
+        }
+
+        impl<N> $T<N> where N: num_traits::Float {
+            /// Returns zero vector.
+            pub fn zero() -> Self {
+                $T { x: N::zero(), y: N::zero() }
+            }
+            /// Returns one vector.
+            pub fn one() -> Self {
+                $T { x: N::one(), y: N::one() }
             }
         }
 

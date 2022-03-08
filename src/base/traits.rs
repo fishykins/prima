@@ -1,5 +1,5 @@
-/// A trait that represents non-float dependant distance between two points.
-pub trait BaseDistance<Rhs = Self> {
+/// A trait that represents any coordinate based unit of measurement.
+pub trait Point<Rhs = Self> {
     /// The output value.
     type Output;
     /// Computes the manhattan distance between two points.
@@ -9,13 +9,13 @@ pub trait BaseDistance<Rhs = Self> {
 }
 
 /// A trait that represents distance between two points.
-pub trait Distance<Rhs = Self>: BaseDistance<Rhs> {
+pub trait FloatPoint<Rhs = Self>: Point<Rhs> {
     /// Computes the euclidean distance between two points.
     fn distance(&self, other: &Rhs) -> Self::Output;
 }
 
 /// A trait for structs that can have magnitude.
-pub trait Magnitude<Rhs = Self> {
+pub trait Vector<Rhs = Self> {
     /// The output value.
     type Output;
     /// Computes the squared magnitude of the vector.
@@ -31,6 +31,3 @@ pub trait Dot<Rhs = Self> {
     /// Computes the dot product of two values.
     fn dot(&self, other: &Rhs) -> Self::Output;
 }
-
-/// A trait to help distinguish structs that can be used as a vector or coordinate.
-pub trait Position {}

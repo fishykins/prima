@@ -1,10 +1,11 @@
 use num_traits::{Float, Num};
 
-use crate::{xy_ops_impl, base::{Distance, BaseDistance}};
+use crate::{xy_ops_impl, base::{FloatPoint, Point}};
 
 use super::Vector2;
 
 /// A base struct for 2D points/vectors.
+#[derive(Debug, Clone, Default)]
 pub struct Point2<N> {
     /// The X coordinate.
     pub x: N,
@@ -24,7 +25,7 @@ impl<N> Point2<N> where N: Float {
     }
 }
 
-impl<N> BaseDistance for Point2<N>
+impl<N> Point for Point2<N>
 where
     N: Num + PartialOrd + Copy,
 {
@@ -43,7 +44,7 @@ where
     }
 }
 
-impl<N> Distance for Point2<N> where N: Float {
+impl<N> FloatPoint for Point2<N> where N: Float {
     fn distance(&self, other: &Self) -> Self::Output {
         self.distance_squared(other).sqrt()
     }
