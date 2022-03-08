@@ -1,144 +1,72 @@
-use super::{CellIndex, GraphData, NodeIndex};
-use crate::core::{DefaultIx, IndexType};
+use crate::base::Index;
 
-/// An edge that connects two [`super::Node`]s and two [`super::Cell`]s together. Carries data for the end user.
-#[derive(Debug, Clone)]
-pub struct Edge<E, Ix = DefaultIx>
+/// An edge that connects two indexable entities, as referenced by the given index type.
+#[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub struct Edge<Ix>
 where
-    Ix: IndexType,
+    Ix: Index,
 {
-    pub(crate) node_a: NodeIndex<Ix>,
-    pub(crate) node_b: NodeIndex<Ix>,
-    pub(crate) cell_a: CellIndex<Ix>,
-    // Optional to allow for the initiation of edge edges!
-    pub(crate) cell_b: Option<CellIndex<Ix>>,
-    /// The assosiated data attached to this Edge.
-    pub data: Option<Box<E>>,
+    /// The index of the first point.
+    pub a: Ix,
+    /// The index of the second point.
+    pub b: Ix,
+    /// Is this edge directional?
+    pub directed: bool,
 }
 
-impl<E, Ix> Edge<E, Ix>
+/// A double linked edge, used for graphs that have linked cells and vertices.
+pub struct EdgePair<I, J>
 where
-    Ix: IndexType,
+    I: Index,
+    J: Index,
 {
-    /// Produces a new Edge with the given nodes, cells and optional data.
-    pub fn new(
-        node_a: NodeIndex<Ix>,
-        node_b: NodeIndex<Ix>,
-        cell_a: CellIndex<Ix>,
-        cell_b: CellIndex<Ix>,
-        data: Option<Box<E>>,
-    ) -> Self {
-        Self {
-            node_a,
-            node_b,
-            cell_a,
-            cell_b: Some(cell_b),
-            data,
+    /// The index of the first edge.
+    pub a: Edge<I>,
+    /// The index of the second edge.
+    pub b: Edge<J>,
+}
+
+impl<I> Edge<I>
+where
+    I: Index,
+{
+    /// Creates a new undirected edge.
+    pub fn new(a: I, b: I) -> Self {
+        Edge {
+            a,
+            b,
+            directed: false,
         }
     }
 
-    /// Creates an edge that is only connected to one cell, rather than the typical two.
-    pub fn new_single_cell(
-        node_a: NodeIndex<Ix>,
-        node_b: NodeIndex<Ix>,
-        cell_a: CellIndex<Ix>,
-        data: Option<Box<E>>,
-    ) -> Self {
-        Self {
-            node_a,
-            node_b,
-            cell_a,
-            cell_b: None,
-            data,
+    /// Creates a new directed edge.
+    pub fn directed(a: I, b: I) -> Edge<I> {
+        Edge {
+            a,
+            b,
+            directed: true,
         }
     }
 
-    /// If no second cell is set, adds given cell and returns [`true`], otherwise returns [`false`].
-    pub fn try_add_cell(&mut self, i: CellIndex<Ix>) -> bool {
-        if self.cell_b.is_none() {
-            self.cell_b = Some(i);
-            return true;
-        }
-        false
-    }
-
-    /// Returns the two nodes attached to this edge.
-    pub fn nodes(&self) -> (NodeIndex<Ix>, NodeIndex<Ix>) {
-        (self.node_a, self.node_b)
-    }
-    /// Given one of two nodes, returns its counterpart. Returns [`None`] if the given node is not found.
-    pub fn node_other(&self, i: NodeIndex<Ix>) -> Option<NodeIndex<Ix>> {
-        if i == self.node_a {
-            return Some(self.node_b);
-        } else if i == self.node_b {
-            return Some(self.node_a);
+    /// Returns the index of the other vertex.
+    pub fn other(&self, index: I) -> Option<I> {
+        if self.a == index {
+            Some(self.b)
+        } else if self.b == index {
+            Some(self.a)
         } else {
             None
         }
     }
-    /// Returns the two cells that connect to this edge.
-    pub fn cells(&self) -> (CellIndex<Ix>, CellIndex<Ix>) {
-        (self.cell_a, self.cell_b.expect("msg"))
-    }
-    /// Given one of two cells, returns its counterpart. Returns [`None`] if the given cell is not found.
-    pub fn cell_other(&self, i: CellIndex<Ix>) -> Option<CellIndex<Ix>> {
-        if self.cell_b.is_none() {
-            return Some(self.cell_a);
-        }
-        if i == self.cell_a {
-            return Some(self.cell_b.unwrap());
-        } else if i == self.cell_b.unwrap() {
-            return Some(self.cell_a);
-        }
-        None
-    }
-
-    /// Returns true if the given cell index is part of this edge
-    pub fn touches_cell(&self, i: CellIndex<Ix>) -> bool {
-        if self.cell_b.is_some() {
-            return self.cell_b.unwrap() == i || self.cell_a == i;
-        }
-        self.cell_a == i
-    }
 }
 
-impl<E, Ix> PartialEq for Edge<E, Ix>
+impl<I, J> EdgePair<I, J>
 where
-    Ix: IndexType,
+    I: Index,
+    J: Index,
 {
-    fn eq(&self, other: &Self) -> bool {
-        let nodes = (self.node_a == other.node_a && self.node_b == other.node_b) || (self.node_a == other.node_b && self.node_b == other.node_a);
-        let cells: bool;
-        if self.cell_b.is_some() == other.cell_b.is_some() {
-            // Both edges have the same number of cells
-            if self.cell_b.is_some() {
-                // Both edges have two cells
-                cells = (self.cell_a == other.cell_a && self.cell_b.unwrap() == other.cell_b.unwrap()) || (self.cell_a == other.cell_b.unwrap() && self.cell_b.unwrap() == other.cell_a);
-            } else {
-                // Both edges have one cell
-                cells = self.cell_a == other.cell_a;
-            }
-            return nodes && cells;
-        }
-        return false;
-    }
-}
-
-impl<E, Ix> GraphData<E> for Edge<E, Ix>
-where
-    Ix: IndexType,
-{
-    fn data(&self) -> Option<&Box<E>> {
-        if self.data.is_none() {
-            return None;
-        }
-        self.data.as_ref()
-    }
-
-    fn data_mut(&mut self) -> Option<&mut Box<E>> {
-        if self.data.is_none() {
-            return None;
-        }
-        self.data.as_mut()
+    /// Creates a new edge pair.
+    pub fn new(a: Edge<I>, b: Edge<J>) -> EdgePair<I, J> {
+        EdgePair { a, b }
     }
 }

@@ -2,10 +2,10 @@ use std::fmt;
 use std::hash::Hash;
 
 /// The standard indexing type to use if none is specified.
-pub type DefaultIx = usize;
+pub type DefaultIndex = usize;
 
 /// Black magic that allows most index type ints to be converted into usize while acting as generics.
-pub unsafe trait IndexType: Copy + Default + Hash + Ord + fmt::Debug + 'static {
+pub unsafe trait Index: Copy + Default + Hash + Ord + fmt::Debug + 'static {
     /// Builds the IndexType from usize x.
     fn new(x: usize) -> Self;
     /// Converts the IndexType back into a usize.
@@ -15,7 +15,7 @@ pub unsafe trait IndexType: Copy + Default + Hash + Ord + fmt::Debug + 'static {
 }
 
 
-unsafe impl IndexType for usize {
+unsafe impl Index for usize {
     #[inline(always)]
     fn new(x: usize) -> Self {
         x
@@ -30,7 +30,7 @@ unsafe impl IndexType for usize {
     }
 }
 
-unsafe impl IndexType for u32 {
+unsafe impl Index for u32 {
     #[inline(always)]
     fn new(x: usize) -> Self {
         x as u32
@@ -45,7 +45,7 @@ unsafe impl IndexType for u32 {
     }
 }
 
-unsafe impl IndexType for u16 {
+unsafe impl Index for u16 {
     #[inline(always)]
     fn new(x: usize) -> Self {
         x as u16
@@ -60,7 +60,7 @@ unsafe impl IndexType for u16 {
     }
 }
 
-unsafe impl IndexType for u8 {
+unsafe impl Index for u8 {
     #[inline(always)]
     fn new(x: usize) -> Self {
         x as u8
