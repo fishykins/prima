@@ -2,13 +2,13 @@ use num_traits::{Float, Num};
 
 use crate::{
     base::{Distance, FloatDistance},
-    xy_ops_impl,
+    xy_ops_impl, Point,
 };
 
 use super::Vector2;
 
 /// A base struct for 2D points/vectors.
-#[derive(Debug, Clone, Default, PartialEq)]
+#[derive(Debug, Clone, Copy, Default, PartialEq)]
 pub struct Point2<N> {
     /// The X coordinate.
     pub x: N,
@@ -28,6 +28,15 @@ where
             x: other.x - self.x,
             y: other.y - self.y,
         }
+    }
+}
+
+impl<N> Point<N> for Point2<N>
+where
+    N: Num + Copy,
+{
+    fn cross_product(&self, other: &Self) -> N {
+        self.x * other.y - self.y * other.x
     }
 }
 
@@ -66,7 +75,6 @@ where
         self.distance_squared(other).sqrt()
     }
 }
-
 // ===========================================================================
 // ============================= IMPL VEC ====================================
 // ===========================================================================
