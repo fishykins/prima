@@ -1,4 +1,5 @@
-use crate::AxisValue;
+use num_traits::Num;
+use crate::{AxisValue, Aabr, Point2};
 
 /// A trait that represents any coordinate based unit of measurement.
 pub trait Distance<Rhs = Self> {
@@ -17,7 +18,7 @@ pub trait FloatDistance<Rhs = Self>: Distance<Rhs> {
 }
 
 /// A trait for structs that can have magnitude.
-pub trait Vector<Rhs = Self> {
+pub trait Vector {
     /// The output value.
     type Output;
     /// Computes the squared magnitude of the vector.
@@ -41,4 +42,31 @@ where
 {
     /// The axis this point type covers.
     fn axis(&self) -> AxisValue<N>;
+}
+
+/// A trait to denote collisions between two geometric objects.
+pub trait Collide<Rhs = Self> {
+    /// The output value.
+    type Output;
+    /// Computes the collision between two geometric objects.
+    fn collision(&self, other: &Rhs) -> Option<Self::Output>;
+
+    /// Returns true if the two objects collide.
+    fn collides(&self, other: &Rhs) -> bool {
+        self.collision(other).is_some()
+    }
+}
+
+/// A two dimensional shape that can be used for collision detection.
+pub trait Shape2<N> where N: Num + Copy + PartialOrd {
+    /// The area of the shape.
+    fn area(&self) -> N;
+    /// The circumference of the shape.
+    fn circumference(&self) -> N;
+    /// The center of the shape.
+    fn center(&self) -> Point2<N>;
+    /// A bounding box that contains the shape.
+    fn bounding_box(&self) -> Aabr<N>;
+    /// Returns true if the shape contains the point.
+    fn contains_point(&self, point: &Point2<N>) -> bool;
 }
