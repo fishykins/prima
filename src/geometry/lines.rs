@@ -1,8 +1,8 @@
 use std::marker::PhantomData;
 
-use num_traits::Num;
+use num_traits::{Num, real::Real, Float};
 
-use crate::{Collide, Point};
+use crate::{Collide, Point, Vector};
 
 use super::Point2;
 
@@ -38,6 +38,13 @@ where
     }
 }
 
+impl<N, P> Line<N, P> where N: Float, P: Point<N> {
+    /// Bisects the line.
+    pub fn bisect(self) -> Self {
+        todo!()
+    }
+}
+
 impl<N, P> Collide for Line<N, P>
 where
     N: Num + PartialOrd + Copy,
@@ -66,5 +73,19 @@ where
             return None;
         }
         return Some(a + r * t);
+    }
+}
+
+impl<N> Vector for Line<N> where N: Num + PartialOrd + Copy + PartialOrd + Real {
+    type Output = N;
+
+    fn magnitude_squared(&self) -> Self::Output {
+        let x = self.end.x - self.start.x;
+        let y = self.end.y - self.start.y;
+        x * x + y * y
+    }
+
+    fn magnitude(&self) -> Self::Output {
+        self.magnitude_squared().sqrt()
     }
 }

@@ -5,12 +5,14 @@ mod rays;
 mod rect;
 mod triangle;
 mod vector_2;
+mod circle;
 
 #[cfg(feature = "d3")]
 mod point_3;
 #[cfg(feature = "d3")]
 mod vector_3;
 
+pub use circle::*;
 pub use bounding::*;
 pub use lines::*;
 pub use point_2::Point2;
