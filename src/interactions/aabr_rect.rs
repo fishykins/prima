@@ -1,7 +1,6 @@
-use crate::{Collide, Aabr, Rect, Point2};
-use num_traits::Num;
+use crate::{Collide, Aabr, Rect, Point2, PrimaNum};
 
-impl<N> Collide<Rect<N>> for Aabr<N> where N: Num + PartialOrd + Copy {
+impl<N> Collide<Rect<N>> for Aabr<N> where N: PrimaNum {
     type Output = Aabr<N>;
 
     fn collision(&self, other: &Rect<N>) -> Option<Self::Output> {
@@ -10,7 +9,7 @@ impl<N> Collide<Rect<N>> for Aabr<N> where N: Num + PartialOrd + Copy {
     }
 }
 
-impl<N> Collide<Aabr<N>> for Rect<N> where N: Num + PartialOrd + Copy {
+impl<N> Collide<Aabr<N>> for Rect<N> where N: PrimaNum {
     type Output = Aabr<N>;
 
     fn collision(&self, other: &Aabr<N>) -> Option<Self::Output> {
@@ -18,14 +17,14 @@ impl<N> Collide<Aabr<N>> for Rect<N> where N: Num + PartialOrd + Copy {
     }
 }
 
-impl<N> Into<Rect<N>> for Aabr<N> where N: Num + PartialOrd + Copy {
+impl<N> Into<Rect<N>> for Aabr<N> where N: PrimaNum {
     fn into(self) -> Rect<N> {
         let bb = self.validate();
         Rect::new(bb.min.x, bb.min.y, bb.max.x - bb.min.x, bb.max.y - bb.min.y)
     }
 }
 
-impl<N> From<Rect<N>> for Aabr<N> where N: Num + PartialOrd + Copy {
+impl<N> From<Rect<N>> for Aabr<N> where N: PrimaNum {
     fn from(rect: Rect<N>) -> Self {
         Self::new(
             Point2::new(rect.x, rect.y),

@@ -1,6 +1,4 @@
-use num_traits::Num;
-
-use crate::{Shape2, Collide};
+use crate::{Shape2, Collide, PrimaNum};
 
 /// A Rectangle in 2D space. Alternative to Aabr. 
 #[derive(Debug, Clone, Default)]
@@ -15,7 +13,7 @@ pub struct Rect<N> {
     pub h: N,
 }
 
-impl<N> Rect<N> where N: Num + PartialOrd + Copy {
+impl<N> Rect<N> where N: PrimaNum {
     /// Constructs a new rectangle.
     pub fn new(x: N, y: N, w: N, h: N) -> Self {
         Self { x, y, w, h }
@@ -30,7 +28,7 @@ impl<N> Rect<N> where N: Num + PartialOrd + Copy {
     }
 }
 
-impl<N> Shape2<N> for Rect<N> where N: Num + PartialOrd + Copy + PartialOrd {
+impl<N> Shape2<N> for Rect<N> where N: PrimaNum {
     fn area(&self) -> N {
         self.w * self.h
     }
@@ -63,7 +61,7 @@ impl<N> Shape2<N> for Rect<N> where N: Num + PartialOrd + Copy + PartialOrd {
     }
 }
 
-impl<N> Collide for Rect<N> where N: Num + Copy + PartialOrd {
+impl<N> Collide for Rect<N> where N: PrimaNum {
     type Output = Rect<N>;
 
     fn collision(&self, other: &Self) -> Option<Self::Output> {

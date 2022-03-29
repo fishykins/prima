@@ -1,5 +1,4 @@
-use crate::{Circle, Collide, Line2, Point, Point2, Shape2, Vector};
-use num_traits::{real::Real, Float, Num};
+use crate::{Circle, Collide, Line2, Point, Point2, Shape2, Vector, PrimaFloat, PrimaNum};
 use std::cmp::Ordering;
 
 /// Triangle orientation, used for mathematical calculations.
@@ -26,7 +25,7 @@ pub struct Triangle<N> {
 
 impl<N> Triangle<N>
 where
-    N: Num + Copy + PartialOrd,
+    N: PrimaNum,
 {
     /// Creates a new triangle.
     #[inline]
@@ -74,7 +73,7 @@ where
 
 impl<N> Triangle<N>
 where
-    N: Float,
+    N: PrimaFloat,
 {
     /// The centroid of the triangle. The crossing point of three lines, drawn from the center of each edge to the opposite corner.
     pub fn centroid(&self) -> Point2<N> {
@@ -109,7 +108,7 @@ where
 
 impl<N> Shape2<N> for Triangle<N>
 where
-    N: Float + Real,
+    N: PrimaFloat,
 {
     fn area(&self) -> N {
         let a = self.a;
@@ -175,7 +174,7 @@ where
 
 impl<N> Collide for Triangle<N>
 where
-    N: Num + PartialOrd + Copy + PartialOrd + Real,
+    N: PrimaFloat,
 {
     type Output = ();
 
@@ -199,14 +198,14 @@ impl<N> From<(Point2<N>, Point2<N>, Point2<N>)> for Triangle<N> {
 
 fn sign<N>(a: &Point2<N>, b: &Point2<N>, c: &Point2<N>) -> N
 where
-    N: Float,
+    N: PrimaFloat,
 {
     (b.x - a.x) * (c.y - a.y) - (b.y - a.y) * (c.x - a.x)
 }
 
 fn cross2<N>(t0: &Triangle<N>, t2: &Triangle<N>) -> bool
 where
-    N: Num + PartialOrd + Copy + PartialOrd,
+    N: PrimaNum,
 {
     let da_x = t2.a.x - t0.c.x;
     let da_y = t2.a.y - t0.c.y;

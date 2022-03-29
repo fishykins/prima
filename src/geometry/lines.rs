@@ -1,8 +1,5 @@
 use std::marker::PhantomData;
-
-use num_traits::{Num, real::Real, Float};
-
-use crate::{Collide, Point, Vector};
+use crate::{Collide, Point, Vector, PrimaNum, PrimaFloat};
 
 use super::Point2;
 
@@ -13,7 +10,7 @@ pub type Line2<N> = Line<N>;
 #[derive(Clone, Debug, PartialEq)]
 pub struct Line<N, P = Point2<N>>
 where
-    N: Num,
+    N: PrimaNum,
     P: Point<N>,
 {
     /// The starting point of the line.
@@ -26,7 +23,7 @@ where
 impl<N, P> Line<N, P>
 where
     P: Point<N>,
-    N: Num,
+    N: PrimaNum,
 {
     /// Creates a new line.
     pub fn new(start: P, end: P) -> Self {
@@ -38,7 +35,7 @@ where
     }
 }
 
-impl<N, P> Line<N, P> where N: Float, P: Point<N> {
+impl<N, P> Line<N, P> where N: PrimaFloat, P: Point<N> {
     /// Bisects the line.
     pub fn bisect(self) -> Self {
         todo!()
@@ -47,7 +44,7 @@ impl<N, P> Line<N, P> where N: Float, P: Point<N> {
 
 impl<N, P> Collide for Line<N, P>
 where
-    N: Num + PartialOrd + Copy,
+    N: PrimaNum,
     P: Point<N>,
 {
     type Output = P;
@@ -76,7 +73,7 @@ where
     }
 }
 
-impl<N> Vector for Line<N> where N: Num + PartialOrd + Copy + PartialOrd + Real {
+impl<N> Vector for Line<N> where N: PrimaFloat {
     type Output = N;
 
     fn magnitude_squared(&self) -> Self::Output {

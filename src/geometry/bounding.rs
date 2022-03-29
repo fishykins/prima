@@ -1,7 +1,4 @@
-use num_traits::Num;
-
-use crate::{base::Distance, Collide, Shape2};
-
+use crate::{base::Distance, Collide, Shape2, PrimaNum};
 use super::Point2;
 
 /// Axis-aligned bounding rectangle.
@@ -21,7 +18,7 @@ where
 
 impl<N> Aabr<N>
 where
-    N: Num + PartialOrd + Copy,
+    N: PrimaNum,
 {
     /// Constructs a new bounding box.
     pub fn new(min: Point2<N>, max: Point2<N>) -> Self {
@@ -57,7 +54,7 @@ where
 
 impl<N> Shape2<N> for Aabr<N>
 where
-    N: Num + Copy + Ord,
+    N: PrimaNum,
 {
     fn center(&self) -> Point2<N> {
         let two = N::one() + N::one();
@@ -90,7 +87,7 @@ where
 
 impl<N> Collide for Aabr<N>
 where
-    N: num_traits::Num + PartialOrd + Copy,
+    N: PrimaNum,
 {
     type Output = Aabr<N>;
 

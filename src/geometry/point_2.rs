@@ -1,8 +1,6 @@
-use num_traits::{Float, Num};
-
 use crate::{
     base::{Distance, FloatDistance},
-    xy_ops_impl, Point,
+    xy_ops_impl, Point, PrimaNum, PrimaFloat,
 };
 
 use super::Vector2;
@@ -20,7 +18,7 @@ xy_ops_impl!(Point2);
 
 impl<N> Point2<N>
 where
-    N: Float,
+    N: PrimaFloat,
 {
     /// Returns the vector from the origin to the point.
     pub fn vector(&self, other: Self) -> Vector2<N> {
@@ -33,7 +31,7 @@ where
 
 impl<N> Point<N> for Point2<N>
 where
-    N: Num + Copy,
+    N: PrimaNum,
 {
     fn cross_product(&self, other: &Self) -> N {
         self.x * other.y - self.y * other.x
@@ -42,7 +40,7 @@ where
 
 impl<N> Distance for Point2<N>
 where
-    N: Num + PartialOrd + Copy,
+    N: PrimaNum,
 {
     type Output = N;
 
@@ -69,7 +67,7 @@ where
 
 impl<N> FloatDistance for Point2<N>
 where
-    N: Float,
+    N: PrimaFloat,
 {
     fn distance(&self, other: &Self) -> Self::Output {
         self.distance_squared(other).sqrt()

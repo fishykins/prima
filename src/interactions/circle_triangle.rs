@@ -1,10 +1,8 @@
-use num_traits::Float;
-
-use crate::{Circle, Point2, Triangle, FloatDistance};
+use crate::{Circle, FloatDistance, Point2, PrimaFloat, Triangle};
 
 impl<N> From<Triangle<N>> for Circle<N>
 where
-    N: Float,
+    N: PrimaFloat,
 {
     fn from(triangle: Triangle<N>) -> Self {
         let minus_two = -N::one() - N::one();

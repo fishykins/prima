@@ -1,7 +1,5 @@
 use std::ops::{Add, Mul, Sub};
-
-use crate::{Aabr, AxisValue, Point2};
-use num_traits::Num;
+use crate::{Aabr, AxisValue, Point2, PrimaNum};
 
 /// A trait that represents any coordinate based unit of measurement.
 pub trait Distance<Rhs = Self> {
@@ -33,7 +31,7 @@ pub trait Vector {
 pub trait Point<N>:
     Sub<Output = Self> + Add<Output = Self> + Mul<N, Output = Self> + Sized + Copy
 where
-    N: Num,
+    N: PrimaNum,
 {
     /// Returns the cross product of two points.
     fn cross_product(&self, other: &Self) -> N;
@@ -72,7 +70,7 @@ pub trait Collide<Rhs = Self> {
 /// A two dimensional shape that can be used for collision detection.
 pub trait Shape2<N>
 where
-    N: Num + Copy + PartialOrd,
+    N: PrimaNum,
 {
     /// The area of the shape.
     fn area(&self) -> N;

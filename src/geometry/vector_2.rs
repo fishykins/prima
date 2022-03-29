@@ -1,6 +1,4 @@
-use crate::{xy_ops_impl, base::{Dot, Vector, Direction}};
-use num_traits::{Float, Num, Signed};
-
+use crate::{xy_ops_impl, base::{Dot, Vector, Direction}, PrimaFloat, PrimaNum};
 use super::Point2;
 
 /// A base struct for 2D points/vectors.
@@ -14,7 +12,7 @@ pub struct Vector2<N> {
 
 xy_ops_impl!(Vector2);
 
-impl<N> Dot for Vector2<N> where N: Num + Copy {
+impl<N> Dot for Vector2<N> where N: PrimaNum {
     type Output = N;
 
     #[inline]
@@ -25,7 +23,7 @@ impl<N> Dot for Vector2<N> where N: Num + Copy {
 
 impl<N> Vector for Vector2<N>
 where
-    N: Float + Copy,
+    N: PrimaFloat,
 {
     type Output = N;
 
@@ -49,7 +47,7 @@ impl<N> Into<Point2<N>> for Vector2<N> {
     }
 }
 
-impl<N> PartialEq<Direction> for Vector2<N> where N: Float + Signed {
+impl<N> PartialEq<Direction> for Vector2<N> where N: PrimaNum {
     fn eq(&self, other: &Direction) -> bool {
         match other {
             Direction::Left => self.x < N::zero() && self.y == N::zero(),
