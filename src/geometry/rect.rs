@@ -26,6 +26,19 @@ impl<N> Rect<N> where N: PrimaNum {
     pub fn is_valid(&self) -> bool {
         self.w > N::zero() && self.h > N::zero()
     }
+
+    /// Returns four [Rects] that are the result of splitting the current rectangle into four equal parts.
+    pub fn into_quad(self) -> [Self; 4] {
+        let two = N::one() + N::one();
+        let w = self.w / two;
+        let h = self.h / two;
+        [
+            Self::new(self.x, self.y, w, h),
+            Self::new(self.x + w, self.y, w, h),
+            Self::new(self.x + w, self.y + h, w, h),
+            Self::new(self.x, self.y + h, w, h),
+        ]
+    }
 }
 
 impl<N> Shape2<N> for Rect<N> where N: PrimaNum {
