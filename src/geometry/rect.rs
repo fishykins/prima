@@ -1,4 +1,4 @@
-use crate::{Shape2, Collide, PrimaNum};
+use crate::{Shape2, Collide, PrimaNum, Point2};
 
 /// A Rectangle in 2D space. Alternative to Aabr. 
 #[derive(Debug, Clone, Default)]
@@ -38,6 +38,16 @@ impl<N> Rect<N> where N: PrimaNum {
             Self::new(self.x + w, self.y + h, w, h),
             Self::new(self.x, self.y + h, w, h),
         ]
+    }
+
+    /// Returns the minimum point of the [Rect]. 
+    pub fn min(&self) -> Point2<N> {
+        Point2::new(self.x, self.y)
+    }
+
+    /// Returns the maximum point of the [Rect].
+    pub fn max(&self) -> Point2<N> {
+        Point2::new(self.x + self.w, self.y + self.h)
     }
 }
 
