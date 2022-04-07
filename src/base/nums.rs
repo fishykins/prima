@@ -7,6 +7,8 @@ use std::{f32, f64};
 pub trait PrimaNum:
     Num + PartialOrd + Clone + Copy + Display + Debug + FromPrimitive + ToPrimitive
 {
+    /// The bitsize of this number type.
+    const BITS: usize;
 }
 
 /// Intiger types.
@@ -18,20 +20,48 @@ pub trait PrimaFloat: PrimaNum + Float {}
 /// A strict subset of intiger types that are unsigned.
 pub trait PrimaUInt: PrimaInt + Unsigned {}
 
-impl PrimaNum for i128 {}
-impl PrimaNum for i64 {}
-impl PrimaNum for i32 {}
-impl PrimaNum for i16 {}
-impl PrimaNum for i8 {}
-impl PrimaNum for f64 {}
-impl PrimaNum for f32 {}
-impl PrimaNum for u128 {}
-impl PrimaNum for u64 {}
-impl PrimaNum for u32 {}
-impl PrimaNum for u16 {}
-impl PrimaNum for u8 {}
-impl PrimaNum for usize {}
-impl PrimaNum for isize {}
+impl PrimaNum for i128 {
+    const BITS: usize = 128;
+}
+impl PrimaNum for i64 {
+    const BITS: usize = 64;
+}
+impl PrimaNum for i32 {
+    const BITS: usize = 32;
+}
+impl PrimaNum for i16 {
+    const BITS: usize = 16;
+}
+impl PrimaNum for i8 {
+    const BITS: usize = 8;
+}
+impl PrimaNum for f64 {
+    const BITS: usize = 64;
+}
+impl PrimaNum for f32 {
+    const BITS: usize = 32;
+}
+impl PrimaNum for u128 {
+    const BITS: usize = 128;
+}
+impl PrimaNum for u64 {
+    const BITS: usize = 64;
+}
+impl PrimaNum for u32 {
+    const BITS: usize = 32;
+}
+impl PrimaNum for u16 {
+    const BITS: usize = 16;
+}
+impl PrimaNum for u8 {
+    const BITS: usize = 8;
+}
+impl PrimaNum for usize {
+    const BITS: usize = 64;
+}
+impl PrimaNum for isize {
+    const BITS: usize = 64;
+}
 
 impl PrimaInt for i128 {}
 impl PrimaInt for i64 {}
