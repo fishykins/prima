@@ -14,7 +14,7 @@ pub enum Orientation {
 
 /// A triangle in 2D space.
 #[derive(Debug, Clone, Copy, PartialEq)]
-pub struct Triangle<N> {
+pub struct Triangle<N = super::DefaultFloat> {
     /// The first point of the triangle.
     pub a: Point2<N>,
     /// The second point of the triangle.

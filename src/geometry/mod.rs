@@ -29,3 +29,6 @@ pub use point_3::Point3;
 pub use cube::Cube;
 #[cfg(feature = "d3")]
 pub use vector_3::Vector3;
+
+/// The default float to use when none is specified.
+pub type DefaultFloat = f32;

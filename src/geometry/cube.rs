@@ -1,7 +1,7 @@
 use crate::{PrimaNum, Point3};
 
 /// A typical cube in 3D space.
-pub struct Cube<N> {
+pub struct Cube<N = super::DefaultFloat> {
     /// x coordinate of the cube's min.
     pub x: N,
     /// y coordinate of the cube's min.

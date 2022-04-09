@@ -7,7 +7,7 @@ use super::Vector2;
 
 /// A base struct for 2D points/vectors.
 #[derive(Debug, Clone, Copy, Default, PartialEq)]
-pub struct Point2<N> {
+pub struct Point2<N = super::DefaultFloat> {
     /// The X coordinate.
     pub x: N,
     /// The Y coordinate.

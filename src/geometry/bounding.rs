@@ -2,7 +2,7 @@ use crate::{base::Distance, Collide, Shape2, PrimaNum};
 use super::Point2;
 
 /// Axis-aligned bounding rectangle.
-pub type Aabr<N> = BoundingBox<Point2<N>>;
+pub type Aabr<N = super::DefaultFloat> = BoundingBox<Point2<N>>;
 
 /// Axis-aligned bounding thingy
 #[derive(Clone, Copy, Debug, PartialEq)]

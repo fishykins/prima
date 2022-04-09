@@ -2,7 +2,7 @@ use crate::{Shape2, Collide, PrimaNum, Point2};
 
 /// A Rectangle in 2D space. Alternative to Aabr. 
 #[derive(Debug, Clone, Default)]
-pub struct Rect<N> {
+pub struct Rect<N = super::DefaultFloat> {
     /// The minimum x point of the rectangle.
     pub x: N,
     /// The minimum y point of the rectangle.

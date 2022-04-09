@@ -8,7 +8,7 @@ use crate::Point2;
 /// let circle = Circle::new(Point2::new(0.0, 0.0), 32.0);
 /// ```
 #[derive(Clone, Copy, Debug, Default)]
-pub struct Circle<N> {
+pub struct Circle<N = super::DefaultFloat> {
     /// The middle of the circle.
     pub center: Point2<N>,
     /// Radius of the circle.

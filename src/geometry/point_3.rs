@@ -4,7 +4,7 @@ use crate::xyz_ops_impl;
 
 /// A three dimensional point.
 #[derive(Copy, Clone, Debug)]
-pub struct Point3<N> {
+pub struct Point3<N = super::DefaultFloat> {
     /// The x coordinate of the point.
     pub x: N,
     /// The y coordinate of the point.

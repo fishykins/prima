@@ -3,7 +3,7 @@ use super::Point2;
 
 /// A base struct for 2D points/vectors.
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
-pub struct Vector3<N> {
+pub struct Vector3<N = super::DefaultFloat> {
     /// The X magnitude.
     pub x: N,
     /// The Y magnitude.

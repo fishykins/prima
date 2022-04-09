@@ -4,7 +4,7 @@ use crate::{Collide, Point, Vector, PrimaNum, PrimaFloat};
 use super::Point2;
 
 /// Alias for a 2D point.
-pub type Line2<N> = Line<N>;
+pub type Line2<N = super::DefaultFloat> = Line<N>;
 
 /// A line from point to point.
 #[derive(Clone, Debug, PartialEq)]
