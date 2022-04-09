@@ -1,4 +1,5 @@
-use crate::{Circle, Collide, Line2, Point, Point2, Shape2, Vector, PrimaFloat, PrimaNum};
+use crate::{Circle, Collide, Line2, Point, Point2, PrimaFloat, PrimaNum, Shape2, Vector};
+use serde::{Deserialize, Serialize};
 use std::cmp::Ordering;
 
 /// Triangle orientation, used for mathematical calculations.
@@ -13,7 +14,7 @@ pub enum Orientation {
 }
 
 /// A triangle in 2D space.
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq, Deserialize, Serialize)]
 pub struct Triangle<N = super::DefaultFloat> {
     /// The first point of the triangle.
     pub a: Point2<N>,
@@ -95,7 +96,7 @@ where
         let ca_length = self.ca().magnitude();
         let x = (ab_length * self.a.x + bc_length * self.b.x + ca_length * self.c.x)
             / (ab_length + bc_length + ca_length);
-        let y = (ab_length * self.a.y + bc_length * self.b.y + ca_length * self.c.y) 
+        let y = (ab_length * self.a.y + bc_length * self.b.y + ca_length * self.c.y)
             / (ab_length + bc_length + ca_length);
         Point2::new(x, y)
     }

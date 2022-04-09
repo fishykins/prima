@@ -1,5 +1,5 @@
 use crate::Point2;
-
+use serde::{Deserialize, Serialize};
 
 /// A simple circle, defined by a center and radius.
 /// # Examples
@@ -7,14 +7,13 @@ use crate::Point2;
 /// ```
 /// let circle = Circle::new(Point2::new(0.0, 0.0), 32.0);
 /// ```
-#[derive(Clone, Copy, Debug, Default)]
+#[derive(Clone, Copy, Debug, Default, Deserialize, Serialize)]
 pub struct Circle<N = super::DefaultFloat> {
     /// The middle of the circle.
     pub center: Point2<N>,
     /// Radius of the circle.
     pub radius: N,
 }
-
 
 impl<N> Circle<N> {
     /// Builds a circle from given center and radius.

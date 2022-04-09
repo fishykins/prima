@@ -1,9 +1,9 @@
+use crate::xyz_ops_impl;
+use serde::{Deserialize, Serialize};
 use std::fmt::Display;
 
-use crate::xyz_ops_impl;
-
 /// A three dimensional point.
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, Deserialize, Serialize)]
 pub struct Point3<N = super::DefaultFloat> {
     /// The x coordinate of the point.
     pub x: N,

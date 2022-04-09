@@ -1,7 +1,9 @@
+use serde::{Deserialize, Serialize};
+
 use crate::{Shape2, Collide, PrimaNum, Point2};
 
 /// A Rectangle in 2D space. Alternative to Aabr. 
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, Deserialize, Serialize)]
 pub struct Rect<N = super::DefaultFloat> {
     /// The minimum x point of the rectangle.
     pub x: N,

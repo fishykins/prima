@@ -18,3 +18,4 @@ d3 = []
 
 [dependencies]
 num-traits = "0.2"
+serde = { version = "1.0", features = ["derive"] }

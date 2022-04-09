@@ -1,11 +1,12 @@
-use crate::{base::Distance, Collide, Shape2, PrimaNum};
 use super::Point2;
+use crate::{base::Distance, Collide, PrimaNum, Shape2};
+use serde::{Deserialize, Serialize};
 
 /// Axis-aligned bounding rectangle.
 pub type Aabr<N = super::DefaultFloat> = BoundingBox<Point2<N>>;
 
 /// Axis-aligned bounding thingy
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Deserialize, Serialize)]
 pub struct BoundingBox<P>
 where
     P: Distance,
@@ -112,8 +113,8 @@ where
         } else {
             other.min.y
         };
-        
-        let max_x  = if self.max.x < other.max.x {
+
+        let max_x = if self.max.x < other.max.x {
             self.max.x
         } else {
             other.max.x
@@ -125,6 +126,9 @@ where
             other.max.y
         };
 
-        Some(Aabr::new(Point2::new(min_x, min_y), Point2::new(max_x, max_y)))
+        Some(Aabr::new(
+            Point2::new(min_x, min_y),
+            Point2::new(max_x, max_y),
+        ))
     }
 }

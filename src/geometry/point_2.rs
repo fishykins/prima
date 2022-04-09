@@ -2,11 +2,12 @@ use crate::{
     base::{Distance, FloatDistance},
     xy_ops_impl, Point, PrimaNum, PrimaFloat,
 };
+use serde::{Deserialize, Serialize};
 
 use super::Vector2;
 
 /// A base struct for 2D points/vectors.
-#[derive(Debug, Clone, Copy, Default, PartialEq)]
+#[derive(Debug, Clone, Copy, Default, PartialEq, Deserialize, Serialize)]
 pub struct Point2<N = super::DefaultFloat> {
     /// The X coordinate.
     pub x: N,

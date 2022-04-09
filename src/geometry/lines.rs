@@ -1,13 +1,13 @@
-use std::marker::PhantomData;
-use crate::{Collide, Point, Vector, PrimaNum, PrimaFloat};
-
 use super::Point2;
+use crate::{Collide, Point, PrimaFloat, PrimaNum, Vector};
+use serde::{Deserialize, Serialize};
+use std::marker::PhantomData;
 
 /// Alias for a 2D point.
 pub type Line2<N = super::DefaultFloat> = Line<N>;
 
 /// A line from point to point.
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
 pub struct Line<N, P = Point2<N>>
 where
     N: PrimaNum,
@@ -35,7 +35,11 @@ where
     }
 }
 
-impl<N, P> Line<N, P> where N: PrimaFloat, P: Point<N> {
+impl<N, P> Line<N, P>
+where
+    N: PrimaFloat,
+    P: Point<N>,
+{
     /// Bisects the line.
     pub fn bisect(self) -> Self {
         todo!()
@@ -73,7 +77,10 @@ where
     }
 }
 
-impl<N> Vector for Line<N> where N: PrimaFloat {
+impl<N> Vector for Line<N>
+where
+    N: PrimaFloat,
+{
     type Output = N;
 
     fn magnitude_squared(&self) -> Self::Output {
