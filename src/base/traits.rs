@@ -35,6 +35,9 @@ where
 {
     /// Returns the cross product of two points.
     fn cross_product(&self, other: &Self) -> N;
+
+    /// Returns true if both points are aligned on at least one shared axis.
+    fn aligned(&self, other: &Self) -> bool;
 }
 
 /// A trait that implements the dot product of two points.

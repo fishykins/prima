@@ -37,6 +37,12 @@ where
     fn cross_product(&self, other: &Self) -> N {
         self.x * other.y - self.y * other.x
     }
+
+    fn aligned(&self, other: &Self) -> bool {
+        self.x == other.x || self.y == other.y
+    }
+
+    
 }
 
 impl<N> Distance for Point2<N>

@@ -33,6 +33,11 @@ where
             phantom: PhantomData,
         }
     }
+
+    /// Returns true if the line is axis aligned.
+    pub fn aligned(&self) -> bool {
+        self.start.aligned(&self.end)
+    }
 }
 
 impl<N, P> Line<N, P>
