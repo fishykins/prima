@@ -2,7 +2,7 @@ use std::hash::Hash;
 
 use crate::{
     base::{Distance, FloatDistance},
-    xy_ops_impl, Point, PrimaNum, PrimaFloat,
+    xy_ops_impl, Point, PrimaFloat, PrimaNum,
 };
 use serde::{Deserialize, Serialize};
 
@@ -83,13 +83,15 @@ where
 
 impl<N> Hash for Point2<N>
 where
-    N: PrimaNum + Hash
+    N: PrimaNum + Hash,
 {
     fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
         self.x.hash(state);
         self.y.hash(state);
     }
 }
+
+impl<N> Eq for Point2<N> where N: PrimaNum + Eq {}
 // ===========================================================================
 // ============================= IMPL VEC ====================================
 // ===========================================================================
