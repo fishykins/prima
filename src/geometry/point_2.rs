@@ -1,3 +1,5 @@
+use std::hash::Hash;
+
 use crate::{
     base::{Distance, FloatDistance},
     xy_ops_impl, Point, PrimaNum, PrimaFloat,
@@ -41,8 +43,6 @@ where
     fn aligned(&self, other: &Self) -> bool {
         self.x == other.x || self.y == other.y
     }
-
-    
 }
 
 impl<N> Distance for Point2<N>
@@ -78,6 +78,16 @@ where
 {
     fn distance(&self, other: &Self) -> Self::Output {
         self.distance_squared(other).sqrt()
+    }
+}
+
+impl<N> Hash for Point2<N>
+where
+    N: PrimaNum + Hash
+{
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        self.x.hash(state);
+        self.y.hash(state);
     }
 }
 // ===========================================================================
