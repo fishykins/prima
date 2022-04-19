@@ -1,5 +1,5 @@
 use super::Point2;
-use crate::{base::FastDistance, Collide, PrimaNum, Shape2};
+use crate::{base::FastDistance, Collide, PrimaNum, Shape2, Intersect};
 use serde::{Deserialize, Serialize};
 
 /// Axis-aligned bounding rectangle.
@@ -130,5 +130,21 @@ where
             Point2::new(min_x, min_y),
             Point2::new(max_x, max_y),
         ))
+    }
+}
+
+impl<N> Intersect for Aabr<N>
+where
+    N: PrimaNum,
+{
+    fn intersecting(&self, other: &Self) -> bool {
+
+        if self.max.x < other.min.x || self.min.x > other.max.x {
+            return false;
+        }
+        if self.max.y < other.min.y || self.min.y > other.max.y {
+            return false;
+        }
+        true
     }
 }

@@ -4,7 +4,7 @@ use crate::{xy_ops_impl, base::{Dot, Vector, Direction}, PrimaFloat, PrimaNum};
 use super::Point2;
 
 /// A base struct for 2D points/vectors.
-#[derive(Debug, Clone, Default, PartialEq, Eq, Deserialize, Serialize)]
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Deserialize, Serialize)]
 pub struct Vector2<N = super::DefaultFloat> {
     /// The X magnitude.
     pub x: N,
