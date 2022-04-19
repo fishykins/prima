@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use crate::{Shape2, Collide, PrimaNum, Point2};
+use crate::{Shape2, Interact, PrimaNum, Point2, Collision};
 
 /// A Rectangle in 2D space. Alternative to Aabr. 
 #[derive(Debug, Clone, Default, Deserialize, Serialize)]
@@ -86,20 +86,12 @@ impl<N> Shape2<N> for Rect<N> where N: PrimaNum {
     }
 }
 
-impl<N> Collide for Rect<N> where N: PrimaNum {
-    type Output = Rect<N>;
+impl<N> Interact<N> for Rect<N> where N: PrimaNum {
+    fn collision(&self, _other: &Self) -> Option<Collision<N>> {
+        todo!()
+    }
 
-    fn collision(&self, other: &Self) -> Option<Self::Output> {
-        let x_min = if self.x > other.x { self.x } else { other.x };
-        let y_min = if self.y > other.y { self.y } else { other.y };
-
-        let x_max = if self.x + self.w < other.x + other.w { self.x + self.w } else { other.x + other.w };
-        let y_max = if self.y + self.h < other.y + other.h { self.y + self.h } else { other.y + other.h };
-
-        if x_min <= x_max && y_min <= y_max {
-            Some(Rect::new(x_min, y_min, x_max - x_min, y_max - y_min))
-        } else {
-            None
-        }
+    fn nearest_point(&self, _other: &Self) -> Option<Point2<N>> {
+        todo!()
     }
 }

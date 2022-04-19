@@ -6,6 +6,7 @@ mod rect;
 mod triangle;
 mod vector_2;
 mod circle;
+mod collision;
 
 #[cfg(feature = "d3")]
 mod point_3;
@@ -22,6 +23,7 @@ pub use rays::*;
 pub use rect::*;
 pub use triangle::*;
 pub use vector_2::*;
+pub use collision::*;
 
 #[cfg(feature = "d3")]
 pub use point_3::Point3;

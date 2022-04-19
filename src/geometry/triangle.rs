@@ -1,4 +1,4 @@
-use crate::{Circle, Collide, Line2, Point, Point2, PrimaFloat, PrimaNum, Shape2, Vector};
+use crate::{Circle, Interact, Line2, Point, Point2, PrimaFloat, PrimaNum, Shape2, Vector, Collision, Intersect};
 use serde::{Deserialize, Serialize};
 use std::cmp::Ordering;
 
@@ -173,17 +173,22 @@ where
     }
 }
 
-impl<N> Collide for Triangle<N>
+impl<N> Interact<N> for Triangle<N>
 where
     N: PrimaFloat,
 {
-    type Output = ();
+    fn collision(&self, _other: &Self) -> Option<Collision<N>> {
+        todo!()
+    }
 
-    fn collision(&self, other: &Self) -> Option<Self::Output> {
-        if !cross2(&self, &other) || !cross2(&other, &self) {
-            return Some(());
-        }
-        None
+    fn nearest_point(&self, _other: &Self) -> Option<Point2<N>> {
+        todo!()
+    }
+}
+
+impl<N> Intersect for Triangle<N> where N: PrimaFloat {
+    fn intersecting(&self, other: &Self) -> bool {
+        !cross2(&self, &other) || !cross2(&other, &self)
     }
 }
 

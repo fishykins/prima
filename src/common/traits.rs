@@ -1,4 +1,4 @@
-use crate::{Aabr, AxisValue, Point2, PrimaNum};
+use crate::{Aabr, AxisValue, Point2, PrimaNum, Collision};
 use std::ops::{Add, Mul, Sub};
 
 /// Used for implimenting 'fast' distance calculations.
@@ -78,23 +78,21 @@ where
     fn contains_point(&self, point: &Point2<N>) -> bool;
 }
 
-/// A trait to denote collisions between two geometric objects and allows for generic return values.
-/// Different to the [Intersect] trait, which is simply used to determine if indeed a collision is happening.
-pub trait Collide<Rhs = Self> {
-    /// The output value.
-    type Output;
+/// A trait that enforces certian behaviors between two shapes.
+pub trait Interact<N, Rhs = Self> {
     /// Computes the collision between two geometric objects.
-    fn collision(&self, other: &Rhs) -> Option<Self::Output>;
+    fn collision(&self, other: &Rhs) -> Option<Collision<N>>;
 
-    /// Returns true if the two objects collide. This should always produce the same result as calling [Intersect.intersecting()] on the two objects.
+    /// Gets the nearest point of 'other' to 'self'.
+    fn nearest_point(&self, other: &Rhs) -> Option<Point2<N>>;
+
+    /// Returns true if the two objects collide. This should always produce the same result as calling [intersecting()] on the two objects.
     fn colliding(&self, other: &Rhs) -> bool {
         self.collision(other).is_some()
     }
-
-    //TODO: Auto derive Intersect???
 }
 
-/// A trait to check if two shapes are intersecting. For more complex intersections, use [Collide].
+/// A trait to check if two shapes are intersecting. For more complex interactions between shapes, use the trait [Interact].
 pub trait Intersect<Rhs = Self> {
     /// Computes the intersection between two geometric objects.
     fn intersecting(&self, other: &Rhs) -> bool;

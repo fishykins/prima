@@ -1,5 +1,5 @@
 use super::Point2;
-use crate::{Collide, Point, PrimaFloat, PrimaNum, Vector, Distance};
+use crate::{Point, PrimaFloat, PrimaNum, Vector, Distance, Intersect};
 use serde::{Deserialize, Serialize};
 use std::marker::PhantomData;
 
@@ -38,27 +38,9 @@ where
     pub fn aligned(&self) -> bool {
         self.start.aligned(&self.end)
     }
-}
 
-impl<N, P> Line<N, P>
-where
-    N: PrimaFloat,
-    P: Point<N>,
-{
-    /// Bisects the line.
-    pub fn bisect(self) -> Self {
-        todo!()
-    }
-}
-
-impl<N, P> Collide for Line<N, P>
-where
-    N: PrimaNum,
-    P: Point<N>,
-{
-    type Output = P;
-
-    fn collision(&self, other: &Self) -> Option<Self::Output> {
+    /// Returns the point of collision between the line and the given line.
+    pub fn contact_point(&self, other: &Self) -> Option<P> {
         let a = self.start;
         let c = other.start;
         let r: P = self.end - a;
@@ -79,6 +61,17 @@ where
             return None;
         }
         return Some(a + r * t);
+    }
+}
+
+impl<N, P> Line<N, P>
+where
+    N: PrimaFloat,
+    P: Point<N>,
+{
+    /// Bisects the line.
+    pub fn bisect(self) -> Self {
+        todo!()
     }
 }
 
@@ -112,5 +105,14 @@ impl<N> Line2<N> where N: PrimaFloat {
         let dist_end = self.end.distance(&point);
         let buffer = N::from_f32(0.01).unwrap();
         dist_start + dist_end >= line_length - buffer && dist_start + dist_end <= line_length + buffer
+    }
+}
+
+impl<N> Intersect for Line<N>
+where
+    N: PrimaFloat,
+{
+    fn intersecting(&self, other: &Self) -> bool {
+        self.contact_point(other).is_some()
     }
 }

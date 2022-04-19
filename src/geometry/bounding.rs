@@ -1,5 +1,5 @@
 use super::Point2;
-use crate::{common::FastDistance, Collide, PrimaNum, Shape2, Intersect};
+use crate::{common::FastDistance, Interact, PrimaNum, Shape2, Intersect, Collision};
 use serde::{Deserialize, Serialize};
 
 /// Axis-aligned bounding rectangle.
@@ -51,6 +51,47 @@ where
     pub fn height(&self) -> N {
         self.max.y - self.min.y
     }
+
+    /// Returns any overlap between the two bounding boxes. 
+    pub fn common_bounds(&self, other: &Self) -> Option<Self> {
+        if self.min.x > other.max.x
+            || self.max.x < other.min.x
+            || self.min.y > other.max.y
+            || self.max.y < other.min.y
+        {
+            return None;
+        }
+
+        // This looks verbose, but it allows us to avoid requiring Ord for N.
+        let min_x = if self.min.x > other.min.x {
+            self.min.x
+        } else {
+            other.min.x
+        };
+
+        let min_y = if self.min.y > other.min.y {
+            self.min.y
+        } else {
+            other.min.y
+        };
+
+        let max_x = if self.max.x < other.max.x {
+            self.max.x
+        } else {
+            other.max.x
+        };
+
+        let max_y = if self.max.y < other.max.y {
+            self.max.y
+        } else {
+            other.max.y
+        };
+
+        Some(Self::new(
+            Point2::new(min_x, min_y),
+            Point2::new(max_x, max_y),
+        ))
+    }
 }
 
 impl<N> Shape2<N> for Aabr<N>
@@ -86,50 +127,16 @@ where
     }
 }
 
-impl<N> Collide for Aabr<N>
+impl<N> Interact<N> for Aabr<N>
 where
     N: PrimaNum,
 {
-    type Output = Aabr<N>;
+    fn collision(&self, _other: &Self) -> Option<Collision<N>> {
+        todo!()
+    }
 
-    fn collision(&self, other: &Self) -> Option<Self::Output> {
-        if self.min.x > other.max.x
-            || self.max.x < other.min.x
-            || self.min.y > other.max.y
-            || self.max.y < other.min.y
-        {
-            return None;
-        }
-
-        // This looks verbose, but it allows us to avoid requiring Ord for N.
-        let min_x = if self.min.x > other.min.x {
-            self.min.x
-        } else {
-            other.min.x
-        };
-
-        let min_y = if self.min.y > other.min.y {
-            self.min.y
-        } else {
-            other.min.y
-        };
-
-        let max_x = if self.max.x < other.max.x {
-            self.max.x
-        } else {
-            other.max.x
-        };
-
-        let max_y = if self.max.y < other.max.y {
-            self.max.y
-        } else {
-            other.max.y
-        };
-
-        Some(Aabr::new(
-            Point2::new(min_x, min_y),
-            Point2::new(max_x, max_y),
-        ))
+    fn nearest_point(&self, _other: &Self) -> Option<Point2<N>> {
+        todo!()
     }
 }
 

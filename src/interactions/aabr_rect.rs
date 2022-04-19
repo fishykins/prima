@@ -1,19 +1,23 @@
-use crate::{Collide, Aabr, Rect, Point2, PrimaNum};
+use crate::{Interact, Aabr, Rect, Point2, PrimaNum, Collision};
 
-impl<N> Collide<Rect<N>> for Aabr<N> where N: PrimaNum {
-    type Output = Aabr<N>;
-
-    fn collision(&self, other: &Rect<N>) -> Option<Self::Output> {
+impl<N> Interact<N, Rect<N>> for Aabr<N> where N: PrimaNum {
+    fn collision(&self, other: &Rect<N>) -> Option<Collision<N>> {
         let other: Aabr<N> = Aabr::<N>::from(other.clone());
         self.collision(&other)
     }
+
+    fn nearest_point(&self, _other: &Rect<N>) -> Option<Point2<N>> {
+        todo!()
+    }
 }
 
-impl<N> Collide<Aabr<N>> for Rect<N> where N: PrimaNum {
-    type Output = Aabr<N>;
-
-    fn collision(&self, other: &Aabr<N>) -> Option<Self::Output> {
+impl<N> Interact<N, Aabr<N>> for Rect<N> where N: PrimaNum {
+    fn collision(&self, other: &Aabr<N>) -> Option<Collision<N>> {
         Aabr::<N>::from(self.clone()).collision(other)
+    }
+
+    fn nearest_point(&self, _other: &Aabr<N>) -> Option<Point2<N>> {
+        todo!()
     }
 }
 
