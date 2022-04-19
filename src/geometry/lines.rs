@@ -1,5 +1,5 @@
 use super::Point2;
-use crate::{Point, PrimaFloat, PrimaNum, Vector, Distance, Intersect};
+use crate::{Point, PrimaFloat, PrimaNum, Vector, Distance, Intersect, Vector2};
 use serde::{Deserialize, Serialize};
 use std::marker::PhantomData;
 
@@ -75,20 +75,25 @@ where
     }
 }
 
-impl<N> Vector for Line<N>
+impl<N> Vector<N> for Line<N>
 where
     N: PrimaFloat,
 {
-    type Output = N;
+    type NormalizedOutput = Vector2<N>;
 
-    fn magnitude_squared(&self) -> Self::Output {
+    fn magnitude_squared(&self) -> N {
         let x = self.end.x - self.start.x;
         let y = self.end.y - self.start.y;
         x * x + y * y
     }
 
-    fn magnitude(&self) -> Self::Output {
+    fn magnitude(&self) -> N {
         self.magnitude_squared().sqrt()
+    }
+
+    fn normalize(&self) -> Vector2<N> {
+        let v: Vector2<N> = (self.end - self.start).into();
+        v.normalize()
     }
 }
 

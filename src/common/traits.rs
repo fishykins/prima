@@ -1,4 +1,4 @@
-use crate::{Aabr, AxisValue, Point2, PrimaNum, Collision};
+use crate::{Aabr, AxisValue, Collision, Point2, PrimaNum};
 use std::ops::{Add, Mul, Sub};
 
 /// Used for implimenting 'fast' distance calculations.
@@ -22,13 +22,19 @@ pub trait Distance<Rhs = Self>: FastDistance<Rhs> {
 }
 
 /// A trait for geometry that can have magnitude.
-pub trait Vector {
+pub trait Vector<N>
+where
+    N: PrimaNum,
+{
     /// The output value.
-    type Output;
+    type NormalizedOutput;
+
     /// Computes the squared magnitude of the vector.
-    fn magnitude_squared(&self) -> Self::Output;
+    fn magnitude_squared(&self) -> N;
     /// Computes the magnitude of the vector.
-    fn magnitude(&self) -> Self::Output;
+    fn magnitude(&self) -> N;
+    /// Normalizes the vector.
+    fn normalize(&self) -> Self::NormalizedOutput;
 }
 
 /// A trait to represent a point in any space.
@@ -84,9 +90,12 @@ pub trait Interact<N, Rhs = Self> {
     fn collision(&self, other: &Rhs) -> Option<Collision<N>>;
 
     /// Gets the nearest point of 'other' to 'self'.
-    fn nearest_point(&self, other: &Rhs) -> Option<Point2<N>>;
+    fn nearest_extent(&self, other: &Rhs) -> Point2<N>;
 
     /// Returns true if the two objects collide. This should always produce the same result as calling [intersecting()] on the two objects.
+    /// ### Note
+    /// While this acheives the same as calling [intersecting()] on the two objects, it is probably faster to use the latter as this uses 
+    /// the more complex opperation of [collision()] as an intermediate step (when impliemented as default).
     fn colliding(&self, other: &Rhs) -> bool {
         self.collision(other).is_some()
     }

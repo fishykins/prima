@@ -9,7 +9,7 @@ pub struct Ray<N, V, P>
 where
     N: PrimaNum,
     P: Point<N>,
-    V: Vector,
+    V: Vector<N>,
 {
     /// The starting point of the ray.
     pub origin: P,

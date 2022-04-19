@@ -181,7 +181,7 @@ where
         todo!()
     }
 
-    fn nearest_point(&self, _other: &Self) -> Option<Point2<N>> {
+    fn nearest_extent(&self, _other: &Self) -> Point2<N> {
         todo!()
     }
 }

@@ -23,19 +23,27 @@ impl<N> Dot for Vector2<N> where N: PrimaNum {
     }
 }
 
-impl<N> Vector for Vector2<N>
+impl<N> Vector<N> for Vector2<N>
 where
     N: PrimaFloat,
 {
-    type Output = N;
+    type NormalizedOutput = Vector2<N>;
 
     /// Returns the squared magnitude of the vector.
-    fn magnitude_squared(&self) -> Self::Output {
+    fn magnitude_squared(&self) -> N {
         self.x * self.x + self.y * self.y
     }
 
-    fn magnitude(&self) -> Self::Output {
+    fn magnitude(&self) -> N {
         self.magnitude_squared().sqrt()
+    }
+
+    fn normalize(&self) -> Self::NormalizedOutput {
+        let mag = self.magnitude();
+        Self {
+            x: self.x / mag,
+            y: self.y / mag,
+        }
     }
 }
 

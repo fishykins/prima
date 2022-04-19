@@ -1,4 +1,6 @@
-use crate::{Distance, FastDistance, Intersect, Point2, PrimaFloat, PrimaNum, Shape2};
+use crate::{
+    Distance, FastDistance, Interact, Intersect, Point2, PrimaFloat, PrimaNum, Shape2, Vector2, Vector,
+};
 use serde::{Deserialize, Serialize};
 
 /// A simple circle, defined by a center and radius.
@@ -89,6 +91,40 @@ where
 
     fn contains_point(&self, point: &Point2<N>) -> bool {
         self.center.distance_squared(point) <= self.radius * self.radius
+    }
+}
+
+impl<N> Interact<N> for Circle<N>
+where
+    N: PrimaFloat,
+{
+    fn collision(&self, other: &Self) -> Option<crate::Collision<N>> {
+        let d = self.center.distance(&other.center);
+        let r = self.radius + other.radius;
+        if d <= r {
+            let normal: Vector2<N> = (other.center - self.center).into();
+            if normal == Vector2::zero() {
+                Some(crate::Collision {
+                    // Pseudo random (but predictable) values for when the circles are one.
+                    penetration: self.radius,
+                    normal: Vector2::new(N::one(), N::zero()),
+                })
+            } else {
+                let penetration = r - d;
+                Some(crate::Collision {
+                    penetration,
+                    normal,
+                })
+            }
+        } else {
+            None
+        }
+    }
+
+    fn nearest_extent(&self, other: &Self) -> Point2<N> {
+        let v: Vector2<N> = (other.center - self.center).into();
+        let normalized = v.normalize();
+        other.center + normalized * other.radius
     }
 }
 
