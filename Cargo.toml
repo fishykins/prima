@@ -19,3 +19,6 @@ d3 = []
 [dependencies]
 num-traits = "0.2"
 serde = { version = "1.0", features = ["derive"] }
+glam = { version = "0.20.0", optional = true }
+
+[profile.dev]

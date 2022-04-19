@@ -12,6 +12,10 @@ mod geometry;
 /// Implimentations for cross-geometry operations.
 mod interactions;
 
+/// Compatability module for external crates, such as glam.
+mod compat;
+
 pub use base::*;
 pub use geometry::*;
 pub use interactions::*;
+pub use compat::*;
