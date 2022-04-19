@@ -1,7 +1,7 @@
 use num_traits::{Float, Signed};
 
 use super::Axis;
-use crate::geometry::Vector2;
+use crate::{geometry::Vector2, Rotation, PrimaFloat};
 
 /// Represents the six possible directions of movement.
 #[derive(Debug, Clone, Copy, Eq, PartialEq, Hash)]
@@ -68,6 +68,19 @@ impl Into<Axis> for Direction {
             Direction::Right => Axis::X,
             Direction::Up => Axis::Y,
             Direction::Down => Axis::Y,
+        }
+    }
+}
+
+impl<N> Into<Rotation<N>> for Direction where N: PrimaFloat {
+    fn into(self) -> Rotation<N> {
+        match self {
+            Direction::Forward => Rotation::from_radians(N::zero()),
+            Direction::Backward => Rotation::from_radians(N::one()),
+            Direction::Left => Rotation::from_radians(N::from_f32(1.5).unwrap()),
+            Direction::Right => Rotation::from_radians(N::from_f32(0.5).unwrap()),
+            Direction::Up => Rotation::from_radians(N::zero()),
+            Direction::Down => Rotation::from_radians(N::one()),
         }
     }
 }
