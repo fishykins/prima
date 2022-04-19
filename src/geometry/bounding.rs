@@ -1,5 +1,5 @@
 use super::Point2;
-use crate::{base::Distance, Collide, PrimaNum, Shape2};
+use crate::{base::FastDistance, Collide, PrimaNum, Shape2};
 use serde::{Deserialize, Serialize};
 
 /// Axis-aligned bounding rectangle.
@@ -9,7 +9,7 @@ pub type Aabr<N = super::DefaultFloat> = BoundingBox<Point2<N>>;
 #[derive(Clone, Copy, Debug, PartialEq, Deserialize, Serialize)]
 pub struct BoundingBox<P>
 where
-    P: Distance,
+    P: FastDistance,
 {
     /// The minimum point of the box.
     pub min: P,

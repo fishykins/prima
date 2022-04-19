@@ -1,5 +1,5 @@
 use super::Point2;
-use crate::{Collide, Point, PrimaFloat, PrimaNum, Vector};
+use crate::{Collide, Point, PrimaFloat, PrimaNum, Vector, Distance};
 use serde::{Deserialize, Serialize};
 use std::marker::PhantomData;
 
@@ -96,5 +96,21 @@ where
 
     fn magnitude(&self) -> Self::Output {
         self.magnitude_squared().sqrt()
+    }
+}
+
+impl<N> Line2<N> where N: PrimaFloat {
+    /// Returns the length of the line.
+    pub fn length(&self) -> N {
+        self.start.distance(&self.end)
+    }
+
+    /// Returns true if the point lies on the line.
+    pub fn contains_point(&self, point: Point2<N>) -> bool {
+        let line_length = self.length();
+        let dist_start = self.start.distance(&point);
+        let dist_end = self.end.distance(&point);
+        let buffer = N::from_f32(0.01).unwrap();
+        dist_start + dist_end >= line_length - buffer && dist_start + dist_end <= line_length + buffer
     }
 }

@@ -1,4 +1,4 @@
-use crate::{Circle, FloatDistance, Point2, PrimaFloat, Triangle};
+use crate::{Circle, Distance, Point2, PrimaFloat, Triangle};
 
 impl<N> From<Triangle<N>> for Circle<N>
 where
@@ -22,7 +22,7 @@ where
         let denom = b1 * a2 - b2 * a1;
 
         if denom == N::zero() {
-            panic!("Imposibe to find center of circle from triangle, perhaps it is not a valid triangle?");
+            panic!("Impossible to find center of circle from triangle, perhaps it is not a valid triangle?");
         }
         let y_cen = numer / denom;
 

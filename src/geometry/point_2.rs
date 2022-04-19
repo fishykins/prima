@@ -1,8 +1,8 @@
 use std::hash::Hash;
 
 use crate::{
-    base::{Distance, FloatDistance},
-    xy_ops_impl, Point, PrimaFloat, PrimaNum,
+    base::{FastDistance, Distance},
+    xy_ops_impl, Point, PrimaFloat, PrimaNum, Dot,
 };
 use serde::{Deserialize, Serialize};
 
@@ -45,7 +45,7 @@ where
     }
 }
 
-impl<N> Distance for Point2<N>
+impl<N> FastDistance for Point2<N>
 where
     N: PrimaNum,
 {
@@ -72,7 +72,7 @@ where
     }
 }
 
-impl<N> FloatDistance for Point2<N>
+impl<N> Distance for Point2<N>
 where
     N: PrimaFloat,
 {
@@ -88,6 +88,17 @@ where
     fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
         self.x.hash(state);
         self.y.hash(state);
+    }
+}
+
+impl<N> Dot for Point2<N>
+where
+    N: PrimaNum,
+{
+    type Output = N;
+
+    fn dot(&self, other: &Self) -> Self::Output {
+        self.x * other.x + self.y * other.y
     }
 }
 

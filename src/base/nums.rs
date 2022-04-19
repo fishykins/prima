@@ -15,7 +15,10 @@ pub trait PrimaNum:
 pub trait PrimaInt: PrimaNum + Hash {}
 
 /// Float types.
-pub trait PrimaFloat: PrimaNum + Float {}
+pub trait PrimaFloat: PrimaNum + Float {
+    /// A quick and dirty grabber for the value of pi!
+    fn pi() -> Self;
+}
 
 /// A strict subset of intiger types that are unsigned.
 pub trait PrimaUInt: PrimaInt + Unsigned {}
@@ -76,8 +79,16 @@ impl PrimaInt for u8 {}
 impl PrimaInt for usize {}
 impl PrimaInt for isize {}
 
-impl PrimaFloat for f64 {}
-impl PrimaFloat for f32 {}
+impl PrimaFloat for f64 {
+    fn pi() -> Self {
+        f64::consts::PI
+    }
+}
+impl PrimaFloat for f32 {
+    fn pi() -> Self {
+        f32::consts::PI
+    }
+}
 
 impl PrimaUInt for usize {}
 impl PrimaUInt for u8 {}

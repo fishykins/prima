@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use crate::{xyz_ops_impl, base::{Dot, Vector, Direction}, PrimaFloat, PrimaNum, Point3, Distance, FloatDistance};
+use crate::{xyz_ops_impl, base::{Dot, Vector, Direction}, PrimaFloat, PrimaNum, Point3, FastDistance, Distance};
 use super::Point2;
 
 /// A base struct for 2D points/vectors.
@@ -89,7 +89,7 @@ where
     }
 }
 
-impl<N> Distance for Point3<N>
+impl<N> FastDistance for Point3<N>
 where
     N: PrimaNum,
 {
@@ -122,7 +122,7 @@ where
     }
 }
 
-impl<N> FloatDistance for Point3<N>
+impl<N> Distance for Point3<N>
 where
     N: PrimaFloat,
 {
