@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use crate::{xyz_ops_impl, base::{Dot, Vector, Direction}, PrimaFloat, PrimaNum, Point3, FastDistance, Distance};
+use crate::{xyz_ops_impl, common::{Dot, Vector}, PrimaFloat, PrimaNum, Point3, FastDistance, Distance, abstracts::Direction};
 use super::Point2;
 
 /// A base struct for 2D points/vectors.

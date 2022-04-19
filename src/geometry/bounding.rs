@@ -1,5 +1,5 @@
 use super::Point2;
-use crate::{base::FastDistance, Collide, PrimaNum, Shape2, Intersect};
+use crate::{common::FastDistance, Collide, PrimaNum, Shape2, Intersect};
 use serde::{Deserialize, Serialize};
 
 /// Axis-aligned bounding rectangle.

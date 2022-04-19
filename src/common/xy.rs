@@ -1,51 +1,51 @@
-/// Implements the typical traits required for an XYZ based struct.
+/// Implements the typical traits required for an XY based struct.
 #[macro_export]
-macro_rules! xyz_ops_impl(
+macro_rules! xy_ops_impl(
     ($T: ident) => {
         use std::ops::{Add, AddAssign, Div, Mul, Sub, SubAssign};
         use crate::Coordinate;
+        use crate::abstracts::*;
 
         impl<N> $T<N> where N: Copy {
             /// Creates a new point.
-            pub fn new(x: N, y: N, z: N) -> Self {
-                $T { x, y, z }
+            pub fn new(x: N, y: N) -> Self {
+                $T { x, y }
             }
 
             /// Creates point from a single value.
             pub fn splat(n: N) -> Self {
-                $T { x: n, y: n, z: n }
+                $T { x: n, y: n }
             }
         }
 
         impl<N> Coordinate<N> for $T<N> where N: num_traits::Num + Copy {
             fn axis(&self) -> crate::AxisValue<N> {
-                crate::base::AxisValue::XYZ(self.x, self.y, self.z)
+                AxisValue::XY(self.x, self.y)
             }
         }
 
         impl<N> $T<N> where N: num_traits::Float {
             /// Returns zero vector.
             pub fn zero() -> Self {
-                $T { x: N::zero(), y: N::zero(), z: N::zero() }
+                $T { x: N::zero(), y: N::zero() }
             }
             /// Returns one vector.
             pub fn one() -> Self {
-                $T { x: N::one(), y: N::one(), z: N::one() }
+                $T { x: N::one(), y: N::one() }
             }
         }
 
-        impl<N> Into<(N, N, N)> for $T<N> {
-            fn into(self) -> (N, N, N) {
-                (self.x, self.y, self.z)
+        impl<N> Into<(N, N)> for $T<N> {
+            fn into(self) -> (N, N) {
+                (self.x, self.y)
             }
         }
 
-        impl<N> From<(N, N, N)> for $T<N> {
-            fn from((x, y, z): (N, N, N)) -> Self {
+        impl<N> From<(N, N)> for $T<N> {
+            fn from((x, y): (N, N)) -> Self {
                 Self {
                     x,
                     y,
-                    z,
                 }
             }
         }
@@ -55,7 +55,6 @@ macro_rules! xyz_ops_impl(
                 Self {
                     x: v[0],
                     y: v[1],
-                    z: v[2],
                 }
             }
         }
@@ -68,7 +67,6 @@ macro_rules! xyz_ops_impl(
                 Self {
                     x: self.x + other.x,
                     y: self.y + other.y,
-                    z: self.z + other.z,
                 }
             }
         }
@@ -81,7 +79,6 @@ macro_rules! xyz_ops_impl(
                 Self {
                     x: self.x - other.x,
                     y: self.y - other.y,
-                    z: self.z - other.z,
                 }
             }
         }
@@ -94,7 +91,6 @@ macro_rules! xyz_ops_impl(
                 Self {
                     x: self.x * other,
                     y: self.y * other,
-                    z: self.z * other,
                 }
             }
         }
@@ -107,7 +103,6 @@ macro_rules! xyz_ops_impl(
                 Self {
                     x: self.x / other,
                     y: self.y / other,
-                    z: self.z / other,
                 }
             }
         }
@@ -120,7 +115,6 @@ macro_rules! xyz_ops_impl(
             fn add_assign(&mut self, other: $T<N>) {
                 self.x += other.x;
                 self.y += other.y;
-                self.z += other.z;
             }
         }
 
@@ -132,7 +126,6 @@ macro_rules! xyz_ops_impl(
             fn sub_assign(&mut self, other: $T<N>) {
                 self.x -= other.x;
                 self.y -= other.y;
-                self.z -= other.z;
             }
         }
     }

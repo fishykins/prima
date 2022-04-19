@@ -5,9 +5,12 @@
 //! Emphasis is on axis-aligned opperations, but the library is designed to be used with any kind of geometry.
 
 /// Base utilities.
-mod base;
+mod common;
 /// Geometry utilities.
 mod geometry;
+
+/// Useful abstractions.
+mod abstracts;
 
 /// Implimentations for cross-geometry operations.
 mod interactions;
@@ -15,7 +18,8 @@ mod interactions;
 /// Compatability module for external crates, such as glam.
 mod compat;
 
-pub use base::*;
+pub use common::*;
 pub use geometry::*;
 pub use interactions::*;
 pub use compat::*;
+pub use abstracts::*;

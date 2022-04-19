@@ -1,7 +1,7 @@
 use std::hash::Hash;
 
 use crate::{
-    base::{FastDistance, Distance},
+    common::{FastDistance, Distance},
     xy_ops_impl, Point, PrimaFloat, PrimaNum, Dot,
 };
 use serde::{Deserialize, Serialize};
