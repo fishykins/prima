@@ -144,45 +144,38 @@ where
     fn collision(&self, other: &Self) -> Option<Collision<N>> {
         let n = other.center() - self.center();
         // Calculate half extents along x axis for each shape.
-        let a_extent = self.half_extents().0;
-        let b_extent = other.half_extents().0;
+        let a_extent = self.half_extents();
+        let b_extent = other.half_extents();
 
         // Calculate overlap on x axis.
-        let x_overlap = a_extent + b_extent - (self.center().x - other.center().x).abs();
+        let x_overlap = a_extent.0 + b_extent.0 - n.x.abs();
 
         if x_overlap > N::zero() {
-            let a_extent = self.half_extents().1;
-            let b_extent = other.half_extents().1;
-
             // Calculate overlap on y axis.
-            let y_overlap = a_extent + b_extent - (self.center().y - other.center().y).abs();
+            let y_overlap = a_extent.1 + b_extent.1 - n.y.abs();
 
             if y_overlap > N::zero() {
                 // Find out which axis is axis of least penetration
-                if x_overlap > y_overlap {
-                    if n.x < N::zero() {
-                        return Some(Collision {
-                            penetration: x_overlap,
-                            normal: Vector2::new(-N::one(), N::zero()),
-                        });
+                if x_overlap < y_overlap {
+                    let normal = if n.x < N::zero() {
+                        Vector2::new(-N::one(), N::zero())
                     } else {
-                        return Some(Collision {
-                            penetration: x_overlap,
-                            normal: Vector2::zero(),
-                        });
-                    }
+                        Vector2::new(N::one(), N::zero())
+                    };
+                    return Some(Collision {
+                        penetration: x_overlap,
+                        normal,
+                    });
                 } else {
-                    if n.y < N::zero() {
-                        return Some(Collision {
-                            penetration: y_overlap,
-                            normal: Vector2::new(N::zero(), -N::one()),
-                        });
+                    let normal = if n.y < N::zero() {
+                        Vector2::new(N::zero(), -N::one())
                     } else {
-                        return Some(Collision {
-                            penetration: y_overlap,
-                            normal: Vector2::zero(),
-                        });
-                    }
+                        Vector2::new(N::zero(), N::one())
+                    };
+                    return Some(Collision {
+                        penetration: y_overlap,
+                        normal,
+                    });
                 }
             }
         }
@@ -257,5 +250,18 @@ where
             return false;
         }
         true
+    }
+}
+
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn aabr_test() {
+        let a = Aabr::new(Point2::new(0.0, 0.0), Point2::new(1.0, 1.0));
+        let b = Aabr::new(Point2::new(0.5, 0.5), Point2::new(1.5, 1.5));
+        assert!(a.intersecting(&b));
     }
 }

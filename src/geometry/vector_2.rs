@@ -39,6 +39,9 @@ where
     }
 
     fn normalize(&self) -> Self::NormalizedOutput {
+        if self.magnitude_squared() == N::zero() {
+            return Self::zero();
+        }
         let mag = self.magnitude();
         Self {
             x: self.x / mag,
@@ -46,7 +49,6 @@ where
         }
     }
 }
-
 
 impl<N> Into<Point2<N>> for Vector2<N> {
     fn into(self) -> Point2<N> {
