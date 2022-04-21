@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use crate::{Shape2, PrimaNum, Point2};
+use crate::{Shape2, PrimaNum, Point};
 
 /// A Rectangle in 2D space. Alternative to Aabr. 
 #[derive(Debug, Clone, Default, Deserialize, Serialize)]
@@ -43,13 +43,13 @@ impl<N> Rect<N> where N: PrimaNum {
     }
 
     /// Returns the minimum point of the [Rect]. 
-    pub fn min(&self) -> Point2<N> {
-        Point2::new(self.x, self.y)
+    pub fn min(&self) -> Point<N> {
+        Point::new(self.x, self.y)
     }
 
     /// Returns the maximum point of the [Rect].
-    pub fn max(&self) -> Point2<N> {
-        Point2::new(self.x + self.w, self.y + self.h)
+    pub fn max(&self) -> Point<N> {
+        Point::new(self.x + self.w, self.y + self.h)
     }
 }
 
@@ -62,16 +62,16 @@ impl<N> Shape2<N> for Rect<N> where N: PrimaNum {
         self.w + self.w + self.h + self.h
     }
 
-    fn center(&self) -> crate::Point2<N> {
+    fn center(&self) -> crate::Point<N> {
         let two = N::one() + N::one();
-        crate::Point2::new(self.x + self.w / two, self.y + self.h / two)
+        crate::Point::new(self.x + self.w / two, self.y + self.h / two)
     }
 
     fn bounding_box(&self) -> crate::Aabr<N> {
         self.clone().into()
     }
 
-    fn contains_point(&self, point: &crate::Point2<N>) -> bool {
+    fn contains_point(&self, point: &crate::Point<N>) -> bool {
         let x_ok = if self.w >= N::zero() {
             point.x >= self.x && point.x <= self.x + self.w
         } else {

@@ -1,20 +1,23 @@
 use serde::{Deserialize, Serialize};
 
-use crate::{xy_ops_impl, common::{Dot, Vector}, PrimaFloat, PrimaNum, abstracts::Direction};
-use super::Point2;
+use super::Point;
+use crate::{abstracts::Direction, common::Dot, xy_ops_impl, PrimaFloat, PrimaNum};
 
 /// A base struct for 2D points/vectors.
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Deserialize, Serialize)]
-pub struct Vector2<N = super::DefaultFloat> {
+pub struct Vector<N = super::DefaultFloat> {
     /// The X magnitude.
     pub x: N,
     /// The Y magnitude.
     pub y: N,
 }
 
-xy_ops_impl!(Vector2);
+xy_ops_impl!(Vector);
 
-impl<N> Dot for Vector2<N> where N: PrimaNum {
+impl<N> Dot for Vector<N>
+where
+    N: PrimaNum,
+{
     type Output = N;
 
     #[inline]
@@ -23,22 +26,22 @@ impl<N> Dot for Vector2<N> where N: PrimaNum {
     }
 }
 
-impl<N> Vector<N> for Vector2<N>
+impl<N> Vector<N>
 where
     N: PrimaFloat,
 {
-    type NormalizedOutput = Vector2<N>;
-
     /// Returns the squared magnitude of the vector.
-    fn magnitude_squared(&self) -> N {
+    pub fn magnitude_squared(&self) -> N {
         self.x * self.x + self.y * self.y
     }
 
-    fn magnitude(&self) -> N {
+    /// The magnitude of the vector.
+    pub fn magnitude(&self) -> N {
         self.magnitude_squared().sqrt()
     }
 
-    fn normalize(&self) -> Self::NormalizedOutput {
+    /// Returns the unit vector of the vector.
+    pub fn normalize(self) -> Self {
         if self.magnitude_squared() == N::zero() {
             return Self::zero();
         }
@@ -50,23 +53,25 @@ where
     }
 }
 
-impl<N> Into<Point2<N>> for Vector2<N> {
-    fn into(self) -> Point2<N> {
-        Point2 {
+impl<N> Into<Point<N>> for Vector<N> {
+    fn into(self) -> Point<N> {
+        Point {
             x: self.x,
             y: self.y,
         }
     }
 }
 
-impl<N> PartialEq<Direction> for Vector2<N> where N: PrimaNum {
+impl<N> PartialEq<Direction> for Vector<N>
+where
+    N: PrimaNum,
+{
     fn eq(&self, other: &Direction) -> bool {
         match other {
             Direction::Left => self.x < N::zero() && self.y == N::zero(),
             Direction::Right => self.x > N::zero() && self.y == N::zero(),
             Direction::Up => self.y > N::zero() && self.x == N::zero(),
             Direction::Down => self.y < N::zero() && self.x == N::zero(),
-            _ => false
         }
     }
 }

@@ -1,4 +1,4 @@
-use crate::{Circle, Interact, Line2, Point, Point2, PrimaFloat, PrimaNum, Shape2, Vector, Collision, Intersect};
+use crate::{Circle, Interact, Line, Point, PrimaFloat, PrimaNum, Shape2, Collision, Intersect, Cross};
 use serde::{Deserialize, Serialize};
 use std::cmp::Ordering;
 
@@ -17,36 +17,36 @@ pub enum Orientation {
 #[derive(Debug, Clone, Copy, PartialEq, Deserialize, Serialize)]
 pub struct Triangle<N = super::DefaultFloat> {
     /// The first point of the triangle.
-    pub a: Point2<N>,
+    pub a: Point<N>,
     /// The second point of the triangle.
-    pub b: Point2<N>,
+    pub b: Point<N>,
     /// The third point of the triangle.
-    pub c: Point2<N>,
+    pub c: Point<N>,
 }
 
 impl<N> Triangle<N>
 where
-    N: PrimaNum,
+    N: PrimaFloat,
 {
     /// Creates a new triangle.
     #[inline]
-    pub fn new(a: Point2<N>, b: Point2<N>, c: Point2<N>) -> Self {
+    pub fn new(a: Point<N>, b: Point<N>, c: Point<N>) -> Self {
         Triangle { a, b, c }
     }
 
     /// Gets a line from a -> b.
-    pub fn ab(&self) -> Line2<N> {
-        Line2::new(self.a, self.b)
+    pub fn ab(&self) -> Line<N> {
+        Line::new(self.a, self.b)
     }
 
     /// Gets a line from b -> c.
-    pub fn bc(&self) -> Line2<N> {
-        Line2::new(self.b, self.c)
+    pub fn bc(&self) -> Line<N> {
+        Line::new(self.b, self.c)
     }
 
     /// Gets a line from c -> a.
-    pub fn ca(&self) -> Line2<N> {
-        Line2::new(self.c, self.a)
+    pub fn ca(&self) -> Line<N> {
+        Line::new(self.c, self.a)
     }
 
     /// Returns [`true`] if this triangle is convex.
@@ -77,20 +77,20 @@ where
     N: PrimaFloat,
 {
     /// The centroid of the triangle. The crossing point of three lines, drawn from the center of each edge to the opposite corner.
-    pub fn centroid(&self) -> Point2<N> {
+    pub fn centroid(&self) -> Point<N> {
         let three = N::one() + N::one() + N::one();
         let avg_x = (self.a.x + self.b.x + self.c.x) / three;
         let avg_y = (self.a.y + self.b.y + self.c.y) / three;
-        Point2::new(avg_x, avg_y)
+        Point::new(avg_x, avg_y)
     }
 
     /// The center of the triangle when converted to a circle.
-    pub fn circumcenter(&self) -> Point2<N> {
+    pub fn circumcenter(&self) -> Point<N> {
         Circle::from(self.clone()).center
     }
 
     /// Center, calculated using bisectors of each of the triangle's corners.
-    pub fn incenter(&self) -> Point2<N> {
+    pub fn incenter(&self) -> Point<N> {
         let ab_length = self.ab().magnitude();
         let bc_length = self.bc().magnitude();
         let ca_length = self.ca().magnitude();
@@ -98,11 +98,11 @@ where
             / (ab_length + bc_length + ca_length);
         let y = (ab_length * self.a.y + bc_length * self.b.y + ca_length * self.c.y)
             / (ab_length + bc_length + ca_length);
-        Point2::new(x, y)
+        Point::new(x, y)
     }
 
     /// The crossing point of three lines, drawn from each edge at a right-angle so that they go to the opposite corner.
-    pub fn orthocenter(&self) -> Point2<N> {
+    pub fn orthocenter(&self) -> Point<N> {
         todo!()
     }
 }
@@ -128,7 +128,7 @@ where
         ab.magnitude() + bc.magnitude() + ca.magnitude()
     }
 
-    fn center(&self) -> Point2<N> {
+    fn center(&self) -> Point<N> {
         self.centroid()
     }
 
@@ -163,7 +163,7 @@ where
         crate::Aabr::new(min, max)
     }
 
-    fn contains_point(&self, p: &Point2<N>) -> bool {
+    fn contains_point(&self, p: &Point<N>) -> bool {
         let d1 = sign(p, &self.a, &self.b);
         let d2 = sign(p, &self.b, &self.c);
         let d3 = sign(p, &self.c, &self.a);
@@ -181,7 +181,7 @@ where
         todo!()
     }
 
-    fn nearest_extent(&self, _other: &Self) -> Point2<N> {
+    fn nearest_extent(&self, _other: &Self) -> Point<N> {
         todo!()
     }
 }
@@ -192,8 +192,8 @@ impl<N> Intersect for Triangle<N> where N: PrimaFloat {
     }
 }
 
-impl<N> From<(Point2<N>, Point2<N>, Point2<N>)> for Triangle<N> {
-    fn from(t: (Point2<N>, Point2<N>, Point2<N>)) -> Self {
+impl<N> From<(Point<N>, Point<N>, Point<N>)> for Triangle<N> {
+    fn from(t: (Point<N>, Point<N>, Point<N>)) -> Self {
         Self {
             a: t.0,
             b: t.1,
@@ -202,7 +202,7 @@ impl<N> From<(Point2<N>, Point2<N>, Point2<N>)> for Triangle<N> {
     }
 }
 
-fn sign<N>(a: &Point2<N>, b: &Point2<N>, c: &Point2<N>) -> N
+fn sign<N>(a: &Point<N>, b: &Point<N>, c: &Point<N>) -> N
 where
     N: PrimaFloat,
 {
@@ -250,9 +250,9 @@ mod tests {
     #[test]
     fn test_triangle_aabr() {
         let t = Triangle::<f64>::new(
-            Point2::new(0.0, 0.0),
-            Point2::new(1.0, 0.0),
-            Point2::new(0.0, 1.0),
+            Point::new(0.0, 0.0),
+            Point::new(1.0, 0.0),
+            Point::new(0.0, 1.0),
         );
         let aabr = t.bounding_box();
         assert_eq!(aabr.min.x, 0.0);
@@ -264,11 +264,11 @@ mod tests {
     #[test]
     fn test_triangle_contains_point() {
         let t = Triangle::<f64>::new(
-            Point2::new(0.0, 0.0),
-            Point2::new(1.0, 0.0),
-            Point2::new(0.0, 1.0),
+            Point::new(0.0, 0.0),
+            Point::new(1.0, 0.0),
+            Point::new(0.0, 1.0),
         );
-        assert!(t.contains_point(&Point2::new(0.3, 0.3)));
-        assert!(!t.contains_point(&Point2::new(0.5, 1.5)));
+        assert!(t.contains_point(&Point::new(0.3, 0.3)));
+        assert!(!t.contains_point(&Point::new(0.5, 1.5)));
     }
 }

@@ -1,4 +1,4 @@
-use crate::{Circle, Intersect, Line2, PrimaFloat};
+use crate::{Circle, Intersect, Line, PrimaFloat};
 
 // impl<N> Collide<N, Line2<N>> for Circle<N> where N: PrimaFloat {
 //     /// Returns the closest point on the line to the circle.
@@ -27,11 +27,11 @@ use crate::{Circle, Intersect, Line2, PrimaFloat};
 //     }
 // }
 
-impl<N> Intersect<Line2<N>> for Circle<N>
+impl<N> Intersect<Line<N>> for Circle<N>
 where
     N: PrimaFloat,
 {
-    fn intersecting(&self, _line: &Line2<N>) -> bool {
+    fn intersecting(&self, _line: &Line<N>) -> bool {
         todo!()
     }
 }

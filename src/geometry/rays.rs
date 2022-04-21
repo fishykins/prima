@@ -1,20 +1,15 @@
-use crate::{Point, Point2, PrimaNum, Vector, Vector2};
+use crate::{Point, PrimaNum, Vector};
 use std::marker::PhantomData;
 
-/// Alias for a 2D Ray.
-pub type Ray2<N> = Ray<N, Vector2<N>, Point2<N>>;
-
 /// A ray, cast in one direction.
-pub struct Ray<N, V, P>
+pub struct Ray<N>
 where
     N: PrimaNum,
-    P: Point<N>,
-    V: Vector<N>,
 {
     /// The starting point of the ray.
-    pub origin: P,
+    pub origin: Point<N>,
     /// The direction of the ray.
-    pub direction: V,
+    pub direction: Vector<N>,
 
     phantom: PhantomData<N>,
 }

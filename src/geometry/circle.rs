@@ -1,5 +1,5 @@
 use crate::{
-    Distance, FastDistance, Interact, Intersect, Point2, PrimaFloat, PrimaNum, Shape2, Vector2, Vector,
+    Distance, FastDistance, Interact, Intersect, Point, PrimaFloat, PrimaNum, Shape2, Vector,
 };
 use serde::{Deserialize, Serialize};
 
@@ -7,19 +7,19 @@ use serde::{Deserialize, Serialize};
 /// # Examples
 ///
 /// ```
-/// let circle = Circle::new(Point2::new(0.0, 0.0), 32.0);
+/// let circle = Circle::new(Point::new(0.0, 0.0), 32.0);
 /// ```
 #[derive(Clone, Copy, Debug, Default, Deserialize, Serialize)]
 pub struct Circle<N = super::DefaultFloat> {
     /// The middle of the circle.
-    pub center: Point2<N>,
+    pub center: Point<N>,
     /// Radius of the circle.
     pub radius: N,
 }
 
 impl<N> Circle<N> {
     /// Builds a circle from given center and radius.
-    pub fn new(center: Point2<N>, radius: N) -> Self {
+    pub fn new(center: Point<N>, radius: N) -> Self {
         Self { center, radius }
     }
 }
@@ -78,18 +78,18 @@ where
         (N::pi() + N::pi()) * self.radius
     }
 
-    fn center(&self) -> Point2<N> {
+    fn center(&self) -> Point<N> {
         self.center
     }
 
     fn bounding_box(&self) -> crate::Aabr<N> {
         crate::Aabr::new(
-            self.center - Point2::splat(self.radius),
-            self.center + Point2::splat(self.radius),
+            self.center - Point::splat(self.radius),
+            self.center + Point::splat(self.radius),
         )
     }
 
-    fn contains_point(&self, point: &Point2<N>) -> bool {
+    fn contains_point(&self, point: &Point<N>) -> bool {
         self.center.distance_squared(point) <= self.radius * self.radius
     }
 }
@@ -102,12 +102,12 @@ where
         let d = self.center.distance(&other.center);
         let r = self.radius + other.radius;
         if d <= r {
-            let normal: Vector2<N> = (other.center - self.center).into();
-            if normal == Vector2::zero() {
+            let normal: Vector<N> = (other.center - self.center).into();
+            if normal == Vector::zero() {
                 Some(crate::Collision {
                     // Pseudo random (but predictable) values for when the circles are one.
                     penetration: self.radius,
-                    normal: Vector2::new(N::one(), N::zero()),
+                    normal: Vector::new(N::one(), N::zero()),
                 })
             } else {
                 let penetration = r - d;
@@ -121,8 +121,8 @@ where
         }
     }
 
-    fn nearest_extent(&self, other: &Self) -> Point2<N> {
-        let v: Vector2<N> = (other.center - self.center).into();
+    fn nearest_extent(&self, other: &Self) -> Point<N> {
+        let v: Vector<N> = (other.center - self.center).into();
         let normalized = v.normalize();
         other.center + normalized * other.radius
     }

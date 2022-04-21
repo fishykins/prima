@@ -10,7 +10,7 @@ a collection of geometry and graph based utilities with emphasis on simple code 
 <!-- ABOUT THE PROJECT -->
 ## About The Project
 
-Prima is yet another geometry library, built around the core principle of simple code and readability. It provides helper structs
+Prima is yet another 2D geometry library, built around the core principle of simple code and readability. It provides helper structs
 for primative shapes, basic collision detection and a suite of graph structures. The graphs are vector orientated and are built with
 procedural world building in mind. Generic floats have been avoided in favour of explicitly typed structs, following the example of [glam](https://crates.io/crates/glam). Support for the crate [vek](https://crates.io/crates/vek) may be implimented in future updates.
 

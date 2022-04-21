@@ -1,4 +1,4 @@
-use crate::{Circle, Distance, Point2, PrimaFloat, Triangle};
+use crate::{Circle, Distance, Point, PrimaFloat, Triangle};
 
 impl<N> From<Triangle<N>> for Circle<N>
 where
@@ -32,7 +32,7 @@ where
             (c1 - b1 * y_cen) / a1
         };
 
-        let center = Point2::new(x_cen, y_cen);
+        let center = Point::new(x_cen, y_cen);
         let radius = center.distance(&p1);
         Self { center, radius }
     }

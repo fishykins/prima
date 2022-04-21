@@ -2,50 +2,83 @@ use std::hash::Hash;
 
 use crate::{
     common::{FastDistance, Distance},
-    xy_ops_impl, Point, PrimaFloat, PrimaNum, Dot,
+    xy_ops_impl, PrimaFloat, PrimaNum, Dot, Cross,
 };
 use serde::{Deserialize, Serialize};
 
-use super::Vector2;
+use super::Vector;
 
 /// A base struct for 2D points/vectors.
 #[derive(Debug, Clone, Copy, Default, PartialEq, Deserialize, Serialize)]
-pub struct Point2<N = super::DefaultFloat> {
+pub struct Point<N = super::DefaultFloat> {
     /// The X coordinate.
     pub x: N,
     /// The Y coordinate.
     pub y: N,
 }
 
-xy_ops_impl!(Point2);
+xy_ops_impl!(Point);
 
-impl<N> Point2<N>
+impl<N> Point<N>
 where
     N: PrimaFloat,
 {
     /// Returns the vector from the origin to the point.
-    pub fn vector(&self, other: Self) -> Vector2<N> {
-        Vector2 {
+    pub fn vector(&self, other: Self) -> Vector<N> {
+        Vector {
             x: other.x - self.x,
             y: other.y - self.y,
         }
     }
-}
 
-impl<N> Point<N> for Point2<N>
-where
-    N: PrimaNum,
-{
-    fn cross_product(&self, other: &Self) -> N {
-        self.x * other.y - self.y * other.x
-    }
-
-    fn aligned(&self, other: &Self) -> bool {
+    /// Checks if two points are aligned.
+    pub fn aligned(&self, other: &Self) -> bool {
         self.x == other.x || self.y == other.y
     }
 }
 
-impl<N> FastDistance for Point2<N>
+impl<N> Cross for Point<N> where N: PrimaNum {
+    type Product = N;
+
+    fn cross_product(&self, other: &Self) -> Self::Product {
+        self.x * other.y - self.y * other.x
+    }
+}
+
+impl<N> Cross<N> for Point<N> where N: PrimaNum {
+    type Product = Self;
+
+    fn cross_product(&self, other: &N) -> Self::Product {
+        Self {
+            x: self.y * *other,
+            y: N::zero() -self.x * *other,
+        }
+    }
+}
+
+impl Cross<Point<f32>> for f32 {
+    type Product = Point<f32>;
+
+    fn cross_product(&self, other: &Point<f32>) -> Self::Product {
+        Point {
+            x: -self * other.y,
+            y: other.x * *self,
+        }
+    }
+}
+
+impl Cross<Point<f64>> for f64 {
+    type Product = Point<f64>;
+
+    fn cross_product(&self, other: &Point<f64>) -> Self::Product {
+        Point {
+            x: -self * other.y,
+            y: other.x * *self,
+        }
+    }
+}
+
+impl<N> FastDistance for Point<N>
 where
     N: PrimaNum,
 {
@@ -72,7 +105,7 @@ where
     }
 }
 
-impl<N> Distance for Point2<N>
+impl<N> Distance for Point<N>
 where
     N: PrimaFloat,
 {
@@ -81,7 +114,7 @@ where
     }
 }
 
-impl<N> Hash for Point2<N>
+impl<N> Hash for Point<N>
 where
     N: PrimaNum + Hash,
 {
@@ -91,7 +124,7 @@ where
     }
 }
 
-impl<N> Dot for Point2<N>
+impl<N> Dot for Point<N>
 where
     N: PrimaNum,
 {
@@ -102,17 +135,17 @@ where
     }
 }
 
-impl<N> Eq for Point2<N> where N: PrimaNum + Eq {}
+impl<N> Eq for Point<N> where N: PrimaNum + Eq {}
 // ===========================================================================
 // ============================= IMPL VEC ====================================
 // ===========================================================================
-impl<N> Add<Vector2<N>> for Point2<N>
+impl<N> Add<Vector<N>> for Point<N>
 where
     N: Add<Output = N>,
 {
     type Output = Self;
 
-    fn add(self, other: Vector2<N>) -> Self {
+    fn add(self, other: Vector<N>) -> Self {
         Self {
             x: self.x + other.x,
             y: self.y + other.y,
@@ -120,13 +153,13 @@ where
     }
 }
 
-impl<N> Sub<Vector2<N>> for Point2<N>
+impl<N> Sub<Vector<N>> for Point<N>
 where
     N: Sub<Output = N>,
 {
     type Output = Self;
 
-    fn sub(self, other: Vector2<N>) -> Self {
+    fn sub(self, other: Vector<N>) -> Self {
         Self {
             x: self.x - other.x,
             y: self.y - other.y,
@@ -134,9 +167,9 @@ where
     }
 }
 
-impl<N> Into<Vector2<N>> for Point2<N> {
-    fn into(self) -> Vector2<N> {
-        Vector2 {
+impl<N> Into<Vector<N>> for Point<N> {
+    fn into(self) -> Vector<N> {
+        Vector {
             x: self.x,
             y: self.y,
         }

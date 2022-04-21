@@ -1,32 +1,27 @@
-use super::Point2;
-use crate::{Point, PrimaFloat, PrimaNum, Vector, Distance, Intersect, Vector2};
+use super::Point;
+use crate::{PrimaFloat, PrimaNum, Vector, Distance, Intersect, Cross};
 use serde::{Deserialize, Serialize};
 use std::marker::PhantomData;
 
-/// Alias for a 2D point.
-pub type Line2<N = super::DefaultFloat> = Line<N>;
-
 /// A line from point to point.
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
-pub struct Line<N, P = Point2<N>>
+pub struct Line<N>
 where
     N: PrimaNum,
-    P: Point<N>,
 {
     /// The starting point of the line.
-    pub start: P,
+    pub start: Point<N>,
     /// The ending point of the line.
-    pub end: P,
+    pub end: Point<N>,
     phantom: PhantomData<N>,
 }
 
-impl<N, P> Line<N, P>
+impl<N> Line<N>
 where
-    P: Point<N>,
-    N: PrimaNum,
+    N: PrimaFloat,
 {
     /// Creates a new line.
-    pub fn new(start: P, end: P) -> Self {
+    pub fn new(start: Point<N>, end: Point<N>) -> Self {
         Line {
             start,
             end,
@@ -40,13 +35,13 @@ where
     }
 
     /// Returns the point of collision between the line and the given line.
-    pub fn contact_point(&self, other: &Self) -> Option<P> {
+    pub fn contact_point(&self, other: &Self) -> Option<Point<N>> {
         let a = self.start;
         let c = other.start;
-        let r: P = self.end - a;
+        let r: Point<N> = self.end - a;
         let s = other.end - c;
 
-        let denom = r.cross_product(&s);
+        let denom: N = r.cross_product(&s);
         if denom == N::zero() {
             return None;
         }
@@ -64,47 +59,42 @@ where
     }
 }
 
-impl<N, P> Line<N, P>
+impl<N> Line<N>
 where
     N: PrimaFloat,
-    P: Point<N>,
 {
     /// Bisects the line.
     pub fn bisect(self) -> Self {
         todo!()
     }
-}
 
-impl<N> Vector<N> for Line<N>
-where
-    N: PrimaFloat,
-{
-    type NormalizedOutput = Vector2<N>;
-
-    fn magnitude_squared(&self) -> N {
+    /// Returns the squared magnitude of the line.
+    pub fn magnitude_squared(&self) -> N {
         let x = self.end.x - self.start.x;
         let y = self.end.y - self.start.y;
         x * x + y * y
     }
 
-    fn magnitude(&self) -> N {
+    /// Returns the length of the line.
+    pub fn magnitude(&self) -> N {
         self.magnitude_squared().sqrt()
     }
 
-    fn normalize(&self) -> Vector2<N> {
-        let v: Vector2<N> = (self.end - self.start).into();
+    /// Returns the unit vector of the line.
+    pub fn normalize(&self) -> Vector<N> {
+        let v: Vector<N> = (self.end - self.start).into();
         v.normalize()
     }
 }
 
-impl<N> Line2<N> where N: PrimaFloat {
+impl<N> Line<N> where N: PrimaFloat {
     /// Returns the length of the line.
     pub fn length(&self) -> N {
         self.start.distance(&self.end)
     }
 
     /// Returns true if the point lies on the line.
-    pub fn contains_point(&self, point: Point2<N>) -> bool {
+    pub fn contains_point(&self, point: Point<N>) -> bool {
         let line_length = self.length();
         let dist_start = self.start.distance(&point);
         let dist_end = self.end.distance(&point);

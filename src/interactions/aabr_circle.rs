@@ -1,5 +1,5 @@
 use crate::{
-    Aabr, Circle, Collision, Interact, Intersect, PrimaFloat, Shape2, Vector, Vector2,
+    Aabr, Circle, Collision, Interact, Intersect, PrimaFloat, Shape2, Vector,
 };
 
 impl<N> From<Circle<N>> for Aabr<N>
@@ -27,7 +27,7 @@ where
     N: PrimaFloat,
 {
     fn collision(&self, aabr: &Aabr<N>) -> Option<crate::Collision<N>> {
-        let n: Vector2<N> = self.center().vector(aabr.center());
+        let n: Vector<N> = self.center().vector(aabr.center());
         let x_extent = aabr.half_extents().0;
         let y_extent = aabr.half_extents().1;
 
@@ -59,7 +59,7 @@ where
             }
         }
 
-        let normal: Vector2<N> = n - closest;
+        let normal: Vector<N> = n - closest;
         let d = normal.magnitude_squared();
         let r = self.radius;
 
@@ -75,7 +75,7 @@ where
             // Collision normal needs to be flipped to point outside if circle was inside the AABB
             Some(Collision {
                 penetration: r - d,
-                normal: Vector2::zero() - n,
+                normal: Vector::zero() - n,
             })
         } else {
             Some(Collision {
@@ -85,7 +85,7 @@ where
         }
     }
 
-    fn nearest_extent(&self, _aabr: &Aabr<N>) -> crate::Point2<N> {
+    fn nearest_extent(&self, _aabr: &Aabr<N>) -> crate::Point<N> {
         todo!()
     }
 }

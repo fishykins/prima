@@ -1,13 +1,13 @@
 use core::panic;
 
-use super::Point2;
+use super::Point;
 use crate::{
-    common::FastDistance, Collision, Interact, Intersect, PrimaFloat, PrimaNum, Shape2, Vector2, Line2,
+    common::FastDistance, Collision, Interact, Intersect, PrimaFloat, PrimaNum, Shape2, Vector, Line,
 };
 use serde::{Deserialize, Serialize};
 
 /// Axis-aligned bounding rectangle.
-pub type Aabr<N = super::DefaultFloat> = BoundingBox<Point2<N>>;
+pub type Aabr<N = super::DefaultFloat> = BoundingBox<Point<N>>;
 
 /// Axis-aligned bounding thingy
 #[derive(Clone, Copy, Debug, PartialEq, Deserialize, Serialize)]
@@ -26,7 +26,7 @@ where
     N: PrimaNum,
 {
     /// Constructs a new bounding box.
-    pub fn new(min: Point2<N>, max: Point2<N>) -> Self {
+    pub fn new(min: Point<N>, max: Point<N>) -> Self {
         Self { min, max }
     }
 
@@ -98,8 +98,8 @@ where
         };
 
         Some(Self::new(
-            Point2::new(min_x, min_y),
-            Point2::new(max_x, max_y),
+            Point::new(min_x, min_y),
+            Point::new(max_x, max_y),
         ))
     }
 }
@@ -108,9 +108,9 @@ impl<N> Shape2<N> for Aabr<N>
 where
     N: PrimaNum,
 {
-    fn center(&self) -> Point2<N> {
+    fn center(&self) -> Point<N> {
         let two = N::one() + N::one();
-        Point2::new(
+        Point::new(
             self.min.x + (self.width() / two),
             self.min.y + (self.height() / two),
         )
@@ -129,7 +129,7 @@ where
         self.clone()
     }
 
-    fn contains_point(&self, point: &Point2<N>) -> bool {
+    fn contains_point(&self, point: &Point<N>) -> bool {
         point.x >= self.min.x
             && point.x <= self.max.x
             && point.y >= self.min.y
@@ -158,9 +158,9 @@ where
                 // Find out which axis is axis of least penetration
                 if x_overlap < y_overlap {
                     let normal = if n.x < N::zero() {
-                        Vector2::new(-N::one(), N::zero())
+                        Vector::new(-N::one(), N::zero())
                     } else {
-                        Vector2::new(N::one(), N::zero())
+                        Vector::new(N::one(), N::zero())
                     };
                     return Some(Collision {
                         penetration: x_overlap,
@@ -168,9 +168,9 @@ where
                     });
                 } else {
                     let normal = if n.y < N::zero() {
-                        Vector2::new(N::zero(), -N::one())
+                        Vector::new(N::zero(), -N::one())
                     } else {
-                        Vector2::new(N::zero(), N::one())
+                        Vector::new(N::zero(), N::one())
                     };
                     return Some(Collision {
                         penetration: y_overlap,
@@ -183,7 +183,7 @@ where
     }
 
     // TODO: This needs testing as it is a fish original.
-    fn nearest_extent(&self, other: &Self) -> Point2<N> {
+    fn nearest_extent(&self, other: &Self) -> Point<N> {
         let x_dist = (other.center().x - self.center().x).abs();
         let y_dist = (other.center().y - self.center().y).abs();
 
@@ -193,7 +193,7 @@ where
 
         if x_dist == y_dist {
             // We are on a corner, do something about it!
-            return Point2::new(
+            return Point::new(
                 self.center().x + (self.half_extents().0 * (other.center().x - self.center().x).signum()),
                 self.center().y + (self.half_extents().1 * (other.center().y - self.center().y).signum()),
             );
@@ -203,34 +203,34 @@ where
         let edge = if x_dist > y_dist {
             if other.center().x > self.center().x {
                 // Left
-                Line2::new(
+                Line::new(
                     self.min,
-                    self.min + Vector2::new(N::zero(), self.height()),
+                    self.min + Vector::new(N::zero(), self.height()),
                 )
             } else {
                 // Right
-                Line2::new(
-                    self.min + Vector2::new(self.width(), N::zero()),
-                    self.min + Vector2::new(self.width(), self.height()),
+                Line::new(
+                    self.min + Vector::new(self.width(), N::zero()),
+                    self.min + Vector::new(self.width(), self.height()),
                 )
             }
         } else {
             if other.center().y > self.center().y {
                 // Bottom
-                Line2::new(
+                Line::new(
                     self.min,
-                    self.min + Vector2::new(self.width(), N::zero()),
+                    self.min + Vector::new(self.width(), N::zero()),
                 )
             } else {
                 // Top
-                Line2::new(
-                    self.min + Vector2::new(N::zero(), self.height()),
-                    self.min + Vector2::new(self.width(), self.height()),
+                Line::new(
+                    self.min + Vector::new(N::zero(), self.height()),
+                    self.min + Vector::new(self.width(), self.height()),
                 )
             }
         };
 
-        let ray = Line2::new(other.center(), self.center());
+        let ray = Line::new(other.center(), self.center());
         if let Some(intersection) = edge.contact_point(&ray) {
             return intersection;
         }
@@ -260,8 +260,8 @@ mod tests {
 
     #[test]
     fn aabr_test() {
-        let a = Aabr::new(Point2::new(0.0, 0.0), Point2::new(1.0, 1.0));
-        let b = Aabr::new(Point2::new(0.5, 0.5), Point2::new(1.5, 1.5));
+        let a = Aabr::new(Point::new(0.0, 0.0), Point::new(1.0, 1.0));
+        let b = Aabr::new(Point::new(0.5, 0.5), Point::new(1.5, 1.5));
         assert!(a.intersecting(&b));
     }
 }

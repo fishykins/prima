@@ -1,5 +1,4 @@
-use crate::{Aabr, AxisValue, Collision, Point2, PrimaNum};
-use std::ops::{Add, Mul, Sub};
+use crate::{Aabr, Point, AxisValue, Collision, PrimaNum};
 
 /// Used for implimenting 'fast' distance calculations.
 /// This is useful when we can't use square root on the generic type 'N', but
@@ -21,33 +20,12 @@ pub trait Distance<Rhs = Self>: FastDistance<Rhs> {
     fn distance(&self, other: &Rhs) -> Self::Output;
 }
 
-/// A trait for geometry that can have magnitude.
-pub trait Vector<N>
-where
-    N: PrimaNum,
-{
-    /// The output value.
-    type NormalizedOutput;
-
-    /// Computes the squared magnitude of the vector.
-    fn magnitude_squared(&self) -> N;
-    /// Computes the magnitude of the vector.
-    fn magnitude(&self) -> N;
-    /// Normalizes the vector.
-    fn normalize(&self) -> Self::NormalizedOutput;
-}
-
-/// A trait to represent a point in any space.
-pub trait Point<N>:
-    Sub<Output = Self> + Add<Output = Self> + Mul<N, Output = Self> + Sized + Copy
-where
-    N: PrimaNum,
-{
-    /// Returns the cross product of two points.
-    fn cross_product(&self, other: &Self) -> N;
-
-    /// Returns true if both points are aligned on at least one shared axis.
-    fn aligned(&self, other: &Self) -> bool;
+/// Cross product for points, floats and other such things.
+pub trait Cross<Rhs = Self> {
+    /// The product of the cross.
+    type Product;
+    /// Returns the cross product of self and other.
+    fn cross_product(&self, other: &Rhs) -> Self::Product;
 }
 
 /// A trait that implements the dot product of two points.
@@ -77,11 +55,11 @@ where
     /// The circumference of the shape.
     fn circumference(&self) -> N;
     /// The center of the shape.
-    fn center(&self) -> Point2<N>;
+    fn center(&self) -> Point<N>;
     /// A bounding box that contains the shape.
     fn bounding_box(&self) -> Aabr<N>;
     /// Returns true if the shape contains the point.
-    fn contains_point(&self, point: &Point2<N>) -> bool;
+    fn contains_point(&self, point: &Point<N>) -> bool;
 }
 
 /// A trait that enforces certian behaviors between two shapes.
@@ -90,7 +68,7 @@ pub trait Interact<N, Rhs = Self> {
     fn collision(&self, other: &Rhs) -> Option<Collision<N>>;
 
     /// Gets the nearest point of 'other' to 'self'.
-    fn nearest_extent(&self, other: &Rhs) -> Point2<N>;
+    fn nearest_extent(&self, other: &Rhs) -> Point<N>;
 
     /// Returns true if the two objects collide. This should always produce the same result as calling [intersecting()] on the two objects.
     /// ### Note
