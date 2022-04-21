@@ -46,7 +46,7 @@ where
 }
 
 /// A two dimensional shape that can be used for collision detection.
-pub trait Shape2<N>
+pub trait Shape<N>
 where
     N: PrimaNum,
 {

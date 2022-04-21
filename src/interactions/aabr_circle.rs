@@ -1,5 +1,5 @@
 use crate::{
-    Aabr, Circle, Collision, Interact, Intersect, PrimaFloat, Shape2, Vector,
+    Aabr, Circle, Collision, Interact, Intersect, PrimaFloat, Shape, Vector,
 };
 
 impl<N> From<Circle<N>> for Aabr<N>

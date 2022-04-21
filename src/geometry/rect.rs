@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use crate::{Shape2, PrimaNum, Point};
+use crate::{Shape, PrimaNum, Point};
 
 /// A Rectangle in 2D space. Alternative to Aabr. 
 #[derive(Debug, Clone, Default, Deserialize, Serialize)]
@@ -53,7 +53,7 @@ impl<N> Rect<N> where N: PrimaNum {
     }
 }
 
-impl<N> Shape2<N> for Rect<N> where N: PrimaNum {
+impl<N> Shape<N> for Rect<N> where N: PrimaNum {
     fn area(&self) -> N {
         self.w * self.h
     }

@@ -1,4 +1,4 @@
-mod bounding;
+mod aabr;
 mod circle;
 mod collision;
 mod line;
@@ -8,7 +8,7 @@ mod rect;
 mod triangle;
 mod vector;
 
-pub use bounding::*;
+pub use aabr::*;
 pub use circle::*;
 pub use collision::*;
 pub use line::*;

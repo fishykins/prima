@@ -1,4 +1,4 @@
-use crate::{Circle, Interact, Line, Point, PrimaFloat, PrimaNum, Shape2, Collision, Intersect, Cross};
+use crate::{Circle, Interact, Line, Point, PrimaFloat, PrimaNum, Shape, Collision, Intersect, Cross};
 use serde::{Deserialize, Serialize};
 use std::cmp::Ordering;
 
@@ -107,7 +107,7 @@ where
     }
 }
 
-impl<N> Shape2<N> for Triangle<N>
+impl<N> Shape<N> for Triangle<N>
 where
     N: PrimaFloat,
 {

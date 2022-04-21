@@ -2,23 +2,18 @@ use core::panic;
 
 use super::Point;
 use crate::{
-    common::FastDistance, Collision, Interact, Intersect, PrimaFloat, PrimaNum, Shape2, Vector, Line,
+    Collision, Interact, Intersect, PrimaFloat, PrimaNum, Shape, Vector, Line, DefaultFloat,
 };
 use serde::{Deserialize, Serialize};
 
 /// Axis-aligned bounding rectangle.
-pub type Aabr<N = super::DefaultFloat> = BoundingBox<Point<N>>;
-
-/// Axis-aligned bounding thingy
 #[derive(Clone, Copy, Debug, PartialEq, Deserialize, Serialize)]
-pub struct BoundingBox<P>
-where
-    P: FastDistance,
+pub struct Aabr<N = DefaultFloat>
 {
     /// The minimum point of the box.
-    pub min: P,
+    pub min: Point<N>,
     /// The maximum point of the box.
-    pub max: P,
+    pub max: Point<N>,
 }
 
 impl<N> Aabr<N>
@@ -104,7 +99,7 @@ where
     }
 }
 
-impl<N> Shape2<N> for Aabr<N>
+impl<N> Shape<N> for Aabr<N>
 where
     N: PrimaNum,
 {

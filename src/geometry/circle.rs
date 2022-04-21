@@ -1,5 +1,5 @@
 use crate::{
-    Distance, FastDistance, Interact, Intersect, Point, PrimaFloat, PrimaNum, Shape2, Vector,
+    Distance, FastDistance, Interact, Intersect, Point, PrimaFloat, PrimaNum, Shape, Vector,
 };
 use serde::{Deserialize, Serialize};
 
@@ -66,7 +66,7 @@ where
     }
 }
 
-impl<N> Shape2<N> for Circle<N>
+impl<N> Shape<N> for Circle<N>
 where
     N: PrimaFloat,
 {
