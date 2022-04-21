@@ -1,5 +1,5 @@
 use super::Point;
-use crate::{PrimaFloat, PrimaNum, Vector, Distance, Intersect, Cross};
+use crate::{PrimaFloat, PrimaNum, Vector, Distance, Intersect, Cross, Aabr};
 use serde::{Deserialize, Serialize};
 use std::marker::PhantomData;
 
@@ -84,6 +84,15 @@ where
     pub fn normalize(&self) -> Vector<N> {
         let v: Vector<N> = (self.end - self.start).into();
         v.normalize()
+    }
+
+    /// Returns the bounding box of the line.
+    pub fn bounding_box(&self) -> Aabr<N> {
+        let x = self.start.x.min(self.end.x);
+        let y = self.start.y.min(self.end.y);
+        let w = self.start.x.max(self.end.x);
+        let h = self.start.y.max(self.end.y);
+        Aabr::new(Point::new(x, y), Point::new(w, h))
     }
 }
 
