@@ -45,7 +45,7 @@ where
     pub fn contact_point(&self, other: &Self) -> Option<Point<N>> {
         let a = self.start;
         let c = other.start;
-        let r: Point<N> = self.end - a;
+        let r = self.end - a;
         let s = other.end - c;
 
         let denom: N = r.cross_product(&s);

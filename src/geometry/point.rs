@@ -37,25 +37,6 @@ where
     }
 }
 
-impl<N> Cross for Point<N> where N: PrimaNum {
-    type Product = N;
-
-    fn cross_product(&self, other: &Self) -> Self::Product {
-        self.x * other.y - self.y * other.x
-    }
-}
-
-impl<N> Cross<N> for Point<N> where N: PrimaNum {
-    type Product = Self;
-
-    fn cross_product(&self, other: &N) -> Self::Product {
-        Self {
-            x: self.y * *other,
-            y: N::zero() -self.x * *other,
-        }
-    }
-}
-
 impl Cross<Point<f32>> for f32 {
     type Product = Point<f32>;
 

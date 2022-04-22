@@ -84,8 +84,8 @@ where
 
     fn bounding_box(&self) -> crate::Aabr<N> {
         crate::Aabr::new(
-            self.center - Point::splat(self.radius),
-            self.center + Point::splat(self.radius),
+            self.center - Vector::splat(self.radius),
+            self.center + Vector::splat(self.radius),
         )
     }
 

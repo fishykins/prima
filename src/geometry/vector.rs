@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 
 use super::Point;
-use crate::{abstracts::Direction, common::Dot, xy_ops_impl, PrimaFloat, PrimaNum};
+use crate::{abstracts::Direction, common::Dot, xy_ops_impl, PrimaFloat, PrimaNum, Cross};
 
 /// A base struct for 2D points/vectors.
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Deserialize, Serialize)]
