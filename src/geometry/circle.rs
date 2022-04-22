@@ -92,6 +92,16 @@ where
     fn contains_point(&self, point: &Point<N>) -> bool {
         self.center.distance_squared(point) <= self.radius * self.radius
     }
+
+    fn nearest_point(&self, point: &Point<N>) -> Point<N> {
+        let d = self.center.distance(point);
+        let r = self.radius;
+        if d > r {
+            self.center + (point.vector(self.center)).normalize() * r
+        } else {
+            self.center
+        }
+    }
 }
 
 impl<N> Interact<N> for Circle<N>

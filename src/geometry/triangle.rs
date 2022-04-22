@@ -171,6 +171,10 @@ where
         let has_pos = d1 > N::zero() || d2 > N::zero() || d3 > N::zero();
         !has_neg && has_pos
     }
+
+    fn nearest_point(&self, _point: &Point<N>) -> Point<N> {
+        todo!()
+    }
 }
 
 impl<N> Interact<N> for Triangle<N>

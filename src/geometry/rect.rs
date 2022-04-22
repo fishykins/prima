@@ -84,4 +84,20 @@ impl<N> Shape<N> for Rect<N> where N: PrimaNum {
         };
         x_ok && y_ok
     }
+
+    fn nearest_point(&self, point: &Point<N>) -> Point<N> {
+        let mut x = point.x;
+        let mut y = point.y;
+        if x < self.x {
+            x = self.x;
+        } else if x > self.x + self.w {
+            x = self.x + self.w;
+        }
+        if y < self.y {
+            y = self.y;
+        } else if y > self.y + self.h {
+            y = self.y + self.h;
+        }
+        Point::new(x, y)
+    }
 }

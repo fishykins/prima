@@ -2,14 +2,14 @@ use core::panic;
 
 use super::Point;
 use crate::{
-    Collision, Interact, Intersect, PrimaFloat, PrimaNum, Shape, Vector, Line, DefaultFloat,
+    Collision, DefaultFloat, Interact, Intersect, Line, FlatShape, PrimaFloat, PrimaNum, Shape,
+    Vector,
 };
 use serde::{Deserialize, Serialize};
 
 /// Axis-aligned bounding rectangle.
 #[derive(Clone, Copy, Debug, PartialEq, Deserialize, Serialize)]
-pub struct Aabr<N = DefaultFloat>
-{
+pub struct Aabr<N = DefaultFloat> {
     /// The minimum point of the box.
     pub min: Point<N>,
     /// The maximum point of the box.
@@ -130,6 +130,21 @@ where
             && point.y >= self.min.y
             && point.y <= self.max.y
     }
+
+    fn nearest_point(&self, point: &Point<N>) -> Point<N> {
+        let mut nearest = self.center();
+        if point.x < self.min.x {
+            nearest.x = self.min.x;
+        } else if point.x > self.max.x {
+            nearest.x = self.max.x;
+        }
+        if point.y < self.min.y {
+            nearest.y = self.min.y;
+        } else if point.y > self.max.y {
+            nearest.y = self.max.y;
+        }
+        nearest
+    }
 }
 
 impl<N> Interact<N> for Aabr<N>
@@ -189,8 +204,10 @@ where
         if x_dist == y_dist {
             // We are on a corner, do something about it!
             return Point::new(
-                self.center().x + (self.half_extents().0 * (other.center().x - self.center().x).signum()),
-                self.center().y + (self.half_extents().1 * (other.center().y - self.center().y).signum()),
+                self.center().x
+                    + (self.half_extents().0 * (other.center().x - self.center().x).signum()),
+                self.center().y
+                    + (self.half_extents().1 * (other.center().y - self.center().y).signum()),
             );
         }
 
@@ -198,10 +215,7 @@ where
         let edge = if x_dist > y_dist {
             if other.center().x > self.center().x {
                 // Left
-                Line::new(
-                    self.min,
-                    self.min + Vector::new(N::zero(), self.height()),
-                )
+                Line::new(self.min, self.min + Vector::new(N::zero(), self.height()))
             } else {
                 // Right
                 Line::new(
@@ -212,10 +226,7 @@ where
         } else {
             if other.center().y > self.center().y {
                 // Bottom
-                Line::new(
-                    self.min,
-                    self.min + Vector::new(self.width(), N::zero()),
-                )
+                Line::new(self.min, self.min + Vector::new(self.width(), N::zero()))
             } else {
                 // Top
                 Line::new(
@@ -248,6 +259,20 @@ where
     }
 }
 
+impl<N> FlatShape<N> for Aabr<N>
+where
+    N: PrimaNum,
+{
+    fn vertices(&self) -> Vec<Point<N>> {
+        [
+            self.min,
+            Point::new(self.min.x, self.max.y),
+            self.max,
+            Point::new(self.max.x, self.min.y),
+        ]
+        .into()
+    }
+}
 
 #[cfg(test)]
 mod tests {

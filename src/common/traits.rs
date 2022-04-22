@@ -1,4 +1,4 @@
-use crate::{Aabr, Point, AxisValue, Collision, PrimaNum};
+use crate::{Aabr, Point, AxisValue, Collision, PrimaNum, Line};
 
 /// Used for implimenting 'fast' distance calculations.
 /// This is useful when we can't use square root on the generic type 'N', but
@@ -60,6 +60,29 @@ where
     fn bounding_box(&self) -> Aabr<N>;
     /// Returns true if the shape contains the point.
     fn contains_point(&self, point: &Point<N>) -> bool;
+    /// Returns the nearest point in the shape to the given point.
+    fn nearest_point(&self, point: &Point<N>) -> Point<N>;
+}
+
+/// Any shape that has concrete vertices, and therefore flat edges.
+pub trait FlatShape<N> : Shape<N> where N: PrimaNum {
+    /// Returns the vertices of the polygon.
+    fn vertices(&self) -> Vec<Point<N>>;
+
+    /// Returns the edges of the polygon.
+    fn edges(&self) -> Vec<Line<N>> {
+        let mut edges = Vec::new();
+        let vertices = self.vertices();
+        for i in 0..vertices.len() {
+            let next = if i == vertices.len() - 1 {
+                0
+            } else {
+                i + 1
+            };
+            edges.push(Line::new(vertices[i], vertices[next]));
+        }
+        edges
+    }
 }
 
 /// A trait that enforces certian behaviors between two shapes.
