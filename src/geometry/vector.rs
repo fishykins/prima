@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 
 use super::Point;
-use crate::{abstracts::Direction, common::Dot, xy_ops_impl, PrimaFloat, PrimaNum};
+use crate::{abstracts::Direction, common::Dot, xy_ops_impl, Cross, PrimaFloat, PrimaNum};
 
 /// A base struct for 2D points/vectors.
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Deserialize, Serialize)]
@@ -23,6 +23,32 @@ where
     #[inline]
     fn dot(&self, other: &Self) -> Self::Output {
         self.x * other.x + self.y * other.y
+    }
+}
+
+impl<N> Vector<N> where N: PrimaNum {
+    /// Returns the counter-clockwise perpendicular vector.
+    pub fn perpendicular_cc(self) -> Self {
+        Vector {
+            x: N::zero() - self.y,
+            y: self.x,
+        }
+    }
+
+    /// Returns the clockwise perpendicular vector.
+    pub fn perpendicular(self) -> Self {
+        Vector {
+            x: self.y,
+            y: N::zero() - self.x,
+        }
+    }
+
+    /// Returns the inverted vector.
+    pub fn inverted(self) -> Self {
+        Vector {
+            x: N::zero() - self.x,
+            y: N::zero() - self.y,
+        }
     }
 }
 

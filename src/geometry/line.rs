@@ -41,11 +41,16 @@ where
         }
     }
 
+    /// Returns the line's vector.
+    pub fn vector(&self) -> Vector<N> {
+        self.end - self.start
+    }
+
     /// Returns the point of collision between the line and the given line.
     pub fn contact_point(&self, other: &Self) -> Option<Point<N>> {
         let a = self.start;
         let c = other.start;
-        let r: Point<N> = self.end - a;
+        let r = self.end - a;
         let s = other.end - c;
 
         let denom: N = r.cross_product(&s);
@@ -78,6 +83,11 @@ where
     /// Bisects the line.
     pub fn bisect(self) -> Self {
         todo!()
+    }
+
+    /// Returns the normal of the line.
+    pub fn normal(&self) -> Vector<N> {
+        self.vector().perpendicular()
     }
 
     /// Returns the squared magnitude of the line.

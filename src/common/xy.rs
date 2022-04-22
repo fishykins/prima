@@ -3,7 +3,7 @@
 macro_rules! xy_ops_impl(
     ($T: ident) => {
         use std::ops::{Add, AddAssign, Div, Mul, Sub, SubAssign};
-        use crate::Coordinate;
+        use crate::{Coordinate};
         use crate::abstracts::*;
 
         impl<N> $T<N> where N: Copy {
@@ -73,10 +73,10 @@ macro_rules! xy_ops_impl(
 
         impl<N> Sub for $T<N>
             where N: Sub<Output = N> {
-            type Output = Self;
+            type Output = Vector<N>;
 
-            fn sub(self, other: Self) -> Self {
-                Self {
+            fn sub(self, other: Self) -> Vector<N> {
+                Vector::<N> {
                     x: self.x - other.x,
                     y: self.y - other.y,
                 }
@@ -128,5 +128,25 @@ macro_rules! xy_ops_impl(
                 self.y -= other.y;
             }
         }
+
+        impl<N> Cross for $T<N> where N: PrimaNum {
+            type Product = N;
+        
+            fn cross_product(&self, other: &Self) -> Self::Product {
+                self.x * other.y - self.y * other.x
+            }
+        }
+        
+        impl<N> Cross<N> for $T<N> where N: PrimaNum {
+            type Product = Self;
+        
+            fn cross_product(&self, other: &N) -> Self::Product {
+                Self {
+                    x: self.y * *other,
+                    y: N::zero() -self.x * *other,
+                }
+            }
+        }
+        
     }
 );

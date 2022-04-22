@@ -1,5 +1,5 @@
 use crate::{
-    Aabr, Circle, Collision, Interact, Intersect, PrimaFloat, Shape, Vector,
+    Aabr, Circle, Collision, Interact, Intersect, PrimaFloat, Shape, Distance,
 };
 
 impl<N> From<Circle<N>> for Aabr<N>
@@ -27,66 +27,34 @@ where
     N: PrimaFloat,
 {
     fn collision(&self, aabr: &Aabr<N>) -> Option<crate::Collision<N>> {
-        let n: Vector<N> = self.center().vector(aabr.center());
-        let x_extent = aabr.half_extents().0;
-        let y_extent = aabr.half_extents().1;
-
-        let mut closest = n.clone();
-        // Clamp point to edges of the AABB
-        if closest.x < -x_extent {
-            closest.x = -x_extent;
-        } else if closest.x > x_extent {
-            closest.x = x_extent;
-        }
-        if closest.y < -y_extent {
-            closest.y = -y_extent;
-        } else if closest.y > y_extent {
-            closest.y = y_extent;
-        }
-
-        let mut inside = false;
-
-        if n == closest {
-            // Circle is inside the AABB, so we need to clamp the circle's center to the closest edge.
-            inside = true;
-
-            if n.x.abs() > n.y.abs() {
-                // Clamp x
-                closest.x = if n.x < N::zero() { -x_extent } else { x_extent };
-            } else {
-                // Clamp y
-                closest.y = if n.y < N::zero() { -y_extent } else { y_extent };
-            }
-        }
-
-        let normal: Vector<N> = n - closest;
-        let d = normal.magnitude_squared();
-        let r = self.radius;
-
-        // The radius is shorter than distance to closest point and Circle not inside the AABB.
-        if d > r * r && !inside {
+        let n = self.nearest_extent(aabr);
+        if !self.contains_point(&n) {
             return None;
         }
+        let penetration = self.radius - n.distance(&self.center);
+        let normal = n - self.center;
 
-        // Collect the sqrt of the distance
-        let d = d.sqrt();
+        // TODO: Resolve when circle center is within the aabr. The center of the circle needs to be clipped to the closest edge of the Aabr, and the normal needs to be flipped.
 
-        if inside {
-            // Collision normal needs to be flipped to point outside if circle was inside the AABB
-            Some(Collision {
-                penetration: r - d,
-                normal: Vector::zero() - n,
-            })
-        } else {
-            Some(Collision {
-                penetration: r - d,
-                normal: n,
-            })
-        }
+        Some(Collision {
+            penetration,
+            normal,
+        })
     }
 
-    fn nearest_extent(&self, _aabr: &Aabr<N>) -> crate::Point<N> {
-        todo!()
+    fn nearest_extent(&self, aabr: &Aabr<N>) -> crate::Point<N> {
+        let mut p = self.center();
+        if p.x > aabr.max.x {
+            p.x = aabr.max.x;
+        } else if p.x < aabr.min.x {
+            p.x = aabr.min.x;
+        }
+        if p.y > aabr.max.y {
+            p.y = aabr.max.y;
+        } else if p.y < aabr.min.y {
+            p.y = aabr.min.y;
+        }
+        p
     }
 }
 
@@ -124,5 +92,22 @@ where
             (circle_distance_x - half_width).powi(2) + (circle_distance_y - half_height).powi(2);
 
         corner_dist_sq <= circle.radius * circle.radius
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::{Circle, Aabr, Point, Vector};
+
+    #[test]
+    fn aabr_circle_test() {
+        let circle = Circle::new(Point::new(32.0, 32.0), 8.0);
+        let square = Aabr::new(Point::new(0.0, 0.0), Point::new(30.0, 30.0));
+        let nearest_point_on_square = circle.nearest_extent(&square);
+        assert_eq!(nearest_point_on_square, Point::new(30.0, 30.0));
+        let collision = circle.collision(&square).unwrap();
+        assert_eq!(collision.penetration, 8.0 - 2. * 2.0f32.sqrt());
+        assert_eq!(collision.normal, Vector::new(2.0, 2.0));
     }
 }
