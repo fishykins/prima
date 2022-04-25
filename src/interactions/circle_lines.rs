@@ -23,6 +23,7 @@ where
             return Some(Collision::<N> {
                 penetration: self.radius - dist_squared.sqrt(),
                 normal: closest.vector(self.center).normalize(),
+                contact: closest,
             });
         }
         None

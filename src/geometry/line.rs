@@ -217,6 +217,7 @@ where
             Some(Collision {
                 penetration,
                 normal,
+                contact: point,
             })
         } else {
             None

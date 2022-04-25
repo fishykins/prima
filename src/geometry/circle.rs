@@ -118,12 +118,14 @@ where
                     // Pseudo random (but predictable) values for when the circles are one.
                     penetration: self.radius,
                     normal: Vector::new(N::one(), N::zero()),
+                    contact: self.center,
                 })
             } else {
                 let penetration = r - d;
                 Some(crate::Collision {
                     penetration,
                     normal,
+                    contact: self.center + normal.normalize() * (self.radius - penetration),
                 })
             }
         } else {

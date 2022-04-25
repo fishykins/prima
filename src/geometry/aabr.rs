@@ -58,7 +58,7 @@ where
     }
 
     /// Returns any overlap between the two bounding boxes.
-    pub fn common_bounds(&self, other: &Self) -> Option<Self> {
+    pub fn overlap(&self, other: &Self) -> Option<Self> {
         if self.min.x > other.max.x
             || self.max.x < other.min.x
             || self.min.y > other.max.y
@@ -67,35 +67,40 @@ where
             return None;
         }
 
+        Some(self.overlap_unchecked(other))
+    }
+
+    /// Returns the overlap of two bounding boxes, without checking for validity.
+    pub fn overlap_unchecked(&self, other: &Self) -> Self {
         // This looks verbose, but it allows us to avoid requiring Ord for N.
         let min_x = if self.min.x > other.min.x {
             self.min.x
         } else {
             other.min.x
         };
-
+    
         let min_y = if self.min.y > other.min.y {
             self.min.y
         } else {
             other.min.y
         };
-
+    
         let max_x = if self.max.x < other.max.x {
             self.max.x
         } else {
             other.max.x
         };
-
+    
         let max_y = if self.max.y < other.max.y {
             self.max.y
         } else {
             other.max.y
         };
-
-        Some(Self::new(
+    
+        Self::new(
             Point::new(min_x, min_y),
             Point::new(max_x, max_y),
-        ))
+        )
     }
 }
 
@@ -165,6 +170,9 @@ where
             let y_overlap = a_extent.1 + b_extent.1 - n.y.abs();
 
             if y_overlap > N::zero() {
+                // We have an overlap on both axes- calculate the area.
+                let overlap = self.overlap_unchecked(other);
+
                 // Find out which axis is axis of least penetration
                 if x_overlap < y_overlap {
                     let normal = if n.x < N::zero() {
@@ -175,6 +183,7 @@ where
                     return Some(Collision {
                         penetration: x_overlap,
                         normal,
+                        contact: overlap.center(),
                     });
                 } else {
                     let normal = if n.y < N::zero() {
@@ -185,6 +194,7 @@ where
                     return Some(Collision {
                         penetration: y_overlap,
                         normal,
+                        contact: overlap.center(),
                     });
                 }
             }
@@ -273,7 +283,6 @@ where
         .into()
     }
 }
-
 #[cfg(test)]
 mod tests {
     use super::*;

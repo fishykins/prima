@@ -17,6 +17,7 @@ impl<N> Interact<N, Line<N>> for Aabr<N> where N: PrimaFloat {
         Some(Collision {
             penetration: x_overlap.min(y_overlap),
             normal,
+            contact: n,
         })
     }
 

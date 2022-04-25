@@ -39,6 +39,7 @@ where
         Some(Collision {
             penetration,
             normal,
+            contact: n,
         })
     }
 
