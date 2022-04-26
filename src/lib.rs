@@ -23,3 +23,12 @@ pub use geometry::*;
 pub use interactions::*;
 pub use compat::*;
 pub use abstracts::*;
+
+/// Common use types.
+pub mod prelude {
+    pub use crate::{
+        common::PrimaFloat, PrimaNum, Cross, Dot, Shape,
+        geometry::Vector, Point, Extent,
+        abstracts::Rotation,
+    };
+}
