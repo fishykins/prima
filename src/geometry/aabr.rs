@@ -2,8 +2,8 @@ use core::panic;
 
 use super::Point;
 use crate::{
-    Collision, DefaultFloat, Interact, Intersect, Line, FlatShape, PrimaFloat, PrimaNum, Shape,
-    Vector,
+    Collision, DefaultFloat, Extent, FlatShape, Interact, Intersect, Line, PrimaFloat, PrimaNum,
+    Shape, Vector,
 };
 use serde::{Deserialize, Serialize};
 
@@ -51,10 +51,14 @@ where
         self.max.y - self.min.y
     }
 
+    /// Returns the extents of this bounding box.
+    pub fn extents(&self) -> Extent<N> {
+        Extent::new(self.width(), self.height())
+    }
+
     /// Returns the half-extents of the bounding box.
-    pub fn half_extents(&self) -> (N, N) {
-        let two = N::one() + N::one();
-        (self.width() / two, self.height() / two)
+    pub fn half_extents(&self) -> Extent<N> {
+        self.extents().half_extents()
     }
 
     /// Returns any overlap between the two bounding boxes.
@@ -78,29 +82,26 @@ where
         } else {
             other.min.x
         };
-    
+
         let min_y = if self.min.y > other.min.y {
             self.min.y
         } else {
             other.min.y
         };
-    
+
         let max_x = if self.max.x < other.max.x {
             self.max.x
         } else {
             other.max.x
         };
-    
+
         let max_y = if self.max.y < other.max.y {
             self.max.y
         } else {
             other.max.y
         };
-    
-        Self::new(
-            Point::new(min_x, min_y),
-            Point::new(max_x, max_y),
-        )
+
+        Self::new(Point::new(min_x, min_y), Point::new(max_x, max_y))
     }
 }
 
@@ -163,11 +164,11 @@ where
         let b_extent = other.half_extents();
 
         // Calculate overlap on x axis.
-        let x_overlap = a_extent.0 + b_extent.0 - n.x.abs();
+        let x_overlap = a_extent.w + b_extent.w - n.x.abs();
 
         if x_overlap > N::zero() {
             // Calculate overlap on y axis.
-            let y_overlap = a_extent.1 + b_extent.1 - n.y.abs();
+            let y_overlap = a_extent.h + b_extent.h - n.y.abs();
 
             if y_overlap > N::zero() {
                 // We have an overlap on both axes- calculate the area.
@@ -215,9 +216,9 @@ where
             // We are on a corner, do something about it!
             return Point::new(
                 self.center().x
-                    + (self.half_extents().0 * (other.center().x - self.center().x).signum()),
+                    + (self.half_extents().w * (other.center().x - self.center().x).signum()),
                 self.center().y
-                    + (self.half_extents().1 * (other.center().y - self.center().y).signum()),
+                    + (self.half_extents().h * (other.center().y - self.center().y).signum()),
             );
         }
 

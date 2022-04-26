@@ -1,6 +1,7 @@
 mod aabr;
 mod circle;
 mod collision;
+mod extent;
 mod line;
 mod point;
 mod rays;
@@ -11,6 +12,7 @@ mod vector;
 pub use aabr::*;
 pub use circle::*;
 pub use collision::*;
+pub use extent::*;
 pub use line::*;
 pub use point::*;
 pub use rays::*;
