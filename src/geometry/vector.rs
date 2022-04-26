@@ -1,5 +1,5 @@
 use serde::{Deserialize, Serialize};
-use super::Point;
+use super::{Point, Extent, Mat2, Rotation};
 use crate::{abstracts::Direction, common::Dot, xy_ops_impl, Cross, PrimaFloat, PrimaNum};
 
 /// A base struct for 2D points/vectors.

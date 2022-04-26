@@ -18,6 +18,14 @@ macro_rules! xy_ops_impl(
             }
         }
 
+        impl<N> $T<N> where N: PrimaFloat {
+            /// Rotate around the origin.
+            pub fn rotate(self, rotation: Rotation<N>) -> Self {
+                let matrix: Mat2<N> = rotation.into();
+                self * matrix
+            }
+        }
+
         impl<N> Coordinate<N> for $T<N> where N: num_traits::Num + Copy {
             fn axis(&self) -> crate::AxisValue<N> {
                 AxisValue::XY(self.x, self.y)
@@ -71,6 +79,30 @@ macro_rules! xy_ops_impl(
             }
         }
 
+        impl<N> Add<Extent<N>> for $T<N>
+            where N: Add<Output = N> {
+            type Output = Self;
+
+            fn add(self, other: Extent<N>) -> Self {
+                Self {
+                    x: self.x + other.w,
+                    y: self.y + other.h,
+                }
+            }
+        }
+
+        impl<N> Sub<Extent<N>> for $T<N>
+            where N: Sub<Output = N> {
+            type Output = Self;
+
+            fn sub(self, other: Extent<N>) -> Self {
+                Self {
+                    x: self.x - other.w,
+                    y: self.y - other.h,
+                }
+            }
+        }
+
         impl<N> Sub for $T<N>
             where N: Sub<Output = N> {
             type Output = Vector<N>;
@@ -91,6 +123,18 @@ macro_rules! xy_ops_impl(
                 Self {
                     x: self.x * other,
                     y: self.y * other,
+                }
+            }
+        }
+
+        impl<N> Mul<Mat2<N>> for $T<N> 
+        where N: Mul<Output = N> + Add<Output = N> + Copy {
+            type Output = Self;
+
+            fn mul(self, other: Mat2<N>) -> Self {
+                Self {
+                    x: self.x * other.m00 + self.y * other.m10,
+                    y: self.x * other.m01 + self.y * other.m11,
                 }
             }
         }

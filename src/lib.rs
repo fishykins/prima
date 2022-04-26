@@ -28,7 +28,6 @@ pub use abstracts::*;
 pub mod prelude {
     pub use crate::{
         common::PrimaFloat, PrimaNum, Cross, Dot, Shape,
-        geometry::Vector, Point, Extent,
-        abstracts::Rotation,
+        geometry::Vector, Point, Extent, Angle
     };
 }

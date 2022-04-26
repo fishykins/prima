@@ -1,6 +1,7 @@
 use crate::{PrimaNum, Aabr, Point};
 
 /// An extent used to describe the length of an axis pair.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
 pub struct Extent<N> {
     /// Width
     pub w: N,
@@ -32,6 +33,21 @@ impl<N> Extent<N> where N: PrimaNum {
     /// Doubles the extent (to get from half extents to full extents).
     pub fn from_half_extents(half_extents: Self) -> Self {
         Self::new(half_extents.w * Self::two(), half_extents.h * Self::two())
+    }
+
+    /// Double self.
+    pub fn double(self) -> Self {
+        Self::new(self.w * Self::two(), self.h * Self::two())
+    }
+
+    /// Returns w * h, or the area of the extent.
+    pub fn area(&self) -> N {
+        self.w * self.h
+    }
+
+    /// Returns the sum of w and h.
+    pub fn sum(&self) -> N {
+        self.w + self.h
     }
 
     fn two() -> N {

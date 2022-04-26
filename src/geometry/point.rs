@@ -6,7 +6,7 @@ use crate::{
 };
 use serde::{Deserialize, Serialize};
 
-use super::Vector;
+use super::{Vector, Extent, Mat2, Rotation};
 
 /// A base struct for 2D points/vectors.
 #[derive(Debug, Clone, Copy, Default, PartialEq, Deserialize, Serialize)]

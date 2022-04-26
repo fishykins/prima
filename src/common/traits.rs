@@ -37,6 +37,7 @@ pub trait Dot<Rhs = Self> {
 }
 
 /// A trait that ensures that the type is a point.
+/// TODO: Remove this trait as it is redundant.
 pub trait Coordinate<N>
 where
     N: num_traits::Num,
