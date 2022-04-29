@@ -11,7 +11,6 @@ impl<N> Interact<N, Line<N>> for Aabr<N> where N: PrimaFloat {
 
         let x_overlap = (self.max.x - n.x).min(n.x - self.min.x);
         let y_overlap = (self.max.y - n.y).min(n.y - self.min.y);
-        println!("{:?} -> [{}, {}]", n, x_overlap, y_overlap);
 
         
         Some(Collision {

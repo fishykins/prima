@@ -35,6 +35,17 @@ where
     pub fn aligned(&self, other: &Self) -> bool {
         self.x == other.x || self.y == other.y
     }
+
+    /// Rotates the point around a given point by a rotation.
+    pub fn rotate_around(&self, point: Self, rotation: Rotation<N>) -> Self {
+        let rot_mat = rotation.to_matrix();
+        let v = self.vector(point);
+        let new_v = v * rot_mat;
+        Self {
+            x: new_v.x + point.x,
+            y: new_v.y + point.y,
+        }
+    }
 }
 
 impl Cross<Point<f32>> for f32 {

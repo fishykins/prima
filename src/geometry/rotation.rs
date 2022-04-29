@@ -1,5 +1,5 @@
 use crate::{Mat2, PrimaFloat};
-use std::ops::{Add, Div, Mul, Sub};
+use std::ops::{Add, Div, Mul, Sub, Neg};
 
 macro_rules! rotation_impl(
     ($T: ident) => {
@@ -68,6 +68,16 @@ macro_rules! rotation_impl(
             pub fn tan(&self) -> N {
                 self.as_rads_raw().tan()
             }
+
+            /// Convert to a rotation matrix.
+            pub fn to_matrix(self) -> Mat2<N> {
+                self.into()
+            }
+
+            /// Mirrors the rotation.
+            pub fn mirror(self) -> Self {
+                Self::new(N::zero() - self.as_rads())
+            }
         }
 
         impl<N> Add for $T<N>
@@ -89,6 +99,17 @@ macro_rules! rotation_impl(
 
             fn sub(self, rhs: Self) -> Self {
                 Self::new(self.0 - rhs.0)
+            }
+        }
+
+        impl<N> Neg for $T<N>
+        where
+            N: PrimaFloat,
+        {
+            type Output = Self;
+
+            fn neg(self) -> Self {
+                Self::new(N::zero() - self.0)
             }
         }
 
@@ -140,7 +161,6 @@ macro_rules! rotation_impl(
                 };
 
                 let mat = Mat2::<N>::new(c, -s, s, c);
-                println!("{:?}", mat);
                 mat
             }
         }
@@ -186,6 +206,24 @@ where
     /// Returns the opposite angle.
     pub fn opposite(self) -> Self {
         Self::new(self.0 + N::pi())
+    }
+}
+
+impl<N> From<Rotation<N>> for Angle<N>
+where
+    N: PrimaFloat,
+{
+    fn from(r: Rotation<N>) -> Self {
+        Self::new(r.0)
+    }
+}
+
+impl<N> From<Angle<N>> for Rotation<N>
+where
+    N: PrimaFloat,
+{
+    fn from(a: Angle<N>) -> Self {
+        Self::new(a.0)
     }
 }
 
