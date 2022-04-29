@@ -139,6 +139,15 @@ macro_rules! xy_ops_impl(
             }
         }
 
+        impl<N> Mul<Rotation<N>> for $T<N> 
+        where N: Mul<Output = N> + Add<Output = N> + PrimaFloat {
+            type Output = Self;
+
+            fn mul(self, other: Rotation<N>) -> Self {
+                self * other.to_matrix()
+            }
+        }
+
         impl<N> Div<N> for $T<N>
             where N: Div<Output = N> + Copy {
             type Output = Self;

@@ -1,5 +1,5 @@
 use crate::{
-    Distance, FastDistance, Interact, Intersect, Point, PrimaFloat, PrimaNum, Shape, Vector,
+    Distance, FastDistance, Interact, Intersect, Point, PrimaFloat, PrimaNum, Shape, Vector, Rotation,
 };
 use serde::{Deserialize, Serialize};
 
@@ -21,6 +21,15 @@ impl<N> Circle<N> {
     /// Builds a circle from given center and radius.
     pub fn new(center: Point<N>, radius: N) -> Self {
         Self { center, radius }
+    }
+}
+
+impl<N> Circle<N> where N: PrimaFloat {
+    /// Rotates the circle around the given point by the given amount.
+    pub fn rotate_around_point(&self, point: Point<N>, rotation: Rotation<N>) -> Self {
+        let v = self.center - point;
+        let new_center = Point::new(v.x, v.y) * rotation + point;
+        Self::new(new_center, self.radius)
     }
 }
 
