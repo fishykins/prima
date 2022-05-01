@@ -35,6 +35,22 @@ where
         self.x / Self::two()
     }
 
+    /// Halves the extent.
+    pub fn half(&self) -> Self {
+        Self {
+            x: self.x / Self::two(),
+            y: self.y / Self::two(),
+        }
+    }
+
+    /// Doubles the extent.
+    pub fn double(&self) -> Self {
+        Self {
+            x: self.x * Self::two(),
+            y: self.y * Self::two(),
+        }
+    }
+
     /// Returns the half-height of the extent.
     pub fn half_height(&self) -> N {
         self.y / Self::two()
@@ -43,6 +59,11 @@ where
     /// The volume of the extent.
     pub fn volume(&self) -> N {
         self.x * self.y
+    }
+
+    /// The sum of width and height.
+    pub fn sum(&self) -> N {
+        self.x + self.y
     }
 }
 

@@ -26,14 +26,14 @@ impl<N> Magnitude<N> for Line<N> where N: PrimaFloat {
 
 impl<N> Distance<N, Point<N>> for Line<N> where N: PrimaFloat {
     fn squared_distance(&self, other: &Point<N>) -> N {
-        let p = self.nearest_extent_to_other(other);
+        let p = self.nearest_point(other);
         let dist = p - *other;
         dist.magnitude_squared()
     }
 }
 
 impl<N> Nearest<N, Point<N>> for Line<N> where N: PrimaFloat {
-    fn nearest_extent_to_other(&self, other: &Point<N>) -> Point<N> {
+    fn nearest_point(&self, other: &Point<N>) -> Point<N> {
         let ap: Vector<N> = (*other - self.start).into();
         let ab: Vector<N> = (self.end - self.start).into();
 
@@ -48,9 +48,5 @@ impl<N> Nearest<N, Point<N>> for Line<N> where N: PrimaFloat {
         } else {
             self.start + ab * dist
         }
-    }
-
-    fn nearest_extent_to_self(&self, other: &Point<N>) -> Point<N> {
-        *other
     }
 }

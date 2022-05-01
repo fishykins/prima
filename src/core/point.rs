@@ -1,10 +1,12 @@
 use crate::{
     core::{AngleMat, Line, Rotation, Vector},
     nums::{PrimaFloat, PrimaNum},
-    traits::{Distance, Magnitude},
+    traits::{Distance, Magnitude, Shape},
     xy_impl,
 };
 use std::ops::{AddAssign, Neg, Sub, SubAssign};
+
+use super::Extent;
 
 /// A point in 2D space.
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
@@ -39,6 +41,11 @@ where
         dist_start + dist_end >= line_length - buffer
             && dist_start + dist_end <= line_length + buffer
     }
+
+    /// Checks if the point is inside the given shape.
+    pub fn in_shape(&self, shape: impl Shape<N>) -> bool {
+        shape.contains(self)
+    }
 }
 
 impl<N> Distance<N, Self> for Point<N>
@@ -51,6 +58,10 @@ where
         dx * dx + dy * dy
     }
 }
+
+//==============================================================================//
+//=============================== OPPERATIONS ==================================//
+//==============================================================================//
 
 impl<N> Add<Vector<N>> for Point<N>
 where
@@ -76,6 +87,30 @@ where
     }
 }
 
+impl<N> Add<Extent<N>> for Point<N>
+where
+    N: PrimaNum,
+{
+    type Output = Self;
+
+    fn add(self, rhs: Extent<N>) -> Self {
+        Self {
+            x: self.x + rhs.half_width(),
+            y: self.y + rhs.half_height(),
+        }
+    }
+}
+
+impl<N> AddAssign<Extent<N>> for Point<N>
+where
+    N: PrimaNum + AddAssign,
+{
+    fn add_assign(&mut self, rhs: Extent<N>) {
+        self.x += rhs.half_width();
+        self.y += rhs.half_height();
+    }
+}
+
 impl<N> Sub for Point<N>
 where
     N: PrimaNum,
@@ -94,5 +129,29 @@ where
     fn sub_assign(&mut self, rhs: Vector<N>) {
         self.x -= rhs.x;
         self.y -= rhs.y;
+    }
+}
+
+impl<N> Sub<Extent<N>> for Point<N>
+where
+    N: PrimaNum,
+{
+    type Output = Self;
+
+    fn sub(self, rhs: Extent<N>) -> Self {
+        Self {
+            x: self.x - rhs.half_width(),
+            y: self.y - rhs.half_height(),
+        }
+    }
+}
+
+impl<N> SubAssign<Extent<N>> for Point<N>
+where
+    N: PrimaNum + SubAssign,
+{
+    fn sub_assign(&mut self, rhs: Extent<N>) {
+        self.x -= rhs.half_width();
+        self.y -= rhs.half_height();
     }
 }

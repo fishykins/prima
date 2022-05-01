@@ -1,4 +1,8 @@
-use crate::{shapes::{Circle, Aabr}, nums::PrimaFloat, core::*};
+use crate::{
+    core::*,
+    nums::{PrimaFloat, PrimaNum},
+    shapes::{Aabr, Circle},
+};
 ///=============================================================///
 ///======================= LOCAL TRAITS ========================///
 ///=============================================================///
@@ -13,14 +17,27 @@ pub trait Shape<N> {
     fn bounding_rect(&self) -> Aabr<N>;
     /// The bounding circle of this shape.
     fn bounding_circle(&self) -> Circle<N>;
+    /// Returns true if the given point is inside the shape.
+    fn contains(&self, point: &Point<N>) -> bool;
 }
 
 /// A shape-object that has flat edges.
-pub trait Flat<N>: Shape<N> {
+pub trait Flat<N>: Shape<N>
+where
+    N: PrimaNum,
+{
     /// Returns vertices of the object.
     fn vertices(&self) -> Vec<Point<N>>;
     /// Returns edges of the object.
-    fn edges(&self) -> Vec<Line<N>>;
+    fn edges(&self) -> Vec<Line<N>> {
+        let mut edges = Vec::new();
+        let vertices = self.vertices();
+        for i in 0..vertices.len() {
+            let next = if i == vertices.len() - 1 { 0 } else { i + 1 };
+            edges.push(Line::new(vertices[i], vertices[next]));
+        }
+        edges
+    }
 }
 
 /// A shape with curved edges.
@@ -69,27 +86,17 @@ where
     }
 }
 
-
 /// Calculating nearest extents.
-pub trait Nearest<N, Rhs = Self>: Distance<N, Rhs>
+pub trait Nearest<N, Rhs = Self>
 where
     N: PrimaFloat,
 {
     /// Returns the nearest point on self to the given object.
-    fn nearest_extent_to_other(&self, other: &Rhs) -> Point<N>;
-    /// Returns the nearest point on other to self.
-    fn nearest_extent_to_self(&self, other: &Rhs) -> Point<N>;
-
-    /// Returns the shortest line between two objects.
-    fn shortest_line(&self, other: &Rhs) -> Line<N> {
-        let nearest_self = self.nearest_extent_to_other(other);
-        let nearest_other = self.nearest_extent_to_self(other);
-        Line::new(nearest_self, nearest_other)
-    }
+    fn nearest_point(&self, other: &Rhs) -> Point<N>;
 }
 
 /// A trait for objects that can collide with other objects.
-pub trait Collide<N, Rhs = Self>: Nearest<N, Rhs>
+pub trait Collide<N, Rhs = Self>
 where
     N: PrimaFloat,
 {
