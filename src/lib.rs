@@ -4,30 +4,20 @@
 //! Prima is a geometry library aimed at providing a simple, generic and safe API for both 2D and 3D euler-based graphics.
 //! Emphasis is on axis-aligned opperations, but the library is designed to be used with any kind of geometry.
 
-/// Base utilities.
-mod common;
-/// Geometry utilities.
-mod geometry;
+/// Core geometric components of the library.
+pub mod core;
 
-/// Useful abstractions.
-mod abstracts;
+/// Geometry primitives.
+pub mod shapes;
 
-/// Implimentations for cross-geometry operations.
-mod interactions;
+/// various utility structs and enums for common geometric concepts.
+pub mod abstracts;
 
-/// Compatability module for external crates, such as glam.
-mod compat;
+/// Useful macros for geometric types (mainly internal use).
+pub mod macros;
 
-pub use common::*;
-pub use geometry::*;
-pub use interactions::*;
-pub use compat::*;
-pub use abstracts::*;
+/// Numerical traits to help keep things as generic as possible.
+pub mod nums;
 
-/// Common use types.
-pub mod prelude {
-    pub use crate::{
-        common::PrimaFloat, PrimaNum, Cross, Dot, Shape,
-        geometry::Vector, Point, Extent, Angle
-    };
-}
+/// A collection of traits that apply to geometric types.
+pub mod traits;
