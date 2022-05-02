@@ -1,5 +1,5 @@
 use super::{AngleMat, Rotation};
-use crate::{xy_impl, nums::{PrimaNum, PrimaFloat}};
+use crate::{xy_impl, nums::{PrimaNum, PrimaFloat}, traits::Cross};
 use std::{fmt::Display, ops::Neg};
 
 /// Width and height extent of a shape.

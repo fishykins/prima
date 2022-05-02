@@ -1,7 +1,7 @@
 use crate::{
     core::{AngleMat, Line, Rotation, Vector},
     nums::{PrimaFloat, PrimaNum},
-    traits::{Distance, Magnitude, Shape},
+    traits::{Distance, Magnitude, Shape, Cross},
     xy_impl,
 };
 use std::ops::{AddAssign, Neg, Sub, SubAssign};

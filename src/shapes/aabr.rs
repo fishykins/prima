@@ -1,10 +1,10 @@
 use crate::{
-    core::{Collision, Extent, Point, Vector},
+    core::{Collision, Extent, Point, Vector, Line},
     nums::{PrimaFloat, PrimaNum},
     traits::{Collide, Distance, Flat, LocalPosition, Nearest, Shape},
 };
 
-use super::Circle;
+use super::{Circle, Obr};
 
 /// An axis-aligned bounding rectangle.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -140,6 +140,10 @@ where
     }
 }
 
+//=================================================================//
+//========================= POINT =================================//
+//=================================================================//
+
 impl<N> Distance<N, Point<N>> for Aabr<N>
 where
     N: PrimaFloat,
@@ -171,6 +175,167 @@ where
     }
 }
 
+//=================================================================//
+//============================= LINE ==============================//
+//=================================================================//
+
+impl<N> Distance<N, Line<N>> for Aabr<N> where N: PrimaFloat {
+    fn squared_distance(&self, other: &Line<N>) -> N {
+        todo!()
+    }
+}
+
+impl<N> Nearest<N, Line<N>> for Aabr<N> where N: PrimaFloat {
+    fn nearest_point(&self, line: &Line<N>) -> Point<N> {
+        todo!()
+    }
+}
+
+impl<N> Collide<N, Line<N>> for Aabr<N> where N: PrimaFloat {
+    fn collision(&self, other: &Line<N>) -> Option<Collision<N>> {
+        todo!()
+    }
+
+    fn enveloping(&self, other: &Line<N>) -> bool {
+        todo!()
+    }
+
+    fn enveloped_by(&self, other: &Line<N>) -> bool {
+        todo!()
+    }
+}
+
+//=================================================================//
+//============================ CIRCLE =============================//
+//=================================================================//
+
+impl<N> Distance<N, Circle<N>> for Aabr<N>
+where
+    N: PrimaFloat,
+{
+    fn squared_distance(&self, other: &Circle<N>) -> N {
+        self.nearest_point(&other.center).squared_distance(&other.center)
+    }
+}
+
+impl<N> Nearest<N, Circle<N>> for Aabr<N>
+where
+    N: PrimaFloat,
+{
+    fn nearest_point(&self, circle: &Circle<N>) -> Point<N> {
+        self.nearest_point(&circle.center)
+    }
+}
+
+impl<N> Collide<N, Circle<N>> for Aabr<N>
+where
+    N: PrimaFloat,
+{
+    fn collision(&self, circle: &Circle<N>) -> Option<Collision<N>> {
+        let n = circle.nearest_point(self);
+        if !circle.contains(&n) {
+            return None;
+        }
+        let depth = circle.radius - n.distance(&circle.center);
+        let normal = n - circle.center;
+
+        // TODO: Resolve when circle center is within the aabr. The center of the circle needs to be clipped to the closest edge of the Aabr, and the normal needs to be flipped.
+
+        Some(Collision::new(n, normal, depth))
+    }
+
+    fn intersecting(&self, circle: &Circle<N>) -> bool {
+        if self.contains(&circle.center) {
+            return true;
+        }
+        let aabr_center = self.position();
+        let two = N::one() + N::one();
+        let half_width = self.width() / two;
+        let half_height = self.height() / two;
+
+        let circle_distance_x = (circle.center.x - aabr_center.x).abs();
+        let circle_distance_y = (circle.center.y - aabr_center.y).abs();
+
+        if circle_distance_x > half_width + circle.radius {
+            return false;
+        }
+        if circle_distance_y > half_height + circle.radius {
+            return false;
+        }
+
+        if circle_distance_x <= half_width {
+            return true;
+        }
+        if circle_distance_y <= half_height {
+            return true;
+        }
+
+        let corner_dist_sq =
+            (circle_distance_x - half_width).powi(2) + (circle_distance_y - half_height).powi(2);
+
+        corner_dist_sq <= circle.radius * circle.radius
+    }
+
+    fn enveloping(&self, circle: &Circle<N>) -> bool {
+        let aabr_center = self.position();
+        let extent = self.extent().half();
+        let half_width = extent.width();
+        let half_height = extent.height();
+
+        let circle_distance_x = (circle.center.x - aabr_center.x).abs();
+        let circle_distance_y = (circle.center.y - aabr_center.y).abs();
+
+        if circle_distance_x > half_width + circle.radius {
+            return false;
+        }
+        if circle_distance_y > half_height + circle.radius {
+            return false;
+        }
+
+        if circle_distance_x <= half_width {
+            return true;
+        }
+        if circle_distance_y <= half_height {
+            return true;
+        }
+
+        let corner_dist_sq =
+            (circle_distance_x - half_width).powi(2) + (circle_distance_y - half_height).powi(2);
+
+        corner_dist_sq <= circle.radius * circle.radius
+    }
+
+    fn enveloped_by(&self, circle: &Circle<N>) -> bool {
+        self.vertices().iter().all(|v| circle.contains(v))
+    }
+}
+
+//=================================================================//
+//============================= AABR ==============================//
+//=================================================================//
+
+impl<N> Distance<N, Aabr<N>> for Aabr<N>
+where
+    N: PrimaFloat,
+{
+    fn squared_distance(&self, other: &Aabr<N>) -> N {
+        let (min_a, max_a) = self.min_max();
+        let (min_b, max_b) = other.min_max();
+        let mut d = N::zero();
+        if min_a.x > max_b.x {
+            d += (min_a.x - max_b.x).powi(2);
+        } else if max_a.x < min_b.x {
+            d += (max_a.x - min_b.x).powi(2);
+        }
+        if min_a.y > max_b.y {
+            d += (min_a.y - max_b.y).powi(2);
+        } else if max_a.y < min_b.y {
+            d += (max_a.y - min_b.y).powi(2);
+        }
+        d
+    }
+}
+
 impl<N> Nearest<N, Aabr<N>> for Aabr<N>
 where
     N: PrimaFloat,
@@ -194,7 +359,7 @@ where
     }
 }
 
-impl<N> Collide<N> for Aabr<N>
+impl<N> Collide<N, Aabr<N>> for Aabr<N>
 where
     N: PrimaFloat,
 {
@@ -247,5 +412,44 @@ where
 
     fn enveloped_by(&self, other: &Self) -> bool {
         other.enveloping(self)
+    }
+}
+
+//=================================================================//
+//============================== OBR ==============================//
+//=================================================================//
+
+impl<N> Distance<N, Obr<N>> for Aabr<N>
+where
+    N: PrimaFloat,
+{
+    fn squared_distance(&self, obr: &Obr<N>) -> N {
+        todo!()
+    }
+}
+
+impl<N> Nearest<N, Obr<N>> for Aabr<N>
+where
+    N: PrimaFloat,
+{
+    fn nearest_point(&self, obr: &Obr<N>) -> Point<N> {
+        todo!()
+    }
+}
+
+impl<N> Collide<N, Obr<N>> for Aabr<N>
+where
+    N: PrimaFloat,
+{
+    fn collision(&self, obr: &Obr<N>) -> Option<Collision<N>> {
+        todo!()
+    }
+
+    fn enveloping(&self, obr: &Obr<N>) -> bool {
+        todo!()
+    }
+
+    fn enveloped_by(&self, obr: &Obr<N>) -> bool {
+        todo!()
     }
 }

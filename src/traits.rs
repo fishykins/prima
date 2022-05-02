@@ -87,6 +87,15 @@ where
 ///======================= INTERACTIONS ========================///
 ///=============================================================///
 
+/// Cross product for points, floats and other such things.
+pub trait Cross<Rhs = Self> {
+    /// The product of the cross.
+    type Product;
+    /// Returns the cross product of self and other.
+    fn cross(&self, other: &Rhs) -> Self::Product;
+}
+
+
 /// Base trait for distance between two entities.
 pub trait Distance<N, Rhs = Point<N>>
 where
@@ -125,4 +134,30 @@ where
     fn enveloping(&self, other: &Rhs) -> bool;
     /// Checks if this object is entirely contained by the other object.
     fn enveloped_by(&self, other: &Rhs) -> bool;
+}
+
+///=============================================================///
+///======================== MISC IMPL's ========================///
+///=============================================================///
+
+impl Cross<Point<f32>> for f32 {
+    type Product = Point<f32>;
+
+    fn cross(&self, other: &Point<f32>) -> Self::Product {
+        Point {
+            x: -self * other.y,
+            y: other.x * *self,
+        }
+    }
+}
+
+impl Cross<Point<f64>> for f64 {
+    type Product = Point<f64>;
+
+    fn cross(&self, other: &Point<f64>) -> Self::Product {
+        Point {
+            x: -self * other.y,
+            y: other.x * *self,
+        }
+    }
 }

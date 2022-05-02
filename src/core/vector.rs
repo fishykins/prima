@@ -1,7 +1,7 @@
 use crate::{
     core::{AngleMat, Rotation},
     nums::{PrimaFloat, PrimaNum},
-    traits::Magnitude,
+    traits::{Magnitude, Cross},
     xy_impl,
 };
 use std::ops::{AddAssign, Neg, Sub, SubAssign};

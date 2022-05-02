@@ -269,5 +269,24 @@ macro_rules! xy_impl(
                 self * other.to_matrix()
             }
         }
+
+        impl<N> Cross for $T<N> where N: PrimaNum {
+            type Product = N;
+        
+            fn cross(&self, other: &Self) -> Self::Product {
+                self.x * other.y - self.y * other.x
+            }
+        }
+        
+        impl<N> Cross<N> for $T<N> where N: PrimaNum {
+            type Product = Self;
+        
+            fn cross(&self, other: &N) -> Self::Product {
+                Self {
+                    x: self.y * *other,
+                    y: N::zero() -self.x * *other,
+                }
+            }
+        }
     }
 );
