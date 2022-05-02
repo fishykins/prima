@@ -135,29 +135,3 @@ where
     /// Checks if this object is entirely contained by the other object.
     fn enveloped_by(&self, other: &Rhs) -> bool;
 }
-
-///=============================================================///
-///======================== MISC IMPL's ========================///
-///=============================================================///
-
-impl Cross<Point<f32>> for f32 {
-    type Product = Point<f32>;
-
-    fn cross(&self, other: &Point<f32>) -> Self::Product {
-        Point {
-            x: -self * other.y,
-            y: other.x * *self,
-        }
-    }
-}
-
-impl Cross<Point<f64>> for f64 {
-    type Product = Point<f64>;
-
-    fn cross(&self, other: &Point<f64>) -> Self::Product {
-        Point {
-            x: -self * other.y,
-            y: other.x * *self,
-        }
-    }
-}

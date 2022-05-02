@@ -4,6 +4,9 @@ use std::hash::Hash;
 use std::ops::{AddAssign, Neg, SubAssign};
 use std::{f32, f64};
 
+use crate::core::{Point, Vector};
+use crate::traits::Cross;
+
 /// A more general trait that covers most number types.
 pub trait PrimaNum:
     Num
@@ -106,3 +109,47 @@ impl PrimaUInt for u16 {}
 impl PrimaUInt for u32 {}
 impl PrimaUInt for u64 {}
 impl PrimaUInt for u128 {}
+
+impl Cross<Point<f32>> for f32 {
+    type Product = Point<f32>;
+
+    fn cross(&self, other: &Point<f32>) -> Self::Product {
+        Point {
+            x: -self * other.y,
+            y: other.x * *self,
+        }
+    }
+}
+
+impl Cross<Point<f64>> for f64 {
+    type Product = Point<f64>;
+
+    fn cross(&self, other: &Point<f64>) -> Self::Product {
+        Point {
+            x: -self * other.y,
+            y: other.x * *self,
+        }
+    }
+}
+
+impl Cross<Vector<f32>> for f32 {
+    type Product = Vector<f32>;
+
+    fn cross(&self, other: &Vector<f32>) -> Self::Product {
+        Vector {
+            x: -self * other.y,
+            y: other.x * *self,
+        }
+    }
+}
+
+impl Cross<Vector<f64>> for f64 {
+    type Product = Vector<f64>;
+
+    fn cross(&self, other: &Vector<f64>) -> Self::Product {
+        Vector {
+            x: -self * other.y,
+            y: other.x * *self,
+        }
+    }
+}
