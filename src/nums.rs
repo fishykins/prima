@@ -1,11 +1,21 @@
-use num_traits::{FromPrimitive, Num, ToPrimitive, Unsigned, Float};
+use num_traits::{Float, FromPrimitive, Num, ToPrimitive, Unsigned};
 use std::fmt::{Debug, Display};
 use std::hash::Hash;
+use std::ops::{AddAssign, Neg, SubAssign};
 use std::{f32, f64};
 
 /// A more general trait that covers most number types.
 pub trait PrimaNum:
-    Num + PartialOrd + Clone + Copy + Display + Debug + FromPrimitive + ToPrimitive
+    Num
+    + PartialOrd
+    + Clone
+    + Copy
+    + Display
+    + Debug
+    + FromPrimitive
+    + ToPrimitive
+    + AddAssign
+    + SubAssign
 {
     /// The bitsize of this number type.
     const BITS: usize;
@@ -15,7 +25,7 @@ pub trait PrimaNum:
 pub trait PrimaInt: PrimaNum + Hash {}
 
 /// Float types.
-pub trait PrimaFloat: PrimaNum + Float {
+pub trait PrimaFloat: PrimaNum + Float + Neg {
     /// A quick and dirty grabber for the value of pi!
     fn pi() -> Self;
 }

@@ -17,7 +17,7 @@ pub struct Aabr<N> {
 
 impl<N> Aabr<N>
 where
-    N: PrimaNum
+    N: PrimaNum,
 {
     /// Creates a new Aabr from a center point, width and height.
     pub fn from_point(center: Point<N>, width: N, height: N) -> Self {
@@ -30,10 +30,7 @@ where
 
     /// Creates a new Aabr from a min and max point.
     pub fn new(min: Point<N>, max: Point<N>) -> Self {
-        Self {
-            min,
-            max
-        }
+        Self { min, max }
     }
 
     /// Returns the min max pair.
@@ -60,11 +57,7 @@ where
     pub fn overlap(&self, other: &Self) -> Option<Self> {
         let (min_a, max_a) = self.min_max();
         let (min_b, max_b) = other.min_max();
-        if min_a.x > max_b.x
-            || max_a.x < min_b.x
-            || min_a.y > max_b.y
-            || max_a.y < min_b.y
-        {
+        if min_a.x > max_b.x || max_a.x < min_b.x || min_a.y > max_b.y || max_a.y < min_b.y {
             return None;
         }
         Some(self.overlap_unchecked(other))
@@ -76,29 +69,13 @@ where
         let (min_b, max_b) = other.min_max();
 
         // This looks verbose, but it allows us to avoid requiring Ord for N.
-        let min_x = if min_a.x > min_b.x {
-            min_a.x
-        } else {
-            min_b.x
-        };
+        let min_x = if min_a.x > min_b.x { min_a.x } else { min_b.x };
 
-        let min_y = if min_a.y > min_b.y {
-            min_a.y
-        } else {
-            min_b.y
-        };
+        let min_y = if min_a.y > min_b.y { min_a.y } else { min_b.y };
 
-        let max_x = if max_a.x < max_b.x {
-            max_a.x
-        } else {
-            max_b.x
-        };
+        let max_x = if max_a.x < max_b.x { max_a.x } else { max_b.x };
 
-        let max_y = if max_a.y < max_b.y {
-            max_a.y
-        } else {
-            max_b.y
-        };
+        let max_y = if max_a.y < max_b.y { max_a.y } else { max_b.y };
 
         Self::new(Point::new(min_x, min_y), Point::new(max_x, max_y))
     }
@@ -156,6 +133,11 @@ where
     fn position(&self) -> Point<N> {
         Point::new(self.min.x + self.max.x, self.min.y + self.max.y) / (N::one() + N::one())
     }
+
+    fn translate(&mut self, offset: &Vector<N>) {
+        self.min += *offset;
+        self.max += *offset;
+    }
 }
 
 impl<N> Distance<N, Point<N>> for Aabr<N>
@@ -189,9 +171,26 @@ where
     }
 }
 
-impl<N> Nearest<N, Aabr<N>> for Aabr<N> where N: PrimaFloat {
-    fn nearest_point(&self, _other: &Aabr<N>) -> Point<N> {
-        todo!()
+impl<N> Nearest<N, Aabr<N>> for Aabr<N>
+where
+    N: PrimaFloat,
+{
+    fn nearest_point(&self, other: &Aabr<N>) -> Point<N> {
+        let mut nearest = self.position();
+        let min = self.min;
+        let max = self.max;
+        let (min_o, max_o) = other.min_max();
+        if min.x < min_o.x {
+            nearest.x = min_o.x;
+        } else if max.x > max_o.x {
+            nearest.x = max_o.x;
+        }
+        if min.y < min_o.y {
+            nearest.y = min_o.y;
+        } else if max.y > max_o.y {
+            nearest.y = max_o.y;
+        }
+        nearest
     }
 }
 
@@ -207,7 +206,7 @@ where
         let b_w = other_extent.width();
         let a_h = self_extent.height();
         let b_h = other_extent.height();
-        
+
         // Calculate overlap on x axis.
         let x_overlap = a_w + b_w - n.x.abs();
 

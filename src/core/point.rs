@@ -79,7 +79,7 @@ where
 
 impl<N> AddAssign<Vector<N>> for Point<N>
 where
-    N: PrimaNum + AddAssign,
+    N: PrimaNum
 {
     fn add_assign(&mut self, rhs: Vector<N>) {
         self.x += rhs.x;
