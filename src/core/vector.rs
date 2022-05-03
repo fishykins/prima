@@ -1,5 +1,5 @@
 use crate::{
-    core::{AngleMat, Rotation},
+    core::{AngleMat, Rotation, Point},
     nums::{PrimaFloat, PrimaNum},
     traits::{Magnitude, Cross},
     xy_impl,
@@ -16,6 +16,69 @@ pub struct Vector<N> {
 }
 
 xy_impl!(Vector);
+
+impl<N> Vector<N> where N: PrimaNum {
+    /// Returns the counter-clockwise perpendicular vector.
+    pub fn perpendicular_cc(self) -> Self {
+        Vector {
+            x: N::zero() - self.y,
+            y: self.x,
+        }
+    }
+
+    /// Returns the clockwise perpendicular vector.
+    pub fn perpendicular(self) -> Self {
+        Vector {
+            x: self.y,
+            y: N::zero() - self.x,
+        }
+    }
+
+    /// Returns the inverted vector.
+    pub fn inverted(self) -> Self {
+        Vector {
+            x: N::zero() - self.x,
+            y: N::zero() - self.y,
+        }
+    }
+
+    /// Converts the vector to a point.
+    pub fn as_point(&self) -> Point<N> {
+        Point::new(self.x, self.y)
+    }
+
+    /// Returns an up vector.
+    pub fn up() -> Self {
+        Vector {
+            x: N::zero(),
+            y: N::one(),
+        }
+    }
+
+    /// Returns a down vector.
+    pub fn down() -> Self {
+        Vector {
+            x: N::zero(),
+            y: N::zero() - N::one(),
+        }
+    }
+
+    /// Returns a left vector.
+    pub fn left() -> Self {
+        Vector {
+            x: N::zero() - N::one(),
+            y: N::zero(),
+        }
+    }
+
+    /// Returns a right vector.
+    pub fn right() -> Self {
+        Vector {
+            x: N::one(),
+            y: N::zero(),
+        }
+    }
+}
 
 impl<N> Vector<N>
 where

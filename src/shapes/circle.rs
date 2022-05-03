@@ -1,7 +1,7 @@
 use crate::{
     core::{Angle, Collision, Line, Point, Rotation, Vector},
     nums::PrimaFloat,
-    traits::{Collide, Curved, Distance, LocalPosition, LocalRotation, Magnitude, Nearest, Shape},
+    traits::{Collide, Curved, Distance, LocalPosition, LocalRotation, Magnitude, Nearest, Shape, Flat},
 };
 
 use super::{Aabr, Obr};
@@ -188,9 +188,10 @@ where
     N: PrimaFloat,
 {
     fn squared_distance(&self, other: &Circle<N>) -> N {
-        let a = self.nearest_point(other);
-        let b = other.nearest_point(self);
-        a.squared_distance(&b)
+        let ar = self.radius.powi(2);
+        let br = other.radius.powi(2);
+        let total_dist_sqrd = self.center.squared_distance(&other.center);
+        total_dist_sqrd - ar - br
     }
 }
 
@@ -256,7 +257,9 @@ where
     N: PrimaFloat,
 {
     fn squared_distance(&self, aabr: &Aabr<N>) -> N {
-        todo!()
+        let a = self.nearest_point(aabr);
+        let b = aabr.nearest_point(self);
+        a.squared_distance(&b)
     }
 }
 
@@ -285,19 +288,19 @@ where
     N: PrimaFloat,
 {
     fn collision(&self, aabr: &Aabr<N>) -> Option<Collision<N>> {
-        todo!()
+        aabr.collision(self)
     }
 
     fn intersecting(&self, aabr: &Aabr<N>) -> bool {
-        todo!()
+        aabr.intersecting(self)
     }
 
     fn enveloping(&self, aabr: &Aabr<N>) -> bool {
-        todo!()
+        aabr.enveloped_by(self)
     }
 
     fn enveloped_by(&self, aabr: &Aabr<N>) -> bool {
-        todo!()
+        aabr.enveloping(self)
     }
 }
 
@@ -310,7 +313,9 @@ where
     N: PrimaFloat,
 {
     fn squared_distance(&self, obr: &Obr<N>) -> N {
-        todo!()
+        let a = self.nearest_point(obr);
+        let b = obr.nearest_point(self);
+        a.squared_distance(&b)
     }
 }
 
@@ -319,7 +324,12 @@ where
     N: PrimaFloat,
 {
     fn nearest_point(&self, obr: &Obr<N>) -> Point<N> {
-        todo!()
+        let rotation = obr.rotation.into();
+        let aabr = obr.as_aabr();
+        let mut circle = self.clone();
+        circle.rotate_around(obr.center, rotation);
+        let mut p = circle.nearest_point(&aabr);
+        *p.rotate_around(obr.center, -rotation)
     }
 }
 
@@ -328,18 +338,30 @@ where
     N: PrimaFloat,
 {
     fn collision(&self, obr: &Obr<N>) -> Option<Collision<N>> {
-        todo!()
-    }
+        let rotation = obr.rotation.into();
+        let aabr = obr.as_aabr();
+        let mut circle = self.clone();
+        circle.rotate_around(obr.center, rotation);
 
-    fn intersecting(&self, obr: &Obr<N>) -> bool {
-        todo!()
+        let collision = circle.collision(&aabr);
+        if let Some(collision) = collision {
+            let normal = collision.normal * -rotation;
+            let point = *collision.point.clone().rotate_around(obr.center, -rotation);
+            Some(Collision::new(point, normal, collision.depth))
+        } else {
+            None
+        }
     }
 
     fn enveloping(&self, obr: &Obr<N>) -> bool {
-        todo!()
+        obr.vertices().iter().all(|v| self.contains(v))
     }
 
     fn enveloped_by(&self, obr: &Obr<N>) -> bool {
-        todo!()
+        let rotation = obr.rotation.into();
+        let aabr = obr.as_aabr();
+        let mut circle = self.clone();
+        circle.rotate_around(obr.center, rotation);
+        aabr.enveloping(&circle)
     }
 }

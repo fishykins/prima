@@ -49,6 +49,19 @@ where
         }
         return Some(a + r * t);
     }
+
+    /// Returns the line's vector.
+    pub fn vector(&self) -> Vector<N> {
+        self.end - self.start
+    }
+
+    /// Returns the line's normal.
+    pub fn normal(&self) -> Vector<N> {
+        let a = self.start;
+        let b = self.end;
+        let c = b - a;
+        c.perpendicular()
+    }
 }
 
 impl<N> Magnitude<N> for Line<N>

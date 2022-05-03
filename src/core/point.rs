@@ -46,6 +46,11 @@ where
     pub fn in_shape(&self, shape: impl Shape<N>) -> bool {
         shape.contains(self)
     }
+
+    /// Returns this point as a vector.
+    pub fn as_vector(&self) -> Vector<N> {
+        Vector::new(self.x, self.y)
+    }
 }
 
 impl<N> Distance<N, Self> for Point<N>

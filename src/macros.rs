@@ -225,6 +225,18 @@ macro_rules! xy_impl(
             }
         }
 
+        impl<N> $T<N> where N: PrimaFloat {
+            /// Rotates the point around the given point by the given angle.
+            pub fn rotate_around(&mut self, point: Point<N>, rotation: Rotation<N>) -> &mut Self {
+                let v = Vector::new(self.x - point.x, self.y - point.y);
+                let rv = v * rotation;
+                let p = point + rv;
+                self.x = p.x;
+                self.y = p.y;
+                self
+            }
+        }
+
         impl<N> Neg for $T<N> where N: PrimaNum + Neg<Output = N> {
             type Output = Self;
 

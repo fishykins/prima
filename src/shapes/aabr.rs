@@ -1,5 +1,5 @@
 use crate::{
-    core::{Collision, Extent, Point, Vector, Line},
+    core::{project_shape_to_axis_pair, AxisLine, Collision, Extent, Line, Point, Vector},
     nums::{PrimaFloat, PrimaNum},
     traits::{Collide, Distance, Flat, LocalPosition, Nearest, Shape},
 };
@@ -179,29 +179,63 @@ where
 //============================= LINE ==============================//
 //=================================================================//
 
-impl<N> Distance<N, Line<N>> for Aabr<N> where N: PrimaFloat {
-    fn squared_distance(&self, other: &Line<N>) -> N {
-        todo!()
+impl<N> Distance<N, Line<N>> for Aabr<N>
+where
+    N: PrimaFloat,
+{
+    fn squared_distance(&self, line: &Line<N>) -> N {
+        let a = self.nearest_point(line);
+        let b = line.nearest_point(&a);
+        a.squared_distance(&b)
     }
 }
 
-impl<N> Nearest<N, Line<N>> for Aabr<N> where N: PrimaFloat {
+impl<N> Nearest<N, Line<N>> for Aabr<N>
+where
+    N: PrimaFloat,
+{
     fn nearest_point(&self, line: &Line<N>) -> Point<N> {
-        todo!()
+        let mut nearest = self.position();
+        let min_a = self.min;
+        let max_a = self.max;
+        let min_b = line.start;
+        let max_b = line.end;
+        if min_a.x < min_b.x {
+            nearest.x = min_b.x;
+        } else if max_a.x > max_b.x {
+            nearest.x = max_b.x;
+        }
+        if min_a.y < min_b.y {
+            nearest.y = min_b.y;
+        } else if max_a.y > max_b.y {
+            nearest.y = max_b.y;
+        }
+        nearest
     }
 }
 
-impl<N> Collide<N, Line<N>> for Aabr<N> where N: PrimaFloat {
-    fn collision(&self, other: &Line<N>) -> Option<Collision<N>> {
-        todo!()
+impl<N> Collide<N, Line<N>> for Aabr<N>
+where
+    N: PrimaFloat,
+{
+    fn collision(&self, line: &Line<N>) -> Option<Collision<N>> {
+        let n = line.nearest_point(&self.position());
+        if !self.contains(&n) {
+            return None;
+        }
+        let normal = line.normal();
+        let x_overlap = (self.max.x - n.x).min(n.x - self.min.x);
+        let y_overlap = (self.max.y - n.y).min(n.y - self.min.y);
+
+        Some(Collision::new(n, normal, x_overlap.min(y_overlap)))
     }
 
-    fn enveloping(&self, other: &Line<N>) -> bool {
-        todo!()
+    fn enveloping(&self, line: &Line<N>) -> bool {
+        self.contains(&line.start) && self.contains(&line.end)
     }
 
-    fn enveloped_by(&self, other: &Line<N>) -> bool {
-        todo!()
+    fn enveloped_by(&self, _: &Line<N>) -> bool {
+        false
     }
 }
 
@@ -214,7 +248,8 @@ where
     N: PrimaFloat,
 {
     fn squared_distance(&self, other: &Circle<N>) -> N {
-        self.nearest_point(&other.center).squared_distance(&other.center)
+        self.nearest_point(&other.center)
+            .squared_distance(&other.center)
     }
 }
 
@@ -445,11 +480,23 @@ where
         todo!()
     }
 
+    fn intersecting(&self, obr: &Obr<N>) -> bool {
+        let a_x = AxisLine::new(self.min.x, self.max.x);
+        let a_y = AxisLine::new(self.min.y, self.max.y);
+        let (b_x, b_y) = project_shape_to_axis_pair(
+            obr,
+            Vector::new(N::one(), N::zero()),
+            Vector::new(N::zero(), N::one()),
+        );
+        // Compare!
+        a_x.intersecting(&b_x) && a_y.intersecting(&b_y)
+    }
+
     fn enveloping(&self, obr: &Obr<N>) -> bool {
-        todo!()
+        obr.vertices().iter().all(|v| self.contains(v))
     }
 
     fn enveloped_by(&self, obr: &Obr<N>) -> bool {
-        todo!()
+        self.vertices().iter().all(|v| obr.contains(v))
     }
 }

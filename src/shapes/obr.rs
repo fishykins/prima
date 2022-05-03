@@ -13,6 +13,23 @@ pub struct Obr<N> {
     pub rotation: Angle<N>,
 }
 
+impl<N> Obr<N> where N: PrimaFloat {
+    /// Creates a new orientated bounding rectangle.
+    pub fn new(center: Point<N>, extent: Extent<N>, rotation: Angle<N>) -> Self {
+        Self { center, extent, rotation }
+    }
+
+    /// Converts this rectangle into a bounding rectangle at the same position, essentially discarding rotation.
+    pub fn as_aabr(&self) -> Aabr<N> {
+        Aabr::from_point(self.center, self.extent.width(), self.extent.height())
+    }
+
+    /// Converts this rectangle into a circle at the origin, without any rotation.
+    pub fn as_local_aabr(&self) -> Aabr<N> {
+        Aabr::from_point(Point::zero(), self.extent.width(), self.extent.height())
+    }
+}
+
 impl<N> Shape<N> for Obr<N> where N: PrimaFloat {
     fn volume(&self) -> N {
         todo!()

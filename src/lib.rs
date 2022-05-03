@@ -21,3 +21,13 @@ pub mod nums;
 
 /// A collection of traits that apply to geometric types.
 pub mod traits;
+
+/// A collection of commonly used imports for this library.
+pub mod prelude {
+    pub use crate::core::{Angle, Collision, Line, Point, Rotation, Vector};
+    pub use crate::nums::{PrimaFloat, PrimaNum};
+    pub use crate::shapes::{Aabr, Circle, Obr};
+    pub use crate::traits::{
+        Collide, Curved, Distance, Flat, LocalPosition, LocalRotation, Magnitude, Nearest, Shape,
+    };
+}

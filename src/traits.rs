@@ -43,8 +43,16 @@ where
 /// A shape with curved edges.
 pub trait Curved<N>: Shape<N> {}
 
+/// A shape that has positional data.
+pub trait LocalPosition<N> {
+    /// Returns the position of the shape.
+    fn position(&self) -> Point<N>;
+    /// Translates the shape.
+    fn translate(&mut self, offset: &Vector<N>);
+}
+
 /// A shape that can be rotated.
-pub trait LocalRotation<N>: Shape<N> + LocalPosition<N>
+pub trait LocalRotation<N>: LocalPosition<N>
 where
     N: PrimaFloat,
 {
@@ -53,21 +61,13 @@ where
     /// Rotates the shape by the given amount.
     fn rotate(&mut self, rotation: Rotation<N>);
     /// Rotate around a point.
-    fn rotate_around(&mut self, rotation: Rotation<N>, point: Point<N>) {
+    fn rotate_around(&mut self, point: Point<N>, rotation: Rotation<N>) {
         let v = self.position() - point;
         let new_center = point + v * rotation;
         let offset = new_center - self.position();
         self.translate(&offset);
         self.rotate(rotation);
     }
-}
-
-/// A shape that has positional data.
-pub trait LocalPosition<N>: Shape<N> {
-    /// Returns the position of the shape.
-    fn position(&self) -> Point<N>;
-    /// Translates the shape.
-    fn translate(&mut self, offset: &Vector<N>);
 }
 
 /// Something that can have magnitude/length.

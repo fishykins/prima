@@ -1,4 +1,4 @@
-use super::{AngleMat, Rotation};
+use super::{AngleMat, Rotation, Point, Vector};
 use crate::{xy_impl, nums::{PrimaNum, PrimaFloat}, traits::Cross};
 use std::{fmt::Display, ops::Neg};
 
