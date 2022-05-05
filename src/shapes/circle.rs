@@ -1,5 +1,5 @@
 use crate::{
-    core::{Angle, Collision, Line, Point, Rotation, Vector},
+    core::{Collision, Line, Point, Rotation, Vector},
     nums::PrimaFloat,
     traits::{Collide, Curved, Distance, LocalPosition, LocalRotation, Magnitude, Nearest, Shape, Flat},
 };
@@ -72,8 +72,8 @@ where
 {
     fn rotate(&mut self, _: Rotation<N>) {}
 
-    fn rotation(&self) -> Angle<N> {
-        Angle::zero()
+    fn rotation(&self) -> Rotation<N> {
+        Rotation::zero()
     }
 }
 
@@ -328,8 +328,8 @@ where
         let aabr = obr.as_aabr();
         let mut circle = self.clone();
         circle.rotate_around(obr.center, rotation);
-        let mut p = circle.nearest_point(&aabr);
-        *p.rotate_around(obr.center, -rotation)
+        let p = circle.nearest_point(&aabr);
+        p.rotate_around(obr.center, -rotation)
     }
 }
 
@@ -346,7 +346,7 @@ where
         let collision = circle.collision(&aabr);
         if let Some(collision) = collision {
             let normal = collision.normal * -rotation;
-            let point = *collision.point.clone().rotate_around(obr.center, -rotation);
+            let point = collision.point.rotate_around(obr.center, -rotation);
             Some(Collision::new(point, normal, collision.depth))
         } else {
             None

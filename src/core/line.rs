@@ -28,18 +28,16 @@ where
 {
     /// Returns the point of collision between the two lines.
     pub fn collision(&self, other: &Self) -> Option<Point<N>> {
-        let a = self.start;
-        let c = other.start;
-        let r = self.end - a;
-        let s = other.end - c;
+        let r = self.end - self.start;
+        let s = other.end - other.start;
 
         let denom: N = r.cross(&s);
         if denom == N::zero() {
             return None;
         }
 
-        let numer_a = (c - a).cross(&s);
-        let numer_c = (c - a).cross(&r);
+        let numer_a = (other.start - self.start).cross(&s);
+        let numer_c = (other.start - self.start).cross(&r);
 
         let t = numer_a / denom;
         let u = numer_c / denom;
@@ -47,7 +45,7 @@ where
         if t < N::zero() || t > N::one() || u < N::zero() || u > N::one() {
             return None;
         }
-        return Some(a + r * t);
+        return Some(self.start + r * t);
     }
 
     /// Returns the line's vector.
@@ -57,10 +55,7 @@ where
 
     /// Returns the line's normal.
     pub fn normal(&self) -> Vector<N> {
-        let a = self.start;
-        let b = self.end;
-        let c = b - a;
-        c.perpendicular()
+        self.vector().perpendicular().normalize()
     }
 }
 
@@ -74,6 +69,11 @@ where
         dx * dx + dy * dy
     }
 }
+
+
+//=================================================================//
+//========================= POINT =================================//
+//=================================================================//
 
 impl<N> Distance<N, Point<N>> for Line<N>
 where
@@ -105,5 +105,39 @@ where
         } else {
             self.start + ab * dist
         }
+    }
+}
+
+
+//=================================================================//
+//============================= LINE ==============================//
+//=================================================================//
+
+impl<N> Distance<N, Line<N>> for Line<N>
+where
+    N: PrimaFloat,
+{
+    fn squared_distance(&self, other: &Line<N>) -> N {
+        if self.collision(&other).is_some() {
+            return N::zero();
+        }
+
+        // todo: Skip this and do the logic here. There is a much faster way!
+        let a = self.nearest_point(other);
+        let b = other.nearest_point(self);
+        a.squared_distance(&b)
+    }
+}
+
+impl<N> Nearest<N, Line<N>> for Line<N>
+where
+    N: PrimaFloat,
+{
+    fn nearest_point(&self, other: &Line<N>) -> Point<N> {
+        if let Some(p) = self.collision(other) {
+            return p;
+        }
+
+        todo!()
     }
 }

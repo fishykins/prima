@@ -57,7 +57,7 @@ where
     N: PrimaFloat,
 {
     /// Returns the rotation of the shape.
-    fn rotation(&self) -> Angle<N>;
+    fn rotation(&self) -> Rotation<N>;
     /// Rotates the shape by the given amount.
     fn rotate(&mut self, rotation: Rotation<N>);
     /// Rotate around a point.

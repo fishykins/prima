@@ -1,5 +1,5 @@
 use assert_approx_eq::assert_approx_eq;
-use prima::prelude::*;
+use prima::{core::*, shapes::*, traits::*};
 
 const IOTA: f32 = 0.001;
 
@@ -45,4 +45,41 @@ fn circle_test() {
     assert!(!a.intersecting(&b));
     assert!(a.collision(&c).is_none());
     assert!(b.intersecting(&c));
+}
+
+#[test]
+fn aabr_test() {
+
+}
+
+#[test]
+fn obr_test() {
+    let a: Obr<f32> = Obr::new(
+        Point::new(2.4, 2.4),
+        Extent::new(2.0, 2.0),
+        Angle::from_degrees(45.0f32),
+    );
+    assert_eq!(a.rotation.as_radians(), 0.25f32);
+    let v = a.vertices();
+    assert_approx_eq!(v[0].x, 0.985, IOTA);
+    assert_approx_eq!(v[0].y, 2.4, IOTA);
+    assert_approx_eq!(v[1].x, 2.4, IOTA);
+    assert_approx_eq!(v[1].y, 3.814, IOTA);
+}
+
+#[test]
+fn aabr_obr_test() {
+    let a: Aabr<f32> = Aabr::new(Point::new(0.0, 0.0), Point::new(2.0, 2.0));
+    let mut b: Obr<f32> = Obr::new(
+        Point::new(3.0, 3.0),
+        Extent::new(2.0, 2.0),
+        Angle::from_degrees(45.0f32),
+    );
+    assert!(!a.intersecting(&b));
+    b.translate(&Vector::splat(-0.6));
+    assert!(a.intersecting(&b));
+    b.center = Point::new(3.0, -1.0);
+    assert!(!a.intersecting(&b));
+    b.translate(&Vector::new(-2.0, 0.0));
+    assert!(a.intersecting(&b));
 }

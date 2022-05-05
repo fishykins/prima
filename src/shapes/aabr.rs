@@ -1,5 +1,5 @@
 use crate::{
-    core::{project_shape_to_axis_pair, AxisLine, Collision, Extent, Line, Point, Vector},
+    core::{project_shape_to_axis_pair, Collision, Extent, Line, Point, Vector},
     nums::{PrimaFloat, PrimaNum},
     traits::{Collide, Distance, Flat, LocalPosition, Nearest, Shape},
 };
@@ -195,22 +195,7 @@ where
     N: PrimaFloat,
 {
     fn nearest_point(&self, line: &Line<N>) -> Point<N> {
-        let mut nearest = self.position();
-        let min_a = self.min;
-        let max_a = self.max;
-        let min_b = line.start;
-        let max_b = line.end;
-        if min_a.x < min_b.x {
-            nearest.x = min_b.x;
-        } else if max_a.x > max_b.x {
-            nearest.x = max_b.x;
-        }
-        if min_a.y < min_b.y {
-            nearest.y = min_b.y;
-        } else if max_a.y > max_b.y {
-            nearest.y = max_b.y;
-        }
-        nearest
+        todo!()
     }
 }
 
@@ -468,7 +453,46 @@ where
     N: PrimaFloat,
 {
     fn nearest_point(&self, obr: &Obr<N>) -> Point<N> {
-        todo!()
+        let mut x = self.position().x;
+        let mut y = self.position().y;
+        let bb = obr.bounding_rect();
+
+        let x_overlapped = if bb.min.x > self.max.x {
+            x = bb.min.x;
+            false
+        } else if bb.max.x < self.min.x {
+            x = bb.max.x;
+            false
+        } else {
+            // there is x overlap
+            true
+        };
+
+        let y_overlapped = if bb.min.y > self.max.y {
+            y = bb.min.y;
+            false
+        } else if bb.max.y < self.min.y {
+            y = bb.max.y;
+            false
+        } else {
+            // there is y overlap
+            true
+        };
+
+        if !x_overlapped && !y_overlapped {
+            return Point::new(x, y);
+        }
+
+        let temp_point = Point::new(x, y);
+        // We need to find the two nearest points on the x axis.
+        let mut ordered_verts = obr.vertices();
+        ordered_verts.sort_by(|a, b| {
+            let dist_a = a.squared_distance(&temp_point);
+            let dist_b = b.squared_distance(&temp_point);
+            dist_a.partial_cmp(&dist_b).unwrap()
+        });
+        let edge = Line::new(ordered_verts[0], ordered_verts[1]);
+        self.nearest_point(&edge)
     }
 }
 
@@ -481,14 +505,22 @@ where
     }
 
     fn intersecting(&self, obr: &Obr<N>) -> bool {
-        let a_x = AxisLine::new(self.min.x, self.max.x);
-        let a_y = AxisLine::new(self.min.y, self.max.y);
-        let (b_x, b_y) = project_shape_to_axis_pair(
-            obr,
-            Vector::new(N::one(), N::zero()),
-            Vector::new(N::zero(), N::one()),
-        );
+        let x_axis = Vector::right();
+        let y_axis = Vector::up();
+        let (a_x, a_y) = project_shape_to_axis_pair(self, x_axis, y_axis);
+        let (b_x, b_y) = project_shape_to_axis_pair(obr, x_axis, y_axis);
+
         // Compare!
+        if !a_x.intersecting(&b_x) || !a_y.intersecting(&b_y) {
+            return false;
+        }
+
+        let x_axis = obr.x_axis();
+        let y_axis = obr.y_axis();
+
+        let (a_x, a_y) = project_shape_to_axis_pair(self, x_axis, y_axis);
+        let (b_x, b_y) = project_shape_to_axis_pair(obr, x_axis, y_axis);
+
         a_x.intersecting(&b_x) && a_y.intersecting(&b_y)
     }
 

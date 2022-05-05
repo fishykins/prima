@@ -91,3 +91,34 @@ impl<N> From<Angle<N>> for Rotation<N> {
         Rotation(a.0)
     }
 }
+
+//=============================================================//
+//======================== OPPERATIONS ========================//
+//=============================================================//
+impl<N> AddAssign<Rotation<N>> for Angle<N> where N: PrimaFloat {
+    fn add_assign(&mut self, rhs: Rotation<N>) {
+        *self = Angle(clamp_radians(self.0 + rhs.0));
+    }
+}
+
+impl<N> Add<Rotation<N>> for Angle<N> where N: PrimaFloat {
+    type Output = Self;
+
+    fn add(self, rhs: Rotation<N>) -> Self {
+        Angle(clamp_radians(self.0 + rhs.0))
+    }
+}
+
+impl<N> SubAssign<Rotation<N>> for Angle<N> where N: PrimaFloat {
+    fn sub_assign(&mut self, rhs: Rotation<N>) {
+        *self = Angle(clamp_radians(self.0 - rhs.0));
+    }
+}
+
+impl<N> Sub<Rotation<N>> for Angle<N> where N: PrimaFloat {
+    type Output = Self;
+
+    fn sub(self, rhs: Rotation<N>) -> Self {
+        Angle(clamp_radians(self.0 - rhs.0))
+    }
+}

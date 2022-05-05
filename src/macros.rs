@@ -48,6 +48,12 @@ macro_rules! rotation_impl(
                 self.0 == N::zero()
             }
 
+            /// Returns true if the rotation is aligned with the x or y axis.
+            /// This essentially checks if facing up, down, left or right.
+            pub fn is_axis_aligned(&self) -> bool {
+                self.0 % (N::one() / (N::one() + N::one())) == N::zero()
+            }
+
             /// Returns the sine of the angle.
             pub fn sin(&self) -> N {
                 self.as_radians_pi().sin()
@@ -227,13 +233,19 @@ macro_rules! xy_impl(
 
         impl<N> $T<N> where N: PrimaFloat {
             /// Rotates the point around the given point by the given angle.
-            pub fn rotate_around(&mut self, point: Point<N>, rotation: Rotation<N>) -> &mut Self {
+            pub fn rotate_around(&self, point: Point<N>, rotation: Rotation<N>) -> Self {
                 let v = Vector::new(self.x - point.x, self.y - point.y);
                 let rv = v * rotation;
                 let p = point + rv;
-                self.x = p.x;
-                self.y = p.y;
-                self
+                Self::new(p.x, p.y)
+            }
+
+            /// Rotates the point around the given point by the given angle.
+            pub fn rotate_around_mat(&self, point: Point<N>, rotation: AngleMat<N>) -> Self {
+                let v = Vector::new(self.x - point.x, self.y - point.y);
+                let rv = v * rotation;
+                let p = point + rv;
+                Self::new(p.x, p.y)
             }
         }
 
@@ -284,15 +296,15 @@ macro_rules! xy_impl(
 
         impl<N> Cross for $T<N> where N: PrimaNum {
             type Product = N;
-        
+
             fn cross(&self, other: &Self) -> Self::Product {
                 self.x * other.y - self.y * other.x
             }
         }
-        
+
         impl<N> Cross<N> for $T<N> where N: PrimaNum {
             type Product = Self;
-        
+
             fn cross(&self, other: &N) -> Self::Product {
                 Self {
                     x: self.y * *other,

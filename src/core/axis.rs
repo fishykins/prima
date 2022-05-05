@@ -1,11 +1,11 @@
-use std::ops::{Add, AddAssign, Sub, SubAssign, Mul, MulAssign, DivAssign, Div};
+use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Sub, SubAssign};
 
 use crate::{
     nums::{PrimaFloat, PrimaNum},
     traits::Flat,
 };
 
-use super::{Vector, Line};
+use super::{Line, Vector};
 
 /// A single axis line between two values. Useful for collision detection, especially when using seperating axis theorem.
 #[derive(Copy, Clone, Debug, PartialEq)]
@@ -26,9 +26,13 @@ where
     }
 
     /// Returns true if the two segments are intersecting.
+    /// This should include the case where the segments are
+    /// equal, or when one segment is inside the other.
     pub fn intersecting(&self, other: &Self) -> bool {
-        self.start <= other.start && other.start <= self.end
-            || self.start <= other.end && other.end <= self.end
+        self.contains_point(other.start)
+            || self.contains_point(other.end)
+            || other.contains_point(self.start)
+            || other.contains_point(self.end)
     }
 
     /// Returns true if the value lies on the axis.
@@ -47,7 +51,10 @@ where
     }
 }
 
-impl<N> AxisLine<N> where N: PrimaFloat {
+impl<N> AxisLine<N>
+where
+    N: PrimaFloat,
+{
     /// Converts this axis line to a line along the given vector.
     pub fn to_line(&self, vector: Vector<N>) -> Line<N> {
         let axis = vector.normalize();
@@ -57,7 +64,10 @@ impl<N> AxisLine<N> where N: PrimaFloat {
     }
 }
 
-impl<N> Add<N> for AxisLine<N> where N: PrimaNum {
+impl<N> Add<N> for AxisLine<N>
+where
+    N: PrimaNum,
+{
     type Output = Self;
 
     fn add(self, rhs: N) -> Self {
@@ -68,14 +78,20 @@ impl<N> Add<N> for AxisLine<N> where N: PrimaNum {
     }
 }
 
-impl<N> AddAssign<N> for AxisLine<N> where N: PrimaNum {
+impl<N> AddAssign<N> for AxisLine<N>
+where
+    N: PrimaNum,
+{
     fn add_assign(&mut self, rhs: N) {
         self.start += rhs;
         self.end += rhs;
     }
 }
 
-impl<N> Sub<N> for AxisLine<N> where N: PrimaNum {
+impl<N> Sub<N> for AxisLine<N>
+where
+    N: PrimaNum,
+{
     type Output = Self;
 
     fn sub(self, rhs: N) -> Self {
@@ -86,14 +102,20 @@ impl<N> Sub<N> for AxisLine<N> where N: PrimaNum {
     }
 }
 
-impl<N> SubAssign<N> for AxisLine<N> where N: PrimaNum {
+impl<N> SubAssign<N> for AxisLine<N>
+where
+    N: PrimaNum,
+{
     fn sub_assign(&mut self, rhs: N) {
         self.start -= rhs;
         self.end -= rhs;
     }
 }
 
-impl<N> Mul<N> for AxisLine<N> where N: PrimaNum {
+impl<N> Mul<N> for AxisLine<N>
+where
+    N: PrimaNum,
+{
     type Output = Self;
 
     fn mul(self, rhs: N) -> Self {
@@ -104,14 +126,20 @@ impl<N> Mul<N> for AxisLine<N> where N: PrimaNum {
     }
 }
 
-impl<N> MulAssign<N> for AxisLine<N> where N: PrimaNum {
+impl<N> MulAssign<N> for AxisLine<N>
+where
+    N: PrimaNum,
+{
     fn mul_assign(&mut self, rhs: N) {
         self.start = self.start * rhs;
         self.end = self.end * rhs;
     }
 }
 
-impl<N> Div<N> for AxisLine<N> where N: PrimaNum {
+impl<N> Div<N> for AxisLine<N>
+where
+    N: PrimaNum,
+{
     type Output = Self;
 
     fn div(self, rhs: N) -> Self {
@@ -122,7 +150,10 @@ impl<N> Div<N> for AxisLine<N> where N: PrimaNum {
     }
 }
 
-impl<N> DivAssign<N> for AxisLine<N> where N: PrimaNum {
+impl<N> DivAssign<N> for AxisLine<N>
+where
+    N: PrimaNum,
+{
     fn div_assign(&mut self, rhs: N) {
         self.start = self.start / rhs;
         self.end = self.end / rhs;
