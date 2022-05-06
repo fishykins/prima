@@ -31,6 +31,11 @@ pub trait PrimaInt: PrimaNum + Hash {}
 pub trait PrimaFloat: PrimaNum + Float + Neg {
     /// A quick and dirty grabber for the value of pi!
     fn pi() -> Self;
+
+    /// Returns true if this number lies between 0 and 1.
+    fn is_decimal(&self) -> bool;
+
+    fn clamp_01(&self) -> Self;
 }
 
 /// A strict subset of intiger types that are unsigned.
@@ -96,10 +101,26 @@ impl PrimaFloat for f64 {
     fn pi() -> Self {
         f64::consts::PI
     }
+
+    fn is_decimal(&self) -> bool {
+        *self >= 0.0 && *self <= 0.0
+    }
+
+    fn clamp_01(&self) -> Self {
+        self.max(0.0).min(1.0)
+    }
 }
 impl PrimaFloat for f32 {
     fn pi() -> Self {
         f32::consts::PI
+    }
+
+    fn is_decimal(&self) -> bool {
+        *self >= 0.0 && *self <= 1.0
+    }
+
+    fn clamp_01(&self) -> Self {
+        self.max(0.0).min(1.0)
     }
 }
 

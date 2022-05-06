@@ -35,6 +35,17 @@ fn core_test() {
 }
 
 #[test]
+fn line_test() {
+    let a = Line::<f32>::from_point(Point::new(2.0, 2.0), Vector::new(8.0, 0.0));
+    let b = Line::<f32>::from_point(Point::new(4.0, 4.0), Vector::new(4.0, 4.0));
+
+    let p = a.nearest_point(&b);
+    assert!(p.on_line(&a));
+    assert_approx_eq!(p.x, 4.0, IOTA);
+
+}
+
+#[test]
 fn circle_test() {
     // Circle circle
     let a: Circle<f32> = Circle::new(Point::new(2.0, 2.0), 3.0);

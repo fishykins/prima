@@ -1,11 +1,11 @@
 use super::{Point, Vector};
 use crate::{
     nums::{PrimaFloat, PrimaNum},
-    traits::{Distance, Magnitude, Nearest, Cross},
+    traits::{Cross, Distance, Magnitude, Nearest},
 };
 
 /// A line between two points.
-pub struct Line<N> {
+pub struct Line<N = f32> {
     /// The starting point of the line.
     pub start: Point<N>,
     /// The ending point of the line.
@@ -19,6 +19,14 @@ where
     /// Creates a new line.
     pub fn new(start: Point<N>, end: Point<N>) -> Line<N> {
         Line { start, end }
+    }
+
+    /// Creates a new line using a point and a vector.
+    pub fn from_point(p: Point<N>, v: Vector<N>) -> Line<N> {
+        Line {
+            start: p,
+            end: p + v,
+        }
     }
 }
 
@@ -53,9 +61,20 @@ where
         self.end - self.start
     }
 
-    /// Returns the line's normal.
+    /// Returns the line's normal. This is facing away from the line, 90 degrees to the left.
     pub fn normal(&self) -> Vector<N> {
-        self.vector().perpendicular().normalize()
+        self.vector().perpendicular_cc().normalize()
+    }
+
+    /// Projects the given point onto the line. A value between 0 and 1 is on the line.
+    pub fn project_scalar(&self, p: &Point<N>) -> N {
+        (*p - self.start).dot(&self.vector()) / self.magnitude_squared()
+    }
+
+    /// Projects the given point onto the line.
+    pub fn project_point(&self, p: &Point<N>) -> Point<N> {
+        let v = self.project_scalar(p);
+        self.start + self.vector() * v
     }
 }
 
@@ -70,7 +89,6 @@ where
     }
 }
 
-
 //=================================================================//
 //========================= POINT =================================//
 //=================================================================//
@@ -79,10 +97,10 @@ impl<N> Distance<N, Point<N>> for Line<N>
 where
     N: PrimaFloat,
 {
-    fn squared_distance(&self, other: &Point<N>) -> N {
-        let p = self.nearest_point(other);
-        let dist = p - *other;
-        dist.magnitude_squared()
+    fn squared_distance(&self, point: &Point<N>) -> N {
+        let v = self.project_scalar(point).clamp_01();
+        let p = self.start + self.vector() * v;
+        p.squared_distance(point)
     }
 }
 
@@ -90,24 +108,18 @@ impl<N> Nearest<N, Point<N>> for Line<N>
 where
     N: PrimaFloat,
 {
-    fn nearest_point(&self, other: &Point<N>) -> Point<N> {
-        let ap: Vector<N> = (*other - self.start).into();
-        let ab: Vector<N> = (self.end - self.start).into();
-
-        let ab_magnitude = ab.magnitude_squared();
-        let abap_product = ap.dot(&ab);
-        let dist = abap_product / ab_magnitude;
+    fn nearest_point(&self, point: &Point<N>) -> Point<N> {
+        let dist = self.project_scalar(point);
 
         if dist < N::zero() {
             self.start
         } else if dist > N::one() {
             self.end
         } else {
-            self.start + ab * dist
+            self.start + self.vector() * dist
         }
     }
 }
-
 
 //=================================================================//
 //============================= LINE ==============================//
@@ -121,10 +133,8 @@ where
         if self.collision(&other).is_some() {
             return N::zero();
         }
-
-        // todo: Skip this and do the logic here. There is a much faster way!
         let a = self.nearest_point(other);
-        let b = other.nearest_point(self);
+        let b = other.nearest_point(&a);
         a.squared_distance(&b)
     }
 }
@@ -134,10 +144,50 @@ where
     N: PrimaFloat,
 {
     fn nearest_point(&self, other: &Line<N>) -> Point<N> {
-        if let Some(p) = self.collision(other) {
-            return p;
-        }
+        let (a, b) = (self, other);
+        // First, get alignment in the direction of this line.
+        // The line 'self' is treated as being horizontal from left to right.
+        let x_a = a.project_scalar(&b.start);
+        let x_b = a.project_scalar(&b.end);
+        let x_overlap = x_a.is_decimal()
+            || x_b.is_decimal()
+            || (x_a >= N::one() && x_b <= N::zero())
+            || (x_b >= N::one() && x_a <= N::zero());
 
-        todo!()
+        // Check the normal axis to see if 'other' intersects our line's direction.
+        let y_a = (b.start - self.start).dot(&self.normal()) / self.magnitude_squared();
+        let y_b = (b.end - self.start).dot(&self.normal()) / self.magnitude_squared();
+        let y_overlap = y_a.signum() != y_b.signum() && !y_a.is_zero() && !y_b.is_zero();
+
+        // println!("x_a: {}, x_b: {} => {}", x_a, x_b, x_overlap);
+        // println!("y_a: {}, y_b: {} => {}", y_a, y_b, y_overlap);
+
+        if !y_overlap {
+            // 'other' is only on one side of our line, which is good.
+            if !x_overlap {
+                // 'other' is way out of scope, so we can return start or end.
+                if x_a + x_b > N::one() {
+                    a.end
+                } else {
+                    a.start
+                }
+            } else {
+                if y_a.abs() <= y_b.abs() && x_a.is_decimal() {
+                    // other.start is in range and closest to self, so use that to finish.
+                    a.start + a.vector() * x_a
+                } else {
+                    // Assuming all prior logic is correct, there can only be one case here:
+                    // end is in a valid position and is closer to the line than start.
+                    a.start + a.vector() * x_b
+                }
+            }
+        } else {
+            // Normal is crossing, so we need to check the other axis.
+            if x_a > N::zero() && x_b >= N::zero() {
+                self.end
+            } else {
+                self.start
+            }
+        }
     }
 }
