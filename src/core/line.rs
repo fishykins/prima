@@ -36,16 +36,13 @@ where
 {
     /// Returns the point of collision between the two lines.
     pub fn collision(&self, other: &Self) -> Option<Point<N>> {
-        let r = self.end - self.start;
-        let s = other.end - other.start;
-
-        let denom: N = r.cross(&s);
+        let denom: N = self.vector().cross(&other.vector());
         if denom == N::zero() {
             return None;
         }
 
-        let numer_a = (other.start - self.start).cross(&s);
-        let numer_c = (other.start - self.start).cross(&r);
+        let numer_a = (other.start - self.start).cross(&other.vector());
+        let numer_c = (other.start - self.start).cross(&self.vector());
 
         let t = numer_a / denom;
         let u = numer_c / denom;
@@ -53,7 +50,7 @@ where
         if t < N::zero() || t > N::one() || u < N::zero() || u > N::one() {
             return None;
         }
-        return Some(self.start + r * t);
+        return Some(self.start + self.vector() * t);
     }
 
     /// Returns the line's vector.
@@ -66,14 +63,14 @@ where
         self.vector().perpendicular_cc().normalize()
     }
 
-    /// Projects the given point onto the line. A value between 0 and 1 is on the line.
-    pub fn project_scalar(&self, p: &Point<N>) -> N {
+    /// Gets the relative dot product of the point along the line.
+    pub fn relative_dot(&self, p: &Point<N>) -> N {
         (*p - self.start).dot(&self.vector()) / self.magnitude_squared()
     }
 
-    /// Projects the given point onto the line.
+    /// Projects the given point onto an unbound self.
     pub fn project_point(&self, p: &Point<N>) -> Point<N> {
-        let v = self.project_scalar(p);
+        let v = self.relative_dot(p);
         self.start + self.vector() * v
     }
 }
@@ -98,7 +95,7 @@ where
     N: PrimaFloat,
 {
     fn squared_distance(&self, point: &Point<N>) -> N {
-        let v = self.project_scalar(point).clamp_01();
+        let v = self.relative_dot(point).clamp_01();
         let p = self.start + self.vector() * v;
         p.squared_distance(point)
     }
@@ -109,7 +106,7 @@ where
     N: PrimaFloat,
 {
     fn nearest_point(&self, point: &Point<N>) -> Point<N> {
-        let dist = self.project_scalar(point);
+        let dist = self.relative_dot(point);
 
         if dist < N::zero() {
             self.start
@@ -147,8 +144,8 @@ where
         let (a, b) = (self, other);
         // First, get alignment in the direction of this line.
         // The line 'self' is treated as being horizontal from left to right.
-        let x_a = a.project_scalar(&b.start);
-        let x_b = a.project_scalar(&b.end);
+        let x_a = a.relative_dot(&b.start);
+        let x_b = a.relative_dot(&b.end);
         let x_overlap = x_a.is_decimal()
             || x_b.is_decimal()
             || (x_a >= N::one() && x_b <= N::zero())

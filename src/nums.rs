@@ -35,6 +35,7 @@ pub trait PrimaFloat: PrimaNum + Float + Neg {
     /// Returns true if this number lies between 0 and 1.
     fn is_decimal(&self) -> bool;
 
+    /// Returns true if this number is a float between 0 and 1.
     fn clamp_01(&self) -> Self;
 }
 
