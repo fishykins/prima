@@ -21,7 +21,7 @@ where
 {
     /// Creates a new Aabr from a center point, width and height.
     pub fn from_point(center: Point<N>, width: N, height: N) -> Self {
-        let e = Extent::<N>::new(width, height).half();
+        let e = Extent::<N>::new(width, height);
         Self {
             min: center - e,
             max: center + e,
@@ -195,7 +195,68 @@ where
     N: PrimaFloat,
 {
     fn nearest_point(&self, line: &Line<N>) -> Point<N> {
-        todo!()
+        let start_x = (line.start.x - self.min.x) / self.width();
+        let start_y = (line.start.y - self.min.y) / self.height();
+        let end_x = (line.end.x - self.min.x) / self.width();
+        let end_y = (line.end.y - self.min.y) / self.height();
+        let line_min = Point::new(start_x.min(end_x), start_y.min(end_y));
+        let line_max = Point::new(start_x.max(end_x), start_y.max(end_y));
+
+        let x = if line_min.x >= N::one() {
+            Some(self.max.x)
+        } else if line_max.x <= N::zero() {
+            Some(self.min.x)
+        } else {
+            None
+        };
+
+        let y = if line_min.y >= N::one() {
+            Some(self.max.y)
+        } else if line_max.y <= N::zero() {
+            Some(self.min.y)
+        } else {
+            None
+        };
+
+        let right_slant = line.start.x < line.end.x;
+        let up_slant = line.start.y < line.end.y;
+
+        if let Some(x) = x {
+            if let Some(y) = y {
+                Point::new(x, y)
+            } else {
+                let y = if right_slant {
+                    line.end.y.max(self.min.y).min(self.max.y)
+                } else {
+                    line.start.y.max(self.min.y).min(self.max.y)
+                };
+                Point::new(x, y)
+            }
+        } else {
+            if let Some(y) = y {
+                let x = if up_slant && y <= self.min.y || !up_slant && y >= self.max.y {
+                    line.end.x.max(self.min.x).min(self.max.x)
+                } else {
+                    line.start.x.max(self.min.x).min(self.max.x)
+                };
+                Point::new(x, y)
+            } else {
+                // solve for a corner. 
+                if right_slant {
+                    if up_slant {
+                        Point::new(self.min.x, self.max.y)
+                    } else {
+                        Point::new(self.min.x, self.min.y)
+                    }
+                } else {
+                    if up_slant {
+                        Point::new(self.max.x, self.max.y)
+                    } else {
+                        Point::new(self.max.x, self.min.y)
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -444,7 +505,9 @@ where
     N: PrimaFloat,
 {
     fn squared_distance(&self, obr: &Obr<N>) -> N {
-        todo!()
+        let a = self.nearest_point(obr);
+        let b = obr.nearest_point(&a);
+        a.squared_distance(&b)
     }
 }
 

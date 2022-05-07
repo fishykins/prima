@@ -59,9 +59,15 @@ fn circle_test() {
 }
 
 #[test]
-fn aabr_test() {
-
-}
+fn aabr_line_test() {
+    let aabr = Aabr::<f32>::from_point(Point::splat(8.), 2.0, 2.0);
+    let line_two_axis = Line::<f32>::from_point(Point::new(6.0, 6.0), Vector::new(4.0, 4.0));
+    assert_eq!(Point::new(7.0, 9.0), aabr.nearest_point(&line_two_axis));
+    let line_x_only = Line::<f32>::from_point(Point::new(8.0, 5.0), Vector::new(4.0, -1.0));
+    assert_eq!(Point::new(8.0, 7.0), aabr.nearest_point(&line_x_only));
+    let line_y_only = Line::<f32>::from_point(Point::new(5.0, 8.0), Vector::new(1.0, 0.4));
+    assert_eq!(Point::new(7.0, 8.4), aabr.nearest_point(&line_y_only));
+}   
 
 #[test]
 fn obr_test() {
