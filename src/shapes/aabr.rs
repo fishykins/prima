@@ -70,11 +70,8 @@ where
 
         // This looks verbose, but it allows us to avoid requiring Ord for N.
         let min_x = if min_a.x > min_b.x { min_a.x } else { min_b.x };
-
         let min_y = if min_a.y > min_b.y { min_a.y } else { min_b.y };
-
         let max_x = if max_a.x < max_b.x { max_a.x } else { max_b.x };
-
         let max_y = if max_a.y < max_b.y { max_a.y } else { max_b.y };
 
         Self::new(Point::new(min_x, min_y), Point::new(max_x, max_y))
@@ -563,7 +560,7 @@ impl<N> Collide<N, Obr<N>> for Aabr<N>
 where
     N: PrimaFloat,
 {
-    fn collision(&self, obr: &Obr<N>) -> Option<Collision<N>> {
+    fn collision(&self, _obr: &Obr<N>) -> Option<Collision<N>> {
         todo!()
     }
 

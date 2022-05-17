@@ -170,7 +170,7 @@ impl<N> Nearest<N, Point<N>> for Obr<N>
 where
     N: PrimaFloat,
 {
-    fn nearest_point(&self, point: &Point<N>) -> Point<N> {
+    fn nearest_point(&self, _point: &Point<N>) -> Point<N> {
         todo!()
     }
 }
@@ -183,7 +183,7 @@ impl<N> Distance<N, Line<N>> for Obr<N>
 where
     N: PrimaFloat,
 {
-    fn squared_distance(&self, line: &Line<N>) -> N {
+    fn squared_distance(&self, _line: &Line<N>) -> N {
         todo!()
     }
 }
@@ -192,7 +192,7 @@ impl<N> Nearest<N, Line<N>> for Obr<N>
 where
     N: PrimaFloat,
 {
-    fn nearest_point(&self, line: &Line<N>) -> Point<N> {
+    fn nearest_point(&self, _line: &Line<N>) -> Point<N> {
         todo!()
     }
 }
@@ -201,15 +201,15 @@ impl<N> Collide<N, Line<N>> for Obr<N>
 where
     N: PrimaFloat,
 {
-    fn collision(&self, line: &Line<N>) -> Option<Collision<N>> {
+    fn collision(&self, _line: &Line<N>) -> Option<Collision<N>> {
         todo!()
     }
 
-    fn enveloping(&self, line: &Line<N>) -> bool {
+    fn enveloping(&self, _line: &Line<N>) -> bool {
         todo!()
     }
 
-    fn enveloped_by(&self, line: &Line<N>) -> bool {
+    fn enveloped_by(&self, _line: &Line<N>) -> bool {
         todo!()
     }
 }
@@ -241,15 +241,15 @@ impl<N> Collide<N, Circle<N>> for Obr<N>
 where
     N: PrimaFloat,
 {
-    fn collision(&self, circle: &Circle<N>) -> Option<Collision<N>> {
+    fn collision(&self, _circle: &Circle<N>) -> Option<Collision<N>> {
         todo!()
     }
 
-    fn intersecting(&self, circle: &Circle<N>) -> bool {
+    fn intersecting(&self, _circle: &Circle<N>) -> bool {
         todo!()
     }
 
-    fn enveloping(&self, circle: &Circle<N>) -> bool {
+    fn enveloping(&self, _circle: &Circle<N>) -> bool {
         todo!()
     }
 
@@ -275,7 +275,7 @@ impl<N> Nearest<N, Aabr<N>> for Obr<N>
 where
     N: PrimaFloat,
 {
-    fn nearest_point(&self, aabr: &Aabr<N>) -> Point<N> {
+    fn nearest_point(&self, _aabr: &Aabr<N>) -> Point<N> {
         todo!()
     }
 }
@@ -309,7 +309,7 @@ impl<N> Distance<N, Obr<N>> for Obr<N>
 where
     N: PrimaFloat,
 {
-    fn squared_distance(&self, obr: &Obr<N>) -> N {
+    fn squared_distance(&self, _obr: &Obr<N>) -> N {
         todo!()
     }
 }
@@ -318,7 +318,7 @@ impl<N> Nearest<N, Obr<N>> for Obr<N>
 where
     N: PrimaFloat,
 {
-    fn nearest_point(&self, obr: &Obr<N>) -> Point<N> {
+    fn nearest_point(&self, _obr: &Obr<N>) -> Point<N> {
         todo!()
     }
 }
@@ -327,7 +327,7 @@ impl<N> Collide<N, Obr<N>> for Obr<N>
 where
     N: PrimaFloat,
 {
-    fn collision(&self, obr: &Obr<N>) -> Option<Collision<N>> {
+    fn collision(&self, _obr: &Obr<N>) -> Option<Collision<N>> {
         todo!()
     }
 
@@ -351,11 +351,11 @@ where
         a_x.intersecting(&b_x) && a_y.intersecting(&b_y)
     }
 
-    fn enveloping(&self, obr: &Obr<N>) -> bool {
+    fn enveloping(&self, _obr: &Obr<N>) -> bool {
         todo!()
     }
 
-    fn enveloped_by(&self, obr: &Obr<N>) -> bool {
+    fn enveloped_by(&self, _obr: &Obr<N>) -> bool {
         todo!()
     }
 }
