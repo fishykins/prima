@@ -102,11 +102,11 @@ where
     N: PrimaFloat,
 {
     /// Returns the square distance between two objects.
-    fn squared_distance(&self, other: &Rhs) -> N;
+    fn distance_squared(&self, other: &Rhs) -> N;
 
     /// Returns the distance between two objects.
     fn distance(&self, other: &Rhs) -> N {
-        self.squared_distance(other).sqrt()
+        self.distance_squared(other).sqrt()
     }
 }
 

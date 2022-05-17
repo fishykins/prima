@@ -145,8 +145,8 @@ impl<N> Distance<N, Point<N>> for Aabr<N>
 where
     N: PrimaFloat,
 {
-    fn squared_distance(&self, other: &Point<N>) -> N {
-        self.nearest_point(other).squared_distance(other)
+    fn distance_squared(&self, other: &Point<N>) -> N {
+        self.nearest_point(other).distance_squared(other)
     }
 }
 
@@ -180,10 +180,10 @@ impl<N> Distance<N, Line<N>> for Aabr<N>
 where
     N: PrimaFloat,
 {
-    fn squared_distance(&self, line: &Line<N>) -> N {
+    fn distance_squared(&self, line: &Line<N>) -> N {
         let a = self.nearest_point(line);
         let b = line.nearest_point(&a);
-        a.squared_distance(&b)
+        a.distance_squared(&b)
     }
 }
 
@@ -290,9 +290,9 @@ impl<N> Distance<N, Circle<N>> for Aabr<N>
 where
     N: PrimaFloat,
 {
-    fn squared_distance(&self, other: &Circle<N>) -> N {
+    fn distance_squared(&self, other: &Circle<N>) -> N {
         self.nearest_point(&other.center)
-            .squared_distance(&other.center)
+            .distance_squared(&other.center)
     }
 }
 
@@ -396,7 +396,7 @@ impl<N> Distance<N, Aabr<N>> for Aabr<N>
 where
     N: PrimaFloat,
 {
-    fn squared_distance(&self, other: &Aabr<N>) -> N {
+    fn distance_squared(&self, other: &Aabr<N>) -> N {
         let (min_a, max_a) = self.min_max();
         let (min_b, max_b) = other.min_max();
         let mut d = N::zero();
@@ -501,10 +501,10 @@ impl<N> Distance<N, Obr<N>> for Aabr<N>
 where
     N: PrimaFloat,
 {
-    fn squared_distance(&self, obr: &Obr<N>) -> N {
+    fn distance_squared(&self, obr: &Obr<N>) -> N {
         let a = self.nearest_point(obr);
         let b = obr.nearest_point(&a);
-        a.squared_distance(&b)
+        a.distance_squared(&b)
     }
 }
 
@@ -547,8 +547,8 @@ where
         // We need to find the two nearest points on the x axis.
         let mut ordered_verts = obr.vertices();
         ordered_verts.sort_by(|a, b| {
-            let dist_a = a.squared_distance(&temp_point);
-            let dist_b = b.squared_distance(&temp_point);
+            let dist_a = a.distance_squared(&temp_point);
+            let dist_b = b.distance_squared(&temp_point);
             dist_a.partial_cmp(&dist_b).unwrap()
         });
         let edge = Line::new(ordered_verts[0], ordered_verts[1]);

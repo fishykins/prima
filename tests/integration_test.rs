@@ -51,7 +51,7 @@ fn circle_test() {
     let a: Circle<f32> = Circle::new(Point::new(2.0, 2.0), 3.0);
     let b: Circle<f32> = Circle::new(Point::new(10.0, 10.0), 3.5);
     let c: Circle<f32> = Circle::new(Point::new(14.0, 10.0), 1.0);
-    let ds = a.squared_distance(&b);
+    let ds = a.distance_squared(&b);
     assert_eq!(ds, 106.75f32);
     assert!(!a.intersecting(&b));
     assert!(a.collision(&c).is_none());

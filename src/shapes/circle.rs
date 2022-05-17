@@ -87,8 +87,8 @@ impl<N> Distance<N, Point<N>> for Circle<N>
 where
     N: PrimaFloat,
 {
-    fn squared_distance(&self, point: &Point<N>) -> N {
-        self.nearest_point(point).squared_distance(point)
+    fn distance_squared(&self, point: &Point<N>) -> N {
+        self.nearest_point(point).distance_squared(point)
     }
 }
 
@@ -126,9 +126,9 @@ impl<N> Distance<N, Line<N>> for Circle<N>
 where
     N: PrimaFloat,
 {
-    fn squared_distance(&self, line: &Line<N>) -> N {
+    fn distance_squared(&self, line: &Line<N>) -> N {
         let p = self.nearest_point(line);
-        p.squared_distance(&line.start)
+        p.distance_squared(&line.start)
     }
 }
 
@@ -148,7 +148,7 @@ where
             return None;
         }
 
-        let dist_squared = self.center.squared_distance(&closest);
+        let dist_squared = self.center.distance_squared(&closest);
 
         if dist_squared <= self.radius * self.radius {
             return Some(Collision::new(
@@ -187,10 +187,10 @@ impl<N> Distance<N, Circle<N>> for Circle<N>
 where
     N: PrimaFloat,
 {
-    fn squared_distance(&self, other: &Circle<N>) -> N {
+    fn distance_squared(&self, other: &Circle<N>) -> N {
         let ar = self.radius.powi(2);
         let br = other.radius.powi(2);
-        let total_dist_sqrd = self.center.squared_distance(&other.center);
+        let total_dist_sqrd = self.center.distance_squared(&other.center);
         total_dist_sqrd - ar - br
     }
 }
@@ -233,7 +233,7 @@ where
     }
 
     fn intersecting(&self, other: &Self) -> bool {
-        self.center.squared_distance(&other.center)
+        self.center.distance_squared(&other.center)
             <= (self.radius + other.radius) * (self.radius + other.radius)
     }
 
@@ -256,10 +256,10 @@ impl<N> Distance<N, Aabr<N>> for Circle<N>
 where
     N: PrimaFloat,
 {
-    fn squared_distance(&self, aabr: &Aabr<N>) -> N {
+    fn distance_squared(&self, aabr: &Aabr<N>) -> N {
         let a = self.nearest_point(aabr);
         let b = aabr.nearest_point(self);
-        a.squared_distance(&b)
+        a.distance_squared(&b)
     }
 }
 
@@ -312,10 +312,10 @@ impl<N> Distance<N, Obr<N>> for Circle<N>
 where
     N: PrimaFloat,
 {
-    fn squared_distance(&self, obr: &Obr<N>) -> N {
+    fn distance_squared(&self, obr: &Obr<N>) -> N {
         let a = self.nearest_point(obr);
         let b = obr.nearest_point(self);
-        a.squared_distance(&b)
+        a.distance_squared(&b)
     }
 }
 

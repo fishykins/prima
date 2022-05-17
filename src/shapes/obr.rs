@@ -161,8 +161,8 @@ impl<N> Distance<N, Point<N>> for Obr<N>
 where
     N: PrimaFloat,
 {
-    fn squared_distance(&self, other: &Point<N>) -> N {
-        self.nearest_point(other).squared_distance(other)
+    fn distance_squared(&self, other: &Point<N>) -> N {
+        self.nearest_point(other).distance_squared(other)
     }
 }
 
@@ -183,7 +183,7 @@ impl<N> Distance<N, Line<N>> for Obr<N>
 where
     N: PrimaFloat,
 {
-    fn squared_distance(&self, _line: &Line<N>) -> N {
+    fn distance_squared(&self, _line: &Line<N>) -> N {
         todo!()
     }
 }
@@ -222,9 +222,9 @@ impl<N> Distance<N, Circle<N>> for Obr<N>
 where
     N: PrimaFloat,
 {
-    fn squared_distance(&self, circle: &Circle<N>) -> N {
+    fn distance_squared(&self, circle: &Circle<N>) -> N {
         self.nearest_point(&circle.center)
-            .squared_distance(&circle.center)
+            .distance_squared(&circle.center)
     }
 }
 
@@ -266,8 +266,8 @@ impl<N> Distance<N, Aabr<N>> for Obr<N>
 where
     N: PrimaFloat,
 {
-    fn squared_distance(&self, aabr: &Aabr<N>) -> N {
-        aabr.squared_distance(self)
+    fn distance_squared(&self, aabr: &Aabr<N>) -> N {
+        aabr.distance_squared(self)
     }
 }
 
@@ -309,7 +309,7 @@ impl<N> Distance<N, Obr<N>> for Obr<N>
 where
     N: PrimaFloat,
 {
-    fn squared_distance(&self, _obr: &Obr<N>) -> N {
+    fn distance_squared(&self, _obr: &Obr<N>) -> N {
         todo!()
     }
 }

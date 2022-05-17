@@ -57,7 +57,7 @@ impl<N> Distance<N, Self> for Point<N>
 where
     N: PrimaFloat,
 {
-    fn squared_distance(&self, other: &Self) -> N {
+    fn distance_squared(&self, other: &Self) -> N {
         let dx = self.x - other.x;
         let dy = self.y - other.y;
         dx * dx + dy * dy

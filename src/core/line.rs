@@ -5,6 +5,7 @@ use crate::{
 };
 
 /// A line between two points.
+#[derive(Copy, Clone, Debug, PartialEq)]
 pub struct Line<N = f32> {
     /// The starting point of the line.
     pub start: Point<N>,
@@ -94,10 +95,10 @@ impl<N> Distance<N, Point<N>> for Line<N>
 where
     N: PrimaFloat,
 {
-    fn squared_distance(&self, point: &Point<N>) -> N {
+    fn distance_squared(&self, point: &Point<N>) -> N {
         let v = self.relative_dot(point).clamp_01();
         let p = self.start + self.vector() * v;
-        p.squared_distance(point)
+        p.distance_squared(point)
     }
 }
 
@@ -126,13 +127,13 @@ impl<N> Distance<N, Line<N>> for Line<N>
 where
     N: PrimaFloat,
 {
-    fn squared_distance(&self, other: &Line<N>) -> N {
+    fn distance_squared(&self, other: &Line<N>) -> N {
         if self.collision(&other).is_some() {
             return N::zero();
         }
         let a = self.nearest_point(other);
         let b = other.nearest_point(&a);
-        a.squared_distance(&b)
+        a.distance_squared(&b)
     }
 }
 

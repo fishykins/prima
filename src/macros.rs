@@ -312,5 +312,11 @@ macro_rules! xy_impl(
                 }
             }
         }
+
+        impl<N> Into<(N, N)> for $T<N> where N: PrimaNum {
+            fn into(self) -> (N, N) {
+                (self.x, self.y)
+            }
+        }
     }
 );
