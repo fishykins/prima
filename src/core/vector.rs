@@ -1,3 +1,5 @@
+use serde::{Serialize, Deserialize};
+
 use crate::{
     core::{AngleMat, Rotation, Point},
     nums::{PrimaFloat, PrimaNum},
@@ -7,7 +9,7 @@ use crate::{
 use std::ops::{AddAssign, Neg, Sub, SubAssign};
 
 /// A vector in 2 dimensions.
-#[derive(Copy, Clone, Debug, PartialEq, Eq)]
+#[derive(Copy, Clone, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Vector<N> {
     /// The vector's x component.
     pub x: N,

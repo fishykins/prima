@@ -3,11 +3,11 @@ use crate::{
     nums::{PrimaFloat, PrimaNum},
     traits::{Collide, Distance, Flat, LocalPosition, Nearest, Shape},
 };
-
+use serde::{Deserialize, Serialize};
 use super::{Circle, Obr};
 
 /// An axis-aligned bounding rectangle.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Aabr<N> {
     /// The minimum point of the rectangle.
     pub min: Point<N>,

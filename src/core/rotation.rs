@@ -1,5 +1,8 @@
-
-use crate::{rotation_impl, nums::{PrimaNum, PrimaFloat}};
+use crate::{
+    nums::{PrimaFloat, PrimaNum},
+    rotation_impl,
+};
+use serde::{Deserialize, Serialize};
 use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Sub, SubAssign};
 
 /// A rotation is the equivalent to an unbound [Angle].
@@ -7,11 +10,11 @@ use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Sub, SubAssi
 pub struct Rotation<N>(N);
 
 /// An angle is bound to the range of [0..2].
-#[derive(Clone, Copy, Debug, PartialEq, PartialOrd)]
+#[derive(Clone, Copy, Debug, Default, PartialEq, PartialOrd)]
 pub struct Angle<N>(N);
 
 /// A 2x2 angular matrix.
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, Serialize, Deserialize)]
 pub struct AngleMat<N = f32> {
     /// Top left
     pub m00: N,
@@ -95,13 +98,19 @@ impl<N> From<Angle<N>> for Rotation<N> {
 //=============================================================//
 //======================== OPPERATIONS ========================//
 //=============================================================//
-impl<N> AddAssign<Rotation<N>> for Angle<N> where N: PrimaFloat {
+impl<N> AddAssign<Rotation<N>> for Angle<N>
+where
+    N: PrimaFloat,
+{
     fn add_assign(&mut self, rhs: Rotation<N>) {
         *self = Angle(clamp_radians(self.0 + rhs.0));
     }
 }
 
-impl<N> Add<Rotation<N>> for Angle<N> where N: PrimaFloat {
+impl<N> Add<Rotation<N>> for Angle<N>
+where
+    N: PrimaFloat,
+{
     type Output = Self;
 
     fn add(self, rhs: Rotation<N>) -> Self {
@@ -109,13 +118,19 @@ impl<N> Add<Rotation<N>> for Angle<N> where N: PrimaFloat {
     }
 }
 
-impl<N> SubAssign<Rotation<N>> for Angle<N> where N: PrimaFloat {
+impl<N> SubAssign<Rotation<N>> for Angle<N>
+where
+    N: PrimaFloat,
+{
     fn sub_assign(&mut self, rhs: Rotation<N>) {
         *self = Angle(clamp_radians(self.0 - rhs.0));
     }
 }
 
-impl<N> Sub<Rotation<N>> for Angle<N> where N: PrimaFloat {
+impl<N> Sub<Rotation<N>> for Angle<N>
+where
+    N: PrimaFloat,
+{
     type Output = Self;
 
     fn sub(self, rhs: Rotation<N>) -> Self {

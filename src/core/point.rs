@@ -1,3 +1,5 @@
+use serde::{Serialize, Deserialize};
+
 use crate::{
     core::{AngleMat, Line, Rotation, Vector},
     nums::{PrimaFloat, PrimaNum},
@@ -9,7 +11,7 @@ use std::ops::{AddAssign, Neg, Sub, SubAssign};
 use super::Extent;
 
 /// A point in 2D space.
-#[derive(Copy, Clone, Debug, PartialEq, Eq)]
+#[derive(Copy, Clone, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Point<N> {
     /// The x coordinate of the point.
     pub x: N,
