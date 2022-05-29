@@ -33,7 +33,7 @@ macro_rules! rotation_impl(
                 self.0
             }
 
-            /// Returns the angle in radians divied by pi.
+            /// Returns the angle in radians times by pi.
             pub fn as_radians_pi(&self) -> N {
                 self.0 * N::pi()
             }

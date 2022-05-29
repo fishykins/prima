@@ -123,6 +123,19 @@ where
     pub fn as_angle(&self) -> Angle<N> {
         self.as_rotation().into()
     }
+
+    /// Gets the rotation from self to other.
+    pub fn angle_of_difference(&self, other: &Self) -> Angle<N> {
+        let d = self.dot(other);
+        let cos_theta = d / (self.magnitude() * other.magnitude());
+        let theta = cos_theta.acos();
+        Angle::from_radians_pi(theta)
+    }
+
+    /// Gets the rotation from self to other.
+    pub fn rotation_to(&self, other: &Self) -> Rotation<N> {
+        self.as_angle().rotation_to(&other.as_angle())
+    }
 }
 
 impl<N> Magnitude<N> for Vector<N>
