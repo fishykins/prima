@@ -229,6 +229,11 @@ macro_rules! xy_impl(
             pub fn dot(&self, other: &Self) -> N {
                 self.x * other.x + self.y * other.y
             }
+
+            /// Returns true if both axis are zero.
+            pub fn is_zero(&self) -> bool {
+                self.x == N::zero() && self.y == N::zero()
+            }
         }
 
         impl<N> $T<N> where N: PrimaFloat {

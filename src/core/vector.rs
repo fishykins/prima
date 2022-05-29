@@ -1,7 +1,7 @@
 use serde::{Serialize, Deserialize};
 
 use crate::{
-    core::{AngleMat, Rotation, Point},
+    core::{Angle, AngleMat, Rotation, Point},
     nums::{PrimaFloat, PrimaNum},
     traits::{Magnitude, Cross},
     xy_impl,
@@ -93,6 +93,35 @@ where
             x: self.x / mag,
             y: self.y / mag,
         }
+    }
+
+    /// Converts the vector to a rotation.
+    pub fn as_rotation(&self) -> Rotation<N> {
+        if self.x == N::zero() {
+            if self.y >= N::zero() {
+                Rotation::new(N::zero())
+            } else {
+                Rotation::new(N::one())
+            }
+        } else {
+            if self.y == N::zero() {
+                let half = N::one() / (N::one() + N::one());
+                if self.x > N::zero() {
+                    Rotation::new(half)
+                } else {
+                    Rotation::new(N::one() + half)
+                }
+            } else {
+                let r = self.x / self.y;
+                let r = r.atan();
+                Rotation::from_radians_pi(r)
+            }
+        }
+    }
+
+    /// Converts the vector to an angle.
+    pub fn as_angle(&self) -> Angle<N> {
+        self.as_rotation().into()
     }
 }
 
