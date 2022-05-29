@@ -1,9 +1,9 @@
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 
 use crate::{
-    core::{Angle, AngleMat, Rotation, Point},
+    core::{Angle, AngleMat, Point, Rotation},
     nums::{PrimaFloat, PrimaNum},
-    traits::{Magnitude, Cross},
+    traits::{Cross, Magnitude},
     xy_impl,
 };
 use std::ops::{AddAssign, Neg, Sub, SubAssign};
@@ -19,7 +19,10 @@ pub struct Vector<N> {
 
 xy_impl!(Vector);
 
-impl<N> Vector<N> where N: PrimaNum {
+impl<N> Vector<N>
+where
+    N: PrimaNum,
+{
     /// Returns the counter-clockwise perpendicular vector.
     pub fn perpendicular_cc(self) -> Self {
         Vector {
@@ -92,6 +95,18 @@ where
         Self {
             x: self.x / mag,
             y: self.y / mag,
+        }
+    }
+
+    /// Lerps from self to other.
+    pub fn lerp(&self, other: Self, t: N) -> Self {
+        let mag = self.magnitude();
+        let mag_other = other.magnitude();
+        let mag_lerp = mag.lerp(mag_other, t);
+        let mag_lerp_inv = N::one() / mag_lerp;
+        Self {
+            x: self.x * mag_lerp_inv,
+            y: self.y * mag_lerp_inv,
         }
     }
 

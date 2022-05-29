@@ -1,3 +1,4 @@
+use core::ops::Range;
 use num_traits::{Float, FromPrimitive, Num, ToPrimitive, Unsigned};
 use std::fmt::{Debug, Display};
 use std::hash::Hash;
@@ -33,10 +34,29 @@ pub trait PrimaFloat: PrimaNum + Float + Neg {
     fn pi() -> Self;
 
     /// Returns true if this number lies between 0 and 1.
-    fn is_decimal(&self) -> bool;
+    fn is_decimal(&self) -> bool {
+        *self >= Self::zero() && *self <= Self::one()
+    }
 
     /// Returns true if this number is a float between 0 and 1.
-    fn clamp_01(&self) -> Self;
+    fn clamp_01(&self) -> Self {
+        self.max(Self::zero()).min(Self::one())
+    }
+
+    /// Clamps this number between the given bounds.
+    fn clamp(&self, range: Range<Self>) -> Self {
+        self.max(range.start).min(range.end)
+    }
+
+    /// Lerps from self to other by the set amount.
+    fn lerp(&self, b: Self, t: Self) -> Self {
+        *self + (b - *self) * t
+    }
+
+    /// Clamped lerp from self to other by the set amount.
+    fn lerp_clamped(&self, b: Self, t: Self) -> Self {
+        *self + (b - *self) * t.clamp_01()
+    }
 }
 
 /// A strict subset of intiger types that are unsigned.
@@ -102,26 +122,10 @@ impl PrimaFloat for f64 {
     fn pi() -> Self {
         f64::consts::PI
     }
-
-    fn is_decimal(&self) -> bool {
-        *self >= 0.0 && *self <= 0.0
-    }
-
-    fn clamp_01(&self) -> Self {
-        self.max(0.0).min(1.0)
-    }
 }
 impl PrimaFloat for f32 {
     fn pi() -> Self {
         f32::consts::PI
-    }
-
-    fn is_decimal(&self) -> bool {
-        *self >= 0.0 && *self <= 1.0
-    }
-
-    fn clamp_01(&self) -> Self {
-        self.max(0.0).min(1.0)
     }
 }
 

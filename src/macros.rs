@@ -73,6 +73,28 @@ macro_rules! rotation_impl(
             pub fn mirror(self) -> Self {
                 Self::new(N::zero() - self.as_radians())
             }
+
+            /// Returns the rotation from self to other.
+            pub fn rotation_to(&self, other: &Self) -> Rotation<N> {
+                Rotation::new((self.0 - other.0) % N::one())
+            }
+
+            /// returns the rotation from other to self._
+            pub fn rotation_from(&self, other: &Self) -> Rotation<N> {
+                Rotation::new((other.0 - self.0) % N::one())
+            }
+
+            /// Lerp from self to other.
+            pub fn lerp(&self, other: &Self, t: N) -> Self {
+                let rotation = self.rotation_to(other) * t;
+                *self + rotation
+            }
+
+            /// Converts the rotation to a vector.
+            pub fn as_vector(&self) -> Vector<N> {
+                let v = self.as_radians_pi();
+                Vector::new(v.sin(), v.cos())
+            }
         }
 
         impl<N> Add for $T<N>

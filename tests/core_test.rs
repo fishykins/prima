@@ -25,4 +25,7 @@ fn vector_test() {
     let v2 = Vector::new(0.0f32, 1.0f32);
     let r = v1.angle_of_difference(&v2);
     assert_eq!(r.as_degrees(), 90.0f32);
+
+    let a3 = a1.lerp(&a2, 0.5f32);
+    assert_eq!(a3.as_degrees(), 0.0f32);
 }

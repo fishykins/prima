@@ -58,28 +58,8 @@ impl<N> Angle<N> {
     }
 }
 
-impl<N> Rotation<N> where N: PrimaFloat {
-    /// Converts the rotation to a vector.
-    pub fn as_vector(&self) -> Vector<N> {
-        let v = self.as_radians_pi();
-        Vector::new(v.sin(), v.cos())
-    }
-}
-
 rotation_impl!(Rotation);
 rotation_impl!(Angle);
-
-impl<N> Angle<N> where N: PrimaFloat {
-    /// Returns the rotation from self to other.
-    pub fn rotation_to(&self, other: &Self) -> Rotation<N> {
-        Rotation::new((self.0 - other.0) % N::one())
-    }
-
-    /// returns the rotation from other to self._
-    pub fn rotation_from(&self, other: &Self) -> Rotation<N> {
-        Rotation::new((other.0 - self.0) % N::one())
-    }
-}
 
 impl<N> AngleMat<N> {
     /// Creates a new matrix.
