@@ -76,12 +76,15 @@ macro_rules! rotation_impl(
 
             /// Returns the rotation from self to other.
             pub fn rotation_to(&self, other: &Self) -> Rotation<N> {
-                Rotation::new((self.0 - other.0) % N::one())
+                let a = N::one() + N::one();
+                let b = a / (N::one() + N::one());
+                let t = (other.0 - self.0 + a + b) % a - b;
+                Rotation::new(t)
             }
 
             /// returns the rotation from other to self._
             pub fn rotation_from(&self, other: &Self) -> Rotation<N> {
-                Rotation::new((other.0 - self.0) % N::one())
+                other.rotation_to(self)
             }
 
             /// Lerp from self to other.

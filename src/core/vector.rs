@@ -127,9 +127,19 @@ where
                     Rotation::new(N::one() + half)
                 }
             } else {
-                let r = self.x / self.y;
-                let r = r.atan();
-                Rotation::from_radians_pi(r)
+                let mut ret = (self.x / self.y).atan();
+
+                if self.y < N::zero() && self.x < N::zero() {
+                    // Quadrant 3
+                    ret += N::one() * N::pi();
+                } else if self.x < N::zero() {
+                    // Quadrant 2
+                    ret += (N::one() + N::one()) * N::pi();
+                } else if self.y < N::zero() {
+                    // Quadrant 4
+                    ret += N::one() * N::pi();
+                }
+                Rotation::from_radians_pi(ret)
             }
         }
     }
